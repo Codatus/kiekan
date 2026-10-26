@@ -27,6 +27,29 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS Core Gui Widgets Network OPTIONAL_COMPO
 find_package(Threads REQUIRED)
 find_package(PkgConfig)
 
+# MSYS2: manche .pc-Dateien liefern MSYS-Pfade wie /ucrt64/include, die das
+# native CMake nicht kennt. Nicht vorhandene Include-Pfade werden verworfen
+# (der Compiler sucht dort ohnehin standardmäßig).
+function(kiekan_fix_pkg_includes)
+    if(NOT WIN32)
+        return()
+    endif()
+    foreach(tgt IN LISTS ARGN)
+        if(TARGET ${tgt})
+            get_target_property(dirs ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
+            if(dirs)
+                set(kept "")
+                foreach(d IN LISTS dirs)
+                    if(EXISTS "${d}")
+                        list(APPEND kept "${d}")
+                    endif()
+                endforeach()
+                set_target_properties(${tgt} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${kept}")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
 # Optionale Bausteine: fehlt einer, wird ohne die Funktion gebaut.
 if(KIEKAN_WITH_PDF)
     find_package(Qt6 COMPONENTS Pdf QUIET)
@@ -46,6 +69,7 @@ endif()
 if(KIEKAN_WITH_EXIF AND PkgConfig_FOUND)
     pkg_check_modules(EXIV2 IMPORTED_TARGET exiv2)
 endif()
+kiekan_fix_pkg_includes(PkgConfig::MPV PkgConfig::TESSERACT PkgConfig::QPDF PkgConfig::EXIV2)
 
 include(GNUInstallDirs)
 set(KIEKAN_INSTALL_PLUGINDIR "${CMAKE_INSTALL_LIBDIR}/kiekan/plugins")
@@ -188,6 +212,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LIBRAW IMPORTED_TARGET GLOBAL libraw_r)
     pkg_check_modules(OPENJP2 IMPORTED_TARGET GLOBAL libopenjp2)
     pkg_check_modules(DJVU IMPORTED_TARGET GLOBAL ddjvuapi)
+    kiekan_fix_pkg_includes(PkgConfig::HEIF PkgConfig::LIBRAW PkgConfig::OPENJP2 PkgConfig::DJVU)
 endif()
 # Metadaten aus HEIC/AVIF (EXIF-Block über libheif) und RAW (LibRaw), wo
 # exiv2 diese Formate nicht kennt (z. B. 0.27 ohne BMFF-Unterstützung).
