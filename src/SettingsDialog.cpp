@@ -4,6 +4,9 @@
 
 #include "SettingsDialog.h"
 
+#include "AiGuard.h"
+#include "AiLogDialog.h"
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -18,6 +21,7 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QSpinBox>
+#include <QTabWidget>
 #include <QThread>
 #include <QVBoxLayout>
 
@@ -33,8 +37,6 @@ bool escapeQuits() { return QSettings().value(QStringLiteral("escapeQuits"), tru
 void setEscapeQuits(bool on) { QSettings().setValue(QStringLiteral("escapeQuits"), on); }
 bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), true).toBool(); }
 void setAiViewerAccess(bool on) { QSettings().setValue(QStringLiteral("ai/viewerAccess"), on); }
-QStringList aiAllowedDirs() { return QSettings().value(QStringLiteral("ai/allowedDirs")).toStringList(); }
-void setAiAllowedDirs(const QStringList &dirs) { QSettings().setValue(QStringLiteral("ai/allowedDirs"), dirs); }
 
 } // namespace Settings
 
@@ -85,23 +87,63 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     iForm->addRow(tr("Texterkennung, Seiten gleichzeitig:"), m_ocrJobs);
 
     // KI-Schnittstelle (MCP)
-    auto *ai = new QGroupBox(tr("KI-Schnittstelle (MCP)"), this);
-    auto *aiLayout = new QVBoxLayout(ai);
+    auto *aiPage = new QWidget(this);
+    auto *aiLayout = new QVBoxLayout(aiPage);
     m_aiAccess = new QCheckBox(tr("KI-Assistenten dürfen das offene Fenster abfragen und steuern"), this);
     m_aiAccess->setChecked(m_initialAiAccess);
     m_aiAccess->setToolTip(tr("Erlaubt einem verbundenen Assistenten wie Claude, das angezeigte Bild und "
                               "die Auswahl abzufragen, Dateien anzuzeigen und Bereiche zu markieren."));
     aiLayout->addWidget(m_aiAccess);
-    aiLayout->addWidget(new QLabel(tr("Dateizugriff nur in diesen Ordnern (ein Ordner pro Zeile, leer = überall):"), this));
-    m_aiDirs = new QPlainTextEdit(Settings::aiAllowedDirs().join(QLatin1Char('\n')), this);
-    m_aiDirs->setFixedHeight(m_aiDirs->fontMetrics().lineSpacing() * 4 + 12);
-    aiLayout->addWidget(m_aiDirs);
+
+    auto dirEditor = [this, aiLayout](const QString &label, const QStringList &dirs, const QString &dialogTitle) {
+        aiLayout->addWidget(new QLabel(label, this));
+        auto *edit = new QPlainTextEdit(dirs.join(QLatin1Char('\n')), this);
+        edit->setFixedHeight(edit->fontMetrics().lineSpacing() * 4 + 12);
+        aiLayout->addWidget(edit);
+        auto *add = new QPushButton(tr("Ordner hinzufügen …"), this);
+        connect(add, &QPushButton::clicked, this, [this, edit, dialogTitle] {
+            const QString dir = QFileDialog::getExistingDirectory(this, dialogTitle);
+            if (!dir.isEmpty())
+                edit->appendPlainText(dir);
+        });
+        auto *row = new QHBoxLayout;
+        row->addWidget(add);
+        row->addStretch(1);
+        aiLayout->addLayout(row);
+        connect(edit, &QPlainTextEdit::textChanged, this, &SettingsDialog::updateOverlapNote);
+        return edit;
+    };
+    m_aiReadDirs = dirEditor(tr("Lesen: Ordner, deren Bilder und Dokumente die KI öffnen darf "
+                                "(ein Ordner pro Zeile; leer = keine):"),
+                             AiGuard::readDirs(), tr("Ordner, den die KI lesen darf"));
+    m_aiWriteDirs = dirEditor(tr("Schreiben: Ordner, in denen die KI neue Dateien anlegen darf "
+                                 "(leer = die KI darf nichts speichern). Diese Ordner darf sie auch lesen:"),
+                              AiGuard::writeDirs(), tr("Ordner für Dateien der KI"));
+
+    m_aiOverwrite = new QCheckBox(tr("KI darf vorhandene Dateien ersetzen und Metadaten in Dateien ändern "
+                                     "(nur in den Schreibordnern)"), this);
+    m_aiOverwrite->setChecked(AiGuard::allowOverwrite());
+    m_aiOverwrite->setToolTip(tr("Aus: Die KI legt nur neue Dateien an und verändert nichts Vorhandenes."));
+    aiLayout->addWidget(m_aiOverwrite);
+    connect(m_aiOverwrite, &QCheckBox::toggled, this, &SettingsDialog::updateOverlapNote);
+
+    m_overlapNote = new QLabel(this);
+    m_overlapNote->setWordWrap(true);
+    m_overlapNote->setStyleSheet(QStringLiteral("color: #b35900"));
+    aiLayout->addWidget(m_overlapNote);
+
+    auto *aiNote = new QLabel(tr("Text aus Dateien (Texterkennung, PDF-Text, Metadaten, Dateinamen) wird der KI als "
+                               "fremder Inhalt gekennzeichnet und auf eingeschleuste Anweisungen geprüft. Jeder "
+                               "Zugriff steht im KI-Protokoll."), this);
+    aiNote->setWordWrap(true);
+    aiNote->setStyleSheet(QStringLiteral("color: gray"));
+    aiLayout->addWidget(aiNote);
+
     auto *aiButtons = new QHBoxLayout;
-    auto *addDir = new QPushButton(tr("Ordner hinzufügen …"), this);
-    connect(addDir, &QPushButton::clicked, this, [this] {
-        const QString dir = QFileDialog::getExistingDirectory(this, tr("Ordner für KI-Zugriff"));
-        if (!dir.isEmpty())
-            m_aiDirs->appendPlainText(dir);
+    auto *logButton = new QPushButton(tr("KI-Protokoll anzeigen …"), this);
+    connect(logButton, &QPushButton::clicked, this, [this] {
+        AiLogDialog dlg(this);
+        dlg.exec();
     });
     auto *copyCmd = new QPushButton(tr("Befehl für Claude kopieren"), this);
     copyCmd->setToolTip(tr("Kopiert den Befehl, mit dem Claude Code Kiek an als MCP-Server einbindet."));
@@ -109,20 +151,63 @@ SettingsDialog::SettingsDialog(QWidget *parent)
         QGuiApplication::clipboard()->setText(QStringLiteral("claude mcp add --scope user kiekan -- \"%1\" --mcp")
                                                   .arg(QCoreApplication::applicationFilePath()));
     });
-    aiButtons->addWidget(addDir);
+    aiButtons->addWidget(logButton);
     aiButtons->addWidget(copyCmd);
     aiButtons->addStretch(1);
     aiLayout->addLayout(aiButtons);
+    aiLayout->addStretch(1);
+    updateOverlapNote();
+
+    auto *generalPage = new QWidget(this);
+    auto *gLayout = new QVBoxLayout(generalPage);
+    gLayout->addWidget(general);
+    gLayout->addWidget(images);
+    gLayout->addStretch(1);
+
+    auto *tabs = new QTabWidget(this);
+    tabs->addTab(generalPage, tr("Allgemein"));
+    tabs->addTab(aiPage, tr("KI-Schnittstelle"));
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     auto *layout = new QVBoxLayout(this);
-    layout->addWidget(general);
-    layout->addWidget(images);
-    layout->addWidget(ai);
+    layout->addWidget(tabs);
     layout->addWidget(buttons);
+}
+
+namespace {
+
+QStringList dirLines(const QPlainTextEdit *edit)
+{
+    QStringList dirs;
+    for (const QString &line : edit->toPlainText().split(QLatin1Char('\n')))
+        if (!line.trimmed().isEmpty())
+            dirs << line.trimmed();
+    return dirs;
+}
+
+} // namespace
+
+// Hinweis, wenn die KI dort schreiben darf, wo auch die Originale liegen.
+void SettingsDialog::updateOverlapNote()
+{
+    const QStringList pairs = AiGuard::overlaps(dirLines(m_aiReadDirs), dirLines(m_aiWriteDirs));
+    if (pairs.isEmpty()) {
+        m_overlapNote->clear();
+        m_overlapNote->hide();
+        return;
+    }
+    QString text = tr("Hinweis: Schreib- und Leseordner überschneiden sich (%1). Die KI kann dann neue Dateien "
+                      "zwischen Ihre Originale legen")
+                       .arg(pairs.join(QStringLiteral("; ")));
+    text += m_aiOverwrite->isChecked()
+        ? tr(" und – weil Ersetzen erlaubt ist – auch Ihre Originale verändern. Eine eingeschleuste Anweisung in "
+             "einer Datei könnte das ausnutzen.")
+        : tr(". Vorhandene Dateien bleiben unverändert, solange Ersetzen nicht erlaubt ist.");
+    m_overlapNote->setText(text);
+    m_overlapNote->show();
 }
 
 bool SettingsDialog::apply()
@@ -134,12 +219,9 @@ bool SettingsDialog::apply()
     Settings::setJpegQuality(m_quality->value());
     Settings::setEscapeQuits(m_escape->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
-    QStringList dirs;
-    for (const QString &line : m_aiDirs->toPlainText().split(QLatin1Char('\n'))) {
-        if (!line.trimmed().isEmpty())
-            dirs << line.trimmed();
-    }
-    Settings::setAiAllowedDirs(dirs);
+    AiGuard::setReadDirs(dirLines(m_aiReadDirs));
+    AiGuard::setWriteDirs(dirLines(m_aiWriteDirs));
+    AiGuard::setAllowOverwrite(m_aiOverwrite->isChecked());
     QSettings().setValue(QStringLiteral("ocr/jobs"), m_ocrJobs->value());
     return langChanged;
 }

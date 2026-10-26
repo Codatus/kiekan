@@ -8,6 +8,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
 
@@ -23,8 +24,7 @@ bool escapeQuits();
 void setEscapeQuits(bool on);
 bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern
 void setAiViewerAccess(bool on);
-QStringList aiAllowedDirs();  // leer = keine Beschränkung
-void setAiAllowedDirs(const QStringList &dirs);
+// Ordnerfreigaben für die KI: siehe AiGuard
 }
 
 class SettingsDialog : public QDialog
@@ -45,7 +45,12 @@ private:
     QSpinBox *m_quality;
     QCheckBox *m_escape;
     QCheckBox *m_aiAccess;
-    QPlainTextEdit *m_aiDirs;
+    void updateOverlapNote();
+
+    QPlainTextEdit *m_aiReadDirs;
+    QPlainTextEdit *m_aiWriteDirs;
+    QCheckBox *m_aiOverwrite;
+    QLabel *m_overlapNote;
     QSpinBox *m_ocrJobs;
     bool m_initialAutoRotate;
     bool m_initialAiAccess;

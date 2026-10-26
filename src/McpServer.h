@@ -8,6 +8,8 @@
 #include <QJsonObject>
 #include <QObject>
 
+#include "AiGuard.h"
+
 // MCP-Server (Model Context Protocol) über stdin/stdout: macht die
 // Bildfunktionen von Kiek an für KI-Assistenten wie Claude nutzbar.
 // Start: kiekan --mcp
@@ -30,6 +32,8 @@ private:
     void send(const QJsonObject &message);
 
     QJsonObject callTool(const QString &name, const QJsonObject &args);
+    void logCall(const QString &tool, const QJsonObject &args, const QStringList &read, const QStringList &written,
+                 const QList<AiGuard::Finding> &findings, const QStringList &sources, const QString &error);
 
     // Werkzeuge
     QJsonArray listMedia(const QJsonObject &args);
@@ -51,4 +55,6 @@ private:
     QJsonArray ocrLanguages(const QJsonObject &args);
     QJsonArray splitPdf(const QJsonObject &args);
     QJsonArray pdfParts(const QJsonObject &args);
+
+    QString m_client;   // Name des verbundenen Programms (aus initialize)
 };

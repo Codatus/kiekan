@@ -210,6 +210,44 @@ Claude Desktop (`claude_desktop_config.json`):
 | `split_pdf` | große PDFs in dokumentierte Teile zerlegen (z. B. unter 30 MB für Claude) |
 | `pdf_parts` | Teile einer Teilung auflisten, Originalseite → Teil nachschlagen, Teile prüfen |
 
+### Sicherheit: Freigaben, Prompt Injection, Protokoll
+
+Eine KI liest über Kiek an fremde Dateien. Text darin – Texterkennung,
+PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
+(„Prompt Injection“). Kiek an begrenzt deshalb, was eine KI tun kann:
+
+- **Ordnerfreigaben** (Extras → Einstellungen → KI-Schnittstelle): Die KI liest
+  nur in freigegebenen *Leseordnern* und speichert nur in *Schreibordnern*
+  (die sie auch lesen darf). Ohne Freigabe hat sie keinen Dateizugriff bzw.
+  darf nichts speichern. Überschneiden sich Lese- und Schreibordner, weist der
+  Dialog darauf hin.
+- **Nichts Vorhandenes ändern**, solange „KI darf vorhandene Dateien ersetzen
+  und Metadaten ändern“ aus ist: kein `overwrite=true`, kein `write_metadata`.
+- **Werkzeug-Kennzeichnung**: Jedes Werkzeug meldet per MCP, ob es nur liest
+  (`readOnlyHint`) oder Dateien verändern kann (`destructiveHint`). Claude
+  Desktop kann für Letztere nachfragen – dort für Kiek an die schreibenden
+  Werkzeuge auf „Immer fragen“ lassen.
+- **Fremden Text kennzeichnen**: Text aus Dateien steht zwischen
+  `<<<FILE-CONTENT …>>>`-Markierungen mit zufälliger Kennung; die KI erhält
+  die Anweisung, ihn nur als Daten zu behandeln.
+- **Verdächtiges melden**: Kiek an sucht nach typischen Mustern (deutsch und
+  englisch: „ignoriere alle bisherigen Anweisungen“, Rollenwechsel,
+  Chat-Steuerzeichen, Aufforderungen zu Werkzeugaufrufen oder zum Versenden
+  von Daten) sowie nach unsichtbaren Zeichen und verstecktem Unicode-Tag-Text.
+  Funde stehen als `SECURITY NOTICE` vor dem Ergebnis, im Protokoll und – wenn
+  Kiek an offen ist – in einem Hinweisfenster.
+- **KI-Protokoll** (Extras → KI-Protokoll): jeder Werkzeugaufruf mit Zeit,
+  Programm, gelesenen und geschriebenen Dateien und Warnungen; Datei
+  `ki-protokoll.jsonl` im Datenordner von Kiek an.
+
+Das senkt das Risiko, verhindert Prompt Injection aber nicht vollständig.
+Fremde Dokumente am besten in einem Chat ohne Web- oder E-Mail-Werkzeuge
+auswerten.
+
+Für Tests lassen sich Freigaben auch per Umgebung setzen:
+`KIEKAN_MCP_ROOTS`, `KIEKAN_MCP_WRITE_ROOTS` (Ordner, durch `:` bzw. `;`
+getrennt) und `KIEKAN_MCP_ALLOW_OVERWRITE=1`.
+
 ### PDFs teilen
 
 Claude Desktop nimmt PDFs nur bis 30 MB an. `split_pdf` (bzw. *Datei → PDF teilen*)

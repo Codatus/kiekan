@@ -6,6 +6,7 @@
 
 #include <QJsonObject>
 #include <QMainWindow>
+#include <QPointer>
 #include <QThreadPool>
 #include <QVariantMap>
 #include <QVector>
@@ -23,6 +24,7 @@ class ImageLoader;
 class ImageView;
 class QLabel;
 class QMenu;
+class QMessageBox;
 class QToolBar;
 
 class MainWindow : public QMainWindow
@@ -104,6 +106,8 @@ private:
     void updateViewerServer();
     QJsonObject handleViewerRequest(const QJsonObject &request);
     void showPlugins();
+    void showAiLog(int filter = 0);
+    void warnAboutInjection(const QJsonObject &req);
     // Ansicht
     void toggleFullScreen();
     void escape();
@@ -128,6 +132,8 @@ private:
     QToolBar *m_toolBar = nullptr;
     HistogramDialog *m_histogram = nullptr;
     ViewerServer *m_viewerServer = nullptr;   // für die KI-Schnittstelle
+    QPointer<QMessageBox> m_injectionWarning;
+    int m_injectionCount = 0;
 
     QStringList m_files;          // Bilder im aktuellen Ordner, natürlich sortiert
     int m_index = -1;

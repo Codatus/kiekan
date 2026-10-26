@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(kiekan
-    VERSION 0.8.1
+    VERSION 0.9.0
     DESCRIPTION "Schneller, schlanker Bildbetrachter"
     LANGUAGES CXX)
 
@@ -106,6 +106,10 @@ qt_add_executable(kiekan WIN32
     src/Media.h
     src/EditOps.cpp
     src/EditOps.h
+    src/AiGuard.cpp
+    src/AiGuard.h
+    src/AiLogDialog.cpp
+    src/AiLogDialog.h
     src/McpServer.cpp
     src/McpServer.h
     src/Ocr.cpp

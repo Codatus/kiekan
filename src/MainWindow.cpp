@@ -4,6 +4,7 @@
 
 #include "MainWindow.h"
 
+#include "AiLogDialog.h"
 #include "CurvesDialog.h"
 #include "EditOps.h"
 #include "ExifDialog.h"
@@ -208,6 +209,7 @@ void MainWindow::createActions()
     QAction *histogram = make(tr("&Histogramm"), "", {K(Qt::SHIFT | Qt::Key_H)}, [this] { toggleHistogram(); });
     QAction *settingsAct = make(tr("&Einstellungen …"), "preferences-system", {K(Qt::Key_P)}, [this] { showSettings(); });
     QAction *plugins = make(tr("&Plugins …"), "", {}, [this] { showPlugins(); });
+    QAction *aiLog = make(tr("&KI-Protokoll …"), "", {}, [this] { showAiLog(); });
 
     QAction *exifAct = make(tr("&EXIF-Daten …"), "", {K(Qt::Key_E)}, [this] { showExif(); });
     QAction *developAct = make(tr("RAW voll &entwickeln"), "", {K(Qt::CTRL | Qt::Key_D)}, [this] { developRaw(); });
@@ -296,6 +298,8 @@ void MainWindow::createActions()
 
     QMenu *extras = menuBar()->addMenu(tr("E&xtras"));
     extras->addActions({settingsAct, plugins});
+    extras->addSeparator();
+    extras->addAction(aiLog);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Hilfe"));
     helpMenu->addActions({help, about});
@@ -1460,7 +1464,58 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
                                                     .arg(clipped.width()).arg(clipped.height())}};
     }
 
+    if (cmd == QLatin1String("notify")) {
+        warnAboutInjection(req);
+        return {{QStringLiteral("message"), QStringLiteral("user notified")}};
+    }
+
     return error(QStringLiteral("unknown command: ") + cmd);
+}
+
+void MainWindow::showAiLog(int filter)
+{
+    AiLogDialog dlg(this);
+    dlg.setFilter(AiLogDialog::Filter(filter));
+    dlg.exec();
+}
+
+// Die KI hat in einer Datei Text gefunden, der sich an eine KI richtet
+// (Prompt Injection). Ein Hinweisfenster, das sich bei weiteren Funden nur
+// aktualisiert, statt sich zu stapeln.
+void MainWindow::warnAboutInjection(const QJsonObject &req)
+{
+    ++m_injectionCount;
+    QStringList sources;
+    for (const QJsonValue &v : req.value(QLatin1String("sources")).toArray())
+        sources << v.toString();
+    QStringList found;
+    const QJsonArray warnings = req.value(QLatin1String("warnings")).toArray();
+    for (int i = 0; i < std::min<qsizetype>(warnings.size(), 4); ++i)
+        found << QStringLiteral("• %1").arg(warnings.at(i).toObject().value(QLatin1String("excerpt")).toString().left(160));
+
+    const QString text = tr("Eine KI hat über die Schnittstelle von Kiek an eine Datei gelesen, die Text enthält, "
+                            "der wie eine Anweisung an eine KI aussieht oder versteckte Zeichen enthält "
+                            "(mögliche „Prompt Injection“):\n\n%1\n\n%2\n\n"
+                            "Die KI wurde gewarnt, diesen Text nicht zu befolgen. Prüfen Sie bitte, was die KI "
+                            "danach tut, und brechen Sie im Zweifel ab.")
+                             .arg(sources.join(QLatin1Char('\n')), found.join(QLatin1Char('\n')));
+    statusBar()->showMessage(tr("Warnung: verdächtiger Text in einer von der KI gelesenen Datei"), 15000);
+
+    if (m_injectionWarning) {
+        m_injectionWarning->setText(text);
+        m_injectionWarning->setInformativeText(tr("Funde in dieser Sitzung: %1").arg(m_injectionCount));
+        m_injectionWarning->raise();
+        return;
+    }
+    auto *box = new QMessageBox(QMessageBox::Warning, tr("Kiek an – Warnung zur KI"), text, QMessageBox::Close, this);
+    box->setAttribute(Qt::WA_DeleteOnClose);
+    box->setModal(false);
+    QPushButton *logButton = box->addButton(tr("KI-Protokoll anzeigen"), QMessageBox::ActionRole);
+    connect(logButton, &QPushButton::clicked, this, [this] { showAiLog(AiLogDialog::Warnings); });
+    m_injectionWarning = box;
+    box->show();
+    box->raise();
+    box->activateWindow();
 }
 
 // --- Ansicht ---------------------------------------------------------------
