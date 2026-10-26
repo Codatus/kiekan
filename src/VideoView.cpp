@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QSettings>
 #include <QSlider>
 #include <QStyle>
@@ -32,6 +33,22 @@ void *getProcAddress(void *, const char *name)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     return ctx ? reinterpret_cast<void *>(ctx->getProcAddress(QByteArray(name))) : nullptr;
+}
+
+// Virtuelle und Software-Grafiktreiber (VirtualBox/VMware SVGA3D, llvmpipe,
+// Microsoft-Basistreiber) zeichnen mpvs Shader-Kette fehlerhaft (fast schwarzes
+// Bild). Dort genügt der einfache Darstellungsweg.
+bool needsSimpleRendering()
+{
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (!ctx)
+        return false;
+    const QByteArray renderer = QByteArray(reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER))).toLower();
+    for (const char *weak : {"svga3d", "llvmpipe", "softpipe", "gdi generic", "microsoft basic render"}) {
+        if (renderer.contains(weak))
+            return true;
+    }
+    return false;
 }
 
 // Schieberegler, der beim Klick direkt an die Klickstelle springt (wie in
@@ -177,6 +194,8 @@ void MpvWidget::initializeGL()
         {MPV_RENDER_PARAM_OPENGL_INIT_PARAMS, &gl},
         {MPV_RENDER_PARAM_INVALID, nullptr},
     };
+    if (needsSimpleRendering() && !qEnvironmentVariable("KIEKAN_MPV_OPTIONS").contains(QLatin1String("gpu-dumb-mode")))
+        mpv_set_property_string(m_mpv, "gpu-dumb-mode", "yes");
     if (mpv_render_context_create(&m_render, m_mpv, params) < 0) {
         m_render = nullptr;
         Q_EMIT errorOccurred(tr("Videoausgabe konnte nicht eingerichtet werden (OpenGL)."));
