@@ -103,6 +103,12 @@ MpvWidget::MpvWidget(QWidget *parent)
     mpv_set_option_string(m_mpv, "vo", "libmpv");
     mpv_set_option_string(m_mpv, "terminal", "no");
     mpv_set_option_string(m_mpv, "msg-level", "all=no");
+    // Fehlersuche: KIEKAN_MPV_LOG=<datei> schreibt ein ausführliches mpv-Protokoll.
+    const QByteArray mpvLog = qgetenv("KIEKAN_MPV_LOG");
+    if (!mpvLog.isEmpty()) {
+        mpv_set_option_string(m_mpv, "log-file", mpvLog.constData());
+        mpv_set_option_string(m_mpv, "msg-level", "all=v");
+    }
     mpv_set_option_string(m_mpv, "hwdec", "auto-safe");
     mpv_set_option_string(m_mpv, "keep-open", "yes");          // letztes Bild stehen lassen
     mpv_set_option_string(m_mpv, "idle", "yes");
