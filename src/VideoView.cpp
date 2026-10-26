@@ -109,6 +109,13 @@ MpvWidget::MpvWidget(QWidget *parent)
         mpv_set_option_string(m_mpv, "log-file", mpvLog.constData());
         mpv_set_option_string(m_mpv, "msg-level", "all=v");
     }
+    // Fehlersuche/Treiberprobleme: KIEKAN_MPV_OPTIONS="name=wert;name=wert"
+    const QStringList extra = qEnvironmentVariable("KIEKAN_MPV_OPTIONS").split(QLatin1Char(';'), Qt::SkipEmptyParts);
+    for (const QString &opt : extra) {
+        const int eq = opt.indexOf(QLatin1Char('='));
+        if (eq > 0)
+            mpv_set_option_string(m_mpv, opt.left(eq).trimmed().toUtf8().constData(), opt.mid(eq + 1).trimmed().toUtf8().constData());
+    }
     mpv_set_option_string(m_mpv, "hwdec", "auto-safe");
     mpv_set_option_string(m_mpv, "keep-open", "yes");          // letztes Bild stehen lassen
     mpv_set_option_string(m_mpv, "idle", "yes");
