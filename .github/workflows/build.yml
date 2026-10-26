@@ -70,7 +70,7 @@ jobs:
             gcc:p cmake:p ninja:p pkgconf:p ntldd:p
             qt6-base:p qt6-svg:p qt6-imageformats:p qt6-tools:p qt6-translations:p qt6-pdf:p
             mpv:p exiv2:p qpdf:p libheif:p libraw:p openjpeg2:p djvulibre:p
-            tesseract-ocr:p tesseract-data-osd:p tesseract-data-eng:p tesseract-data-deu:p tesseract-data-frk:p
+            tesseract-ocr:p tesseract-data-eng:p tesseract-data-deu:p tesseract-data-frk:p
 
       - name: Bauen
         run: |
