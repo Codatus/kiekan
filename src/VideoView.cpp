@@ -162,11 +162,12 @@ void MpvWidget::initializeGL()
     mpv_opengl_init_params gl{};
     gl.get_proc_address = &getProcAddress;
     gl.get_proc_address_ctx = nullptr;
-    int advanced = 1;
+    // Kein MPV_RENDER_PARAM_ADVANCED_CONTROL: das verlangt, auf jeden Update-Rückruf
+    // mpv_render_context_update() zu bedienen; sonst hängt der Decoder beim
+    // Anlegen von Bildpuffern (direct rendering) – unter Windows sofort.
     mpv_render_param params[] = {
         {MPV_RENDER_PARAM_API_TYPE, const_cast<char *>(MPV_RENDER_API_TYPE_OPENGL)},
         {MPV_RENDER_PARAM_OPENGL_INIT_PARAMS, &gl},
-        {MPV_RENDER_PARAM_ADVANCED_CONTROL, &advanced},
         {MPV_RENDER_PARAM_INVALID, nullptr},
     };
     if (mpv_render_context_create(&m_render, m_mpv, params) < 0) {
