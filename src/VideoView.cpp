@@ -98,6 +98,9 @@ MpvWidget::MpvWidget(QWidget *parent)
     if (!m_mpv)
         return;
 
+    // Nur in das eingebettete Widget zeichnen: ohne diese Vorgabe öffnet mpv ein
+    // eigenes Fenster, wenn eine Datei geladen wird, bevor OpenGL bereit ist (Windows).
+    mpv_set_option_string(m_mpv, "vo", "libmpv");
     mpv_set_option_string(m_mpv, "terminal", "no");
     mpv_set_option_string(m_mpv, "msg-level", "all=no");
     mpv_set_option_string(m_mpv, "hwdec", "auto-safe");
