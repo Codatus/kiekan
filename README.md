@@ -27,6 +27,10 @@ Fertige Pakete für Ubuntu/Debian liegen unter
 sudo apt install ./kiekan_<version>_amd64.deb
 ```
 
+Für Windows 10/11 gibt es ein portables ZIP (`KiekAn-<version>-windows-x64.zip`):
+entpacken und `kiekan.exe` starten – ohne Installation. Es enthält alle
+Bibliotheken und die Tesseract-Sprachdaten für Deutsch, Englisch und Fraktur.
+
 ## Funktionen (Stand 0.8)
 
 - Bilder sofort anzeigen, Ordner per Tastatur oder Mausrad durchblättern
