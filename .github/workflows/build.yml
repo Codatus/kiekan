@@ -86,6 +86,11 @@ jobs:
         run: |
           VERSION=$(sed -n 's/^CMAKE_PROJECT_VERSION:STATIC=//p' build/CMakeCache.txt)
           packaging/windows/deploy.sh build dist/KiekAn
+          # Rauchtest: MCP-Server des fertigen Pakets (braucht das Plugin „offscreen“)
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+                        '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | dist/KiekAn/kiekan.exe --mcp | tee mcp.out
+          grep -q '"extract_text"' mcp.out
           (cd dist && zip -qr "KiekAn-${VERSION}-windows-x64.zip" KiekAn)
           ls -la dist
 

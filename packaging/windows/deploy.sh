@@ -21,6 +21,10 @@ cp README.md LICENSE "$OUT/"
 # Qt-Bibliotheken, Plattform-, Stil-, Bildformat- und Übersetzungsdateien
 WINDEPLOYQT=$(command -v windeployqt6 || command -v windeployqt-qt6 || command -v windeployqt)
 "$WINDEPLOYQT" --release --no-compiler-runtime --dir "$OUT" "$OUT/kiekan.exe"
+# MCP-Server und OCR-Hilfsprozesse laufen ohne Fenster (QT_QPA_PLATFORM=offscreen);
+# windeployqt kopiert nur das Plattform-Plugin „windows“.
+QTPLUGINS=$(qtpaths-qt6 --query QT_INSTALL_PLUGINS 2>/dev/null || qtpaths6 --query QT_INSTALL_PLUGINS 2>/dev/null || echo "$PREFIX/share/qt6/plugins")
+cp "$(cygpath -u "$QTPLUGINS")/platforms/qoffscreen.dll" "$OUT/platforms/"
 
 # Alle übrigen DLLs aus MSYS2 einsammeln (mpv, exiv2, Tesseract, qpdf, libheif …),
 # auch die, die erst die Plugins brauchen. Wiederholen, bis nichts Neues dazukommt.
