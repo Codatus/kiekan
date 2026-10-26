@@ -1,0 +1,10 @@
+# Build-Ausgaben
+/build/
+/build-*/
+*.deb
+
+# Editoren
+*.user
+.vscode/
+.idea/
+*~

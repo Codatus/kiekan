@@ -1,0 +1,53 @@
+# Kiek an – automatischer Build
+# Baut und testet bei jeder Änderung; bei einem Tag v* wird das .deb als
+# Release veröffentlicht.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten installieren
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ pkg-config \
+            qt6-base-dev qt6-base-dev-tools qt6-l10n-tools libqt6svg6-dev qt6-pdf-dev \
+            libgl-dev libmpv-dev libexiv2-dev libtesseract-dev libqpdf-dev \
+            libheif-dev libraw-dev libopenjp2-7-dev libdjvulibre-dev
+
+      - name: Bauen
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Testen
+        run: ctest --test-dir build --output-on-failure
+        env:
+          QT_QPA_PLATFORM: offscreen
+
+      - name: Debian-Paket
+        run: cd build && cpack -G DEB
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiekan-deb
+          path: build/*.deb
+
+      - name: Release veröffentlichen
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/*.deb
+          generate_release_notes: true

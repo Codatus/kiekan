@@ -1,0 +1,427 @@
+// Kiek an – schneller Bildbetrachter
+// Copyright (C) 2026 Carl Kliefert
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include "ImageView.h"
+
+#include <QMouseEvent>
+#include <QPainter>
+#include <QWheelEvent>
+
+#include <algorithm>
+#include <cmath>
+
+namespace {
+constexpr double kMinZoom = 0.01;
+constexpr double kMaxZoom = 32.0;
+constexpr double kZoomStep = 1.25;
+}
+
+ImageView::ImageView(QWidget *parent)
+    : QWidget(parent)
+    , m_background(0x2b, 0x2b, 0x2b)
+{
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setFocusPolicy(Qt::StrongFocus);
+    setMouseTracking(false);
+
+    m_smoothTimer.setSingleShot(true);
+    m_smoothTimer.setInterval(150);
+    connect(&m_smoothTimer, &QTimer::timeout, this, [this] {
+        rebuildScaled();
+        update();
+    });
+}
+
+// --- Bild setzen -----------------------------------------------------------
+
+void ImageView::setImage(const QImage &image)
+{
+    m_image = image;
+    m_selection = QRect();
+    m_fit = true;
+    m_zoom = fitZoom();
+    m_offset = QPointF();
+    rebuildScaled();
+    Q_EMIT selectionChanged(m_selection);
+    Q_EMIT zoomChanged(m_zoom);
+    Q_EMIT imageChanged();
+    update();
+}
+
+void ImageView::replaceImage(const QImage &image)
+{
+    m_image = image;
+    m_selection = QRect();
+    if (m_fit)
+        m_zoom = fitZoom();
+    clampOffset();
+    rebuildScaled();
+    Q_EMIT selectionChanged(m_selection);
+    Q_EMIT zoomChanged(m_zoom);
+    Q_EMIT imageChanged();
+    update();
+}
+
+void ImageView::setFrame(const QImage &frame)
+{
+    const bool sizeChanged = frame.size() != m_image.size();
+    m_image = frame;
+    if (sizeChanged && m_fit)
+        m_zoom = fitZoom();
+    rebuildScaled();
+    update();
+}
+
+void ImageView::clear()
+{
+    m_image = QImage();
+    m_scaled = QImage();
+    m_selection = QRect();
+    Q_EMIT selectionChanged(m_selection);
+    Q_EMIT imageChanged();
+    update();
+}
+
+void ImageView::setBackground(const QColor &color)
+{
+    m_background = color;
+    update();
+}
+
+// --- Zoom ------------------------------------------------------------------
+
+double ImageView::fitZoom() const
+{
+    if (m_image.isNull() || width() <= 0 || height() <= 0)
+        return 1.0;
+    const double dpr = devicePixelRatioF();
+    const double z = std::min(width() * dpr / m_image.width(),
+                              height() * dpr / m_image.height());
+    // Kleine Bilder nicht aufblasen – wie in IrfanView.
+    return std::min(z, 1.0);
+}
+
+void ImageView::setFitMode()
+{
+    m_fit = true;
+    m_zoom = fitZoom();
+    m_offset = QPointF();
+    invalidateScaled(true);
+    Q_EMIT zoomChanged(m_zoom);
+    update();
+}
+
+void ImageView::setZoom(double zoom)
+{
+    zoomAt(zoom, QPointF(width() / 2.0, height() / 2.0));
+}
+
+void ImageView::zoomIn()
+{
+    double z = m_zoom * kZoomStep;
+    if (m_zoom < 1.0 && z > 1.0)
+        z = 1.0;     // 100 % nicht überspringen
+    setZoom(z);
+}
+
+void ImageView::zoomOut()
+{
+    double z = m_zoom / kZoomStep;
+    if (m_zoom > 1.0 && z < 1.0)
+        z = 1.0;
+    setZoom(z);
+}
+
+void ImageView::zoomAt(double zoom, const QPointF &widgetPos)
+{
+    if (m_image.isNull())
+        return;
+    zoom = std::clamp(zoom, kMinZoom, kMaxZoom);
+    const QPointF anchor = toImage(widgetPos);
+
+    m_fit = false;
+    m_zoom = zoom;
+    const double scale = m_zoom / devicePixelRatioF();
+    m_offset = widgetPos - anchor * scale;
+    clampOffset();
+
+    invalidateScaled(false);
+    Q_EMIT zoomChanged(m_zoom);
+    update();
+}
+
+// --- Geometrie -------------------------------------------------------------
+
+QSizeF ImageView::scaledSize() const
+{
+    const double scale = m_zoom / devicePixelRatioF();
+    return QSizeF(m_image.width() * scale, m_image.height() * scale);
+}
+
+QRectF ImageView::imageRect() const
+{
+    const QSizeF s = scaledSize();
+    const double x = s.width() <= width() ? (width() - s.width()) / 2.0 : m_offset.x();
+    const double y = s.height() <= height() ? (height() - s.height()) / 2.0 : m_offset.y();
+    return QRectF(QPointF(x, y), s);
+}
+
+QPointF ImageView::toImage(const QPointF &widgetPos) const
+{
+    const QRectF r = imageRect();
+    if (r.width() <= 0 || r.height() <= 0)
+        return QPointF();
+    return QPointF((widgetPos.x() - r.x()) * m_image.width() / r.width(),
+                   (widgetPos.y() - r.y()) * m_image.height() / r.height());
+}
+
+QPointF ImageView::toWidget(const QPointF &imagePos) const
+{
+    const QRectF r = imageRect();
+    return QPointF(r.x() + imagePos.x() * r.width() / m_image.width(),
+                   r.y() + imagePos.y() * r.height() / m_image.height());
+}
+
+void ImageView::clampOffset()
+{
+    const QSizeF s = scaledSize();
+    m_offset.setX(s.width() > width() ? std::clamp(m_offset.x(), width() - s.width(), 0.0) : 0.0);
+    m_offset.setY(s.height() > height() ? std::clamp(m_offset.y(), height() - s.height(), 0.0) : 0.0);
+}
+
+bool ImageView::canPan() const
+{
+    if (m_image.isNull())
+        return false;
+    const QSizeF s = scaledSize();
+    return s.width() > width() + 0.5 || s.height() > height() + 0.5;
+}
+
+void ImageView::panBy(int dx, int dy)
+{
+    m_offset -= QPointF(dx, dy);
+    clampOffset();
+    update();
+}
+
+// --- Geglättete Verkleinerung ---------------------------------------------
+
+void ImageView::invalidateScaled(bool immediate)
+{
+    if (immediate) {
+        m_smoothTimer.stop();
+        rebuildScaled();
+    } else {
+        m_smoothTimer.start();
+    }
+}
+
+void ImageView::rebuildScaled()
+{
+    if (m_image.isNull() || m_zoom >= 0.999) {
+        m_scaled = QImage();
+        m_scaledZoom = 0;
+        return;
+    }
+    const QSize target(std::max(1, int(std::lround(m_image.width() * m_zoom))),
+                       std::max(1, int(std::lround(m_image.height() * m_zoom))));
+    if (m_scaledZoom == m_zoom && m_scaledKey == m_image.cacheKey() && m_scaled.size() == target)
+        return;
+    m_scaled = m_image.scaled(target, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    m_scaled.setDevicePixelRatio(devicePixelRatioF());
+    m_scaledZoom = m_zoom;
+    m_scaledKey = m_image.cacheKey();
+}
+
+// --- Zeichnen --------------------------------------------------------------
+
+void ImageView::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.fillRect(rect(), m_background);
+    if (m_image.isNull())
+        return;
+
+    const QRectF target = imageRect();
+
+    if (m_zoom < 0.999) {
+        if (!m_scaled.isNull() && m_scaledZoom == m_zoom && m_scaledKey == m_image.cacheKey()) {
+            p.drawImage(target.topLeft(), m_scaled);
+        } else {
+            // Übergangsweise ungeglättet, bis der Timer die glatte Kopie baut.
+            p.drawImage(target, m_image);
+        }
+    } else {
+        // Nur den sichtbaren Ausschnitt zeichnen.
+        const QRectF visible = target.intersected(QRectF(rect()));
+        if (!visible.isEmpty()) {
+            const double f = m_image.width() / target.width();
+            const QRectF source((visible.x() - target.x()) * f,
+                                (visible.y() - target.y()) * f,
+                                visible.width() * f,
+                                visible.height() * f);
+            p.drawImage(visible, m_image, source);
+        }
+    }
+
+    if (!m_selection.isEmpty()) {
+        const QRectF sel = QRectF(toWidget(m_selection.topLeft()),
+                                  toWidget(m_selection.topLeft() + QPointF(m_selection.width(), m_selection.height())));
+        p.setRenderHint(QPainter::Antialiasing, false);
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(Qt::black, 1));
+        p.drawRect(sel);
+        p.setPen(QPen(Qt::white, 1, Qt::DashLine));
+        p.drawRect(sel);
+
+        const QString label = QStringLiteral("%1 × %2").arg(m_selection.width()).arg(m_selection.height());
+        const QRect textRect = p.fontMetrics().boundingRect(label).adjusted(-4, -2, 4, 2);
+        QRectF box(sel.topLeft() + QPointF(0, -textRect.height() - 2), textRect.size());
+        if (box.top() < 0)
+            box.moveTop(sel.top() + 2);
+        p.fillRect(box, QColor(0, 0, 0, 170));
+        p.setPen(Qt::white);
+        p.drawText(box, Qt::AlignCenter, label);
+    }
+}
+
+void ImageView::resizeEvent(QResizeEvent *)
+{
+    if (m_fit && !m_image.isNull()) {
+        const double z = fitZoom();
+        if (z != m_zoom) {
+            m_zoom = z;
+            invalidateScaled(false);
+            Q_EMIT zoomChanged(m_zoom);
+        }
+    }
+    clampOffset();
+}
+
+// --- Maus ------------------------------------------------------------------
+
+void ImageView::wheelEvent(QWheelEvent *event)
+{
+    if (m_image.isNull()) {
+        event->ignore();
+        return;
+    }
+    const int delta = event->angleDelta().y();
+    if (event->modifiers() & Qt::ControlModifier) {
+        const double factor = std::pow(kZoomStep, delta / 120.0);
+        zoomAt(m_zoom * factor, event->position());
+    } else {
+        m_wheelAccum += delta;
+        while (std::abs(m_wheelAccum) >= 120) {
+            const int dir = m_wheelAccum > 0 ? 1 : -1;
+            m_wheelAccum -= dir * 120;
+            Q_EMIT navigateRequested(-dir);   // Rad nach unten = nächstes Bild
+        }
+    }
+    event->accept();
+}
+
+void ImageView::mousePressEvent(QMouseEvent *event)
+{
+    if (m_image.isNull()) {
+        if (event->button() == Qt::RightButton)
+            Q_EMIT contextMenuRequested(event->globalPosition().toPoint());
+        return;
+    }
+    if (event->button() == Qt::LeftButton) {
+        m_selecting = true;
+        QPointF pt = toImage(event->position());
+        pt.setX(std::clamp(pt.x(), 0.0, double(m_image.width())));
+        pt.setY(std::clamp(pt.y(), 0.0, double(m_image.height())));
+        m_selectStart = pt;
+        if (!m_selection.isEmpty()) {
+            m_selection = QRect();
+            Q_EMIT selectionChanged(m_selection);
+            update();
+        }
+    } else if (event->button() == Qt::RightButton || event->button() == Qt::MiddleButton) {
+        m_panning = true;
+        m_panMoved = false;
+        m_panLast = event->position().toPoint();
+        m_pressPos = m_panLast;
+    }
+}
+
+void ImageView::mouseMoveEvent(QMouseEvent *event)
+{
+    if (m_selecting) {
+        QPointF pt = toImage(event->position());
+        pt.setX(std::clamp(pt.x(), 0.0, double(m_image.width())));
+        pt.setY(std::clamp(pt.y(), 0.0, double(m_image.height())));
+        const QPoint a(int(std::floor(std::min(pt.x(), m_selectStart.x()))),
+                       int(std::floor(std::min(pt.y(), m_selectStart.y()))));
+        const QPoint b(int(std::ceil(std::max(pt.x(), m_selectStart.x()))),
+                       int(std::ceil(std::max(pt.y(), m_selectStart.y()))));
+        m_selection = QRect(a, QSize(b.x() - a.x(), b.y() - a.y()));
+        Q_EMIT selectionChanged(m_selection);
+        update();
+    } else if (m_panning) {
+        const QPoint pos = event->position().toPoint();
+        if ((pos - m_pressPos).manhattanLength() > 4) {
+            m_panMoved = true;
+            setCursor(Qt::ClosedHandCursor);
+        }
+        if (m_panMoved && canPan()) {
+            m_offset += pos - m_panLast;
+            clampOffset();
+            update();
+        }
+        m_panLast = pos;
+    }
+}
+
+void ImageView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && m_selecting) {
+        m_selecting = false;
+        if (m_selection.width() < 2 || m_selection.height() < 2) {
+            m_selection = QRect();
+            Q_EMIT selectionChanged(m_selection);
+            update();
+        }
+    } else if ((event->button() == Qt::RightButton || event->button() == Qt::MiddleButton) && m_panning) {
+        m_panning = false;
+        unsetCursor();
+        if (!m_panMoved && event->button() == Qt::RightButton)
+            Q_EMIT contextMenuRequested(event->globalPosition().toPoint());
+    }
+}
+
+void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        Q_EMIT doubleClicked();
+}
+
+// --- Auswahl ---------------------------------------------------------------
+
+void ImageView::clearSelection()
+{
+    if (m_selection.isEmpty())
+        return;
+    m_selection = QRect();
+    Q_EMIT selectionChanged(m_selection);
+    update();
+}
+
+void ImageView::setSelection(const QRect &rect)
+{
+    m_selection = rect.intersected(m_image.rect());
+    Q_EMIT selectionChanged(m_selection);
+    update();
+}
+
+void ImageView::selectAll()
+{
+    if (m_image.isNull())
+        return;
+    m_selection = m_image.rect();
+    Q_EMIT selectionChanged(m_selection);
+    update();
+}

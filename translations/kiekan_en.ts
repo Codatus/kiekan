@@ -1,0 +1,2066 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TS version="2.1" language="en" sourcelanguage="de">
+<context>
+    <name>CurvesDialog</name>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="252" />
+        <source>Gradationskurven</source>
+        <translation>Curves</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="261" />
+        <source>Helligkeit (alle Farben)</source>
+        <translation>Brightness (all colors)</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="261" />
+        <source>Rot</source>
+        <translation>Red</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="261" />
+        <source>Grün</source>
+        <translation>Green</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="261" />
+        <source>Blau</source>
+        <translation>Blue</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="264" />
+        <source>Kanal zurücksetzen</source>
+        <translation>Reset channel</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="267" />
+        <source>Alle zurücksetzen</source>
+        <translation>Reset all</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="273" />
+        <source>Histogramm ausgleichen</source>
+        <translation>Equalize histogram</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="274" />
+        <source>Setzt die Helligkeitskurve so, dass alle Tonwerte gleich häufig vorkommen. Die Punkte lassen sich danach weiter anpassen.</source>
+        <translation>Sets the brightness curve so that all tonal values occur equally often. The points can be adjusted further afterwards.</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="281" />
+        <source>Auto-Tonwert</source>
+        <translation>Auto levels</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="282" />
+        <source>Streckt jeden Farbkanal auf den vollen Tonwertumfang (0,5 % an den Enden werden abgeschnitten).</source>
+        <translation>Stretches each color channel to the full tonal range (0.5 % is clipped at both ends).</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="299" />
+        <source>Vorher (gedrückt halten)</source>
+        <translation>Before (press and hold)</translation>
+    </message>
+    <message>
+        <location filename="../src/CurvesDialog.cpp" line="303" />
+        <source>Klicken fügt einen Punkt hinzu, Ziehen verschiebt ihn,
+Rechtsklick oder Doppelklick entfernt ihn.</source>
+        <translation>Click adds a point, drag moves it,
+right-click or double-click removes it.</translation>
+    </message>
+</context>
+<context>
+    <name>ExifDialog</name>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="27" />
+        <source>EXIF-Daten – %1</source>
+        <translation>EXIF data – %1</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="36" />
+        <source>Diese Version wurde ohne EXIF-Unterstützung gebaut.</source>
+        <translation>This version was built without EXIF support.</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="46" />
+        <source>Kamera:</source>
+        <translation>Camera:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="47" />
+        <source>Objektiv:</source>
+        <translation>Lens:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="48" />
+        <source>Aufgenommen:</source>
+        <translation>Taken:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="49" />
+        <source>Belichtung:</source>
+        <translation>Exposure:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="50" />
+        <source>Blende:</source>
+        <translation>Aperture:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="51" />
+        <source>ISO:</source>
+        <translation>ISO:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="52" />
+        <source>Brennweite:</source>
+        <translation>Focal length:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="57" />
+        <source> · %1 m Höhe</source>
+        <translation> · %1 m altitude</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="61" />
+        <source>In OpenStreetMap zeigen</source>
+        <translation>Show in OpenStreetMap</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="71" />
+        <source>Ort:</source>
+        <translation>Location:</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="77" />
+        <source>Suchen …</source>
+        <translation>Search …</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="82" />
+        <source>Bereich</source>
+        <translation>Group</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="82" />
+        <source>Eigenschaft</source>
+        <translation>Property</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="82" />
+        <source>Wert</source>
+        <translation>Value</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="101" />
+        <source>Diese Datei enthält keine Metadaten.</source>
+        <translation>This file contains no metadata.</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="102" />
+        <source>Metadaten nicht lesbar: %1</source>
+        <translation>Metadata not readable: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/ExifDialog.cpp" line="109" />
+        <source>Alles kopieren</source>
+        <translation>Copy all</translation>
+    </message>
+</context>
+<context>
+    <name>FilterDialog</name>
+    <message>
+        <location filename="../src/FilterDialog.cpp" line="101" />
+        <source>Vorher (gedrückt halten)</source>
+        <translation>Before (press and hold)</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterDialog.cpp" line="106" />
+        <source>Zurücksetzen</source>
+        <translation>Reset</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterDialog.cpp" line="177" />
+        <source>Keine Einstellungen.</source>
+        <translation>No settings.</translation>
+    </message>
+</context>
+<context>
+    <name>Filters</name>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="270" />
+        <source>Farben anpassen</source>
+        <translation>Adjust colors</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="271" />
+        <source>Helligkeit</source>
+        <translation>Brightness</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="272" />
+        <source>Kontrast</source>
+        <translation>Contrast</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="273" />
+        <source>Gamma</source>
+        <translation>Gamma</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="274" />
+        <source>Sättigung</source>
+        <translation>Saturation</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="275" />
+        <source>Farbton</source>
+        <translation>Hue</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="276" />
+        <source>Rot</source>
+        <translation>Red</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="277" />
+        <source>Grün</source>
+        <translation>Green</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="278" />
+        <source>Blau</source>
+        <translation>Blue</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="281" />
+        <source>Schärfen</source>
+        <translation>Sharpen</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="282" />
+        <location filename="../src/FilterRegistry.cpp" line="307" />
+        <location filename="../src/FilterRegistry.cpp" line="310" />
+        <location filename="../src/FilterRegistry.cpp" line="318" />
+        <location filename="../src/FilterRegistry.cpp" line="334" />
+        <source>Stärke</source>
+        <translation>Strength</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="283" />
+        <location filename="../src/FilterRegistry.cpp" line="291" />
+        <source>Radius</source>
+        <translation>Radius</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="284" />
+        <location filename="../src/FilterRegistry.cpp" line="297" />
+        <source>Schwelle</source>
+        <translation>Threshold</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="290" />
+        <source>Weichzeichnen</source>
+        <translation>Blur</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="296" />
+        <source>Schwarzweiß</source>
+        <translation>Black and white</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="298" />
+        <source>Rasterung (Fehlerverteilung)</source>
+        <translation>Dithering (error diffusion)</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="303" />
+        <source>Negativ</source>
+        <translation>Negative</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="306" />
+        <source>Sepia</source>
+        <translation>Sepia</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="309" />
+        <source>Relief</source>
+        <translation>Emboss</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="317" />
+        <source>Kanten finden</source>
+        <translation>Find edges</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="319" />
+        <source>Als Zeichnung (hell)</source>
+        <translation>As drawing (light)</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="327" />
+        <source>Posterisieren</source>
+        <translation>Posterize</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="328" />
+        <source>Farbstufen</source>
+        <translation>Color levels</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="330" />
+        <source>Verpixeln</source>
+        <translation>Pixelate</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="331" />
+        <source>Blockgröße</source>
+        <translation>Block size</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="333" />
+        <source>Vignette</source>
+        <translation>Vignette</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="335" />
+        <source>Heller Bereich</source>
+        <translation>Bright area</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="338" />
+        <source>Rauschen hinzufügen</source>
+        <translation>Add noise</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="339" />
+        <source>Menge</source>
+        <translation>Amount</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="340" />
+        <source>Farbiges Rauschen</source>
+        <translation>Colored noise</translation>
+    </message>
+    <message>
+        <location filename="../src/FilterRegistry.cpp" line="375" />
+        <source>kein Kiek-an-Filter-Plugin</source>
+        <translation>not a Kiek an filter plugin</translation>
+    </message>
+</context>
+<context>
+    <name>HistogramDialog</name>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="121" />
+        <source>Histogramm</source>
+        <translation>Histogram</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="126" />
+        <source>RGB überlagert</source>
+        <translation>RGB overlaid</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="127" />
+        <source>Helligkeit</source>
+        <translation>Brightness</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="128" />
+        <source>Rot</source>
+        <translation>Red</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="129" />
+        <source>Grün</source>
+        <translation>Green</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="130" />
+        <source>Blau</source>
+        <translation>Blue</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="136" />
+        <source>Logarithmisch</source>
+        <translation>Logarithmic</translation>
+    </message>
+    <message>
+        <location filename="../src/HistogramDialog.cpp" line="192" />
+        <source>Mittelwert: %1   Median: %2   Standardabweichung: %3</source>
+        <translation>Mean: %1   Median: %2   Standard deviation: %3</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="168" />
+        <source>&amp;Öffnen …</source>
+        <translation>&amp;Open …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="169" />
+        <source>&amp;Speichern</source>
+        <translation>&amp;Save</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="170" />
+        <source>Speichern &amp;unter …</source>
+        <translation>Save &amp;as …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="171" />
+        <source>&amp;Umbenennen …</source>
+        <translation>Re&amp;name …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="172" />
+        <source>In den &amp;Papierkorb</source>
+        <translation>Move to &amp;trash</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="173" />
+        <source>Bild&amp;informationen</source>
+        <translation>Image &amp;information</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="174" />
+        <source>&amp;Beenden</source>
+        <translation>&amp;Quit</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="176" />
+        <source>&amp;Rückgängig</source>
+        <translation>&amp;Undo</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="177" />
+        <source>&amp;Kopieren</source>
+        <translation>&amp;Copy</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="178" />
+        <source>&amp;Einfügen</source>
+        <translation>&amp;Paste</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="179" />
+        <source>&amp;Alles auswählen</source>
+        <translation>Select &amp;all</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="180" />
+        <source>Auswahl &amp;zuschneiden</source>
+        <translation>&amp;Crop selection</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="182" />
+        <source>Nach &amp;rechts drehen</source>
+        <translation>Rotate &amp;right</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="183" />
+        <source>Nach &amp;links drehen</source>
+        <translation>Rotate &amp;left</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="184" />
+        <source>&amp;Horizontal spiegeln</source>
+        <translation>Flip &amp;horizontally</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="185" />
+        <source>&amp;Vertikal spiegeln</source>
+        <translation>Flip &amp;vertically</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="186" />
+        <source>&amp;Größe ändern …</source>
+        <translation>Re&amp;size …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="188" />
+        <source>In &amp;Graustufen umwandeln</source>
+        <translation>Convert to &amp;grayscale</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="190" />
+        <source>In &amp;Schwarzweiß umwandeln …</source>
+        <translation>Convert to &amp;black and white …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="192" />
+        <source>&amp;Negativ</source>
+        <translation>&amp;Negative</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="194" />
+        <source>&amp;Automatische Farbkorrektur</source>
+        <translation>&amp;Auto color correction</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="195" />
+        <source>Histogramm &amp;ausgleichen</source>
+        <translation>&amp;Equalize histogram</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="197" />
+        <source>&amp;Farben anpassen …</source>
+        <translation>Adjust &amp;colors …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="199" />
+        <source>Gradations&amp;kurven …</source>
+        <translation>C&amp;urves …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="200" />
+        <source>Sc&amp;härfen</source>
+        <translation>S&amp;harpen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="202" />
+        <source>Schärfen (Einstellungen) …</source>
+        <translation>Sharpen (settings) …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="204" />
+        <source>&amp;Weichzeichnen …</source>
+        <translation>&amp;Blur …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="206" />
+        <source>&amp;Effekte-Browser …</source>
+        <translation>&amp;Effects browser …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="208" />
+        <source>&amp;Histogramm</source>
+        <translation>&amp;Histogram</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="209" />
+        <source>&amp;Einstellungen …</source>
+        <translation>&amp;Settings …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="210" />
+        <source>&amp;Plugins …</source>
+        <translation>&amp;Plugins …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="227" />
+        <source>&amp;Nächstes Bild</source>
+        <translation>&amp;Next image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="236" />
+        <source>&amp;Vorheriges Bild</source>
+        <translation>&amp;Previous image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="237" />
+        <source>&amp;Erstes Bild</source>
+        <translation>&amp;First image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="238" />
+        <source>&amp;Letztes Bild</source>
+        <translation>&amp;Last image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="240" />
+        <source>Ver&amp;größern</source>
+        <translation>Zoom &amp;in</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="243" />
+        <source>Ver&amp;kleinern</source>
+        <translation>Zoom &amp;out</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="246" />
+        <source>&amp;Originalgröße (100 %)</source>
+        <translation>&amp;Original size (100 %)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="247" />
+        <source>An &amp;Fenster anpassen</source>
+        <translation>&amp;Fit to window</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="248" />
+        <source>&amp;Vollbild</source>
+        <translation>&amp;Full screen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="251" />
+        <source>Abbrechen / Beenden</source>
+        <translation>Cancel / quit</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="253" />
+        <source>&amp;Tastenkürzel</source>
+        <translation>&amp;Keyboard shortcuts</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="254" />
+        <source>Über &amp;Kiek an</source>
+        <translation>&amp;About Kiek an</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="256" />
+        <source>&amp;Datei</source>
+        <translation>&amp;File</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="263" />
+        <source>&amp;Bearbeiten</source>
+        <translation>&amp;Edit</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="268" />
+        <source>B&amp;ild</source>
+        <translation>&amp;Image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="280" />
+        <source>&amp;Effekte</source>
+        <translation>Effe&amp;cts</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="289" />
+        <source>&amp;Ansicht</source>
+        <translation>&amp;View</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="297" />
+        <source>E&amp;xtras</source>
+        <translation>&amp;Tools</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="300" />
+        <source>&amp;Hilfe</source>
+        <translation>&amp;Help</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="303" />
+        <source>Werkzeugleiste</source>
+        <translation>Toolbar</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="332" />
+        <source>Nicht gefunden: %1</source>
+        <translation>Not found: %1</translation>
+    </message>
+    <message>
+        <source>Keine Bilder in diesem Ordner.</source>
+        <translation type="vanished">No images in this folder.</translation>
+    </message>
+    <message>
+        <source>Letztes Bild im Ordner.</source>
+        <translation type="vanished">Last image in folder.</translation>
+    </message>
+    <message>
+        <source>Erstes Bild im Ordner.</source>
+        <translation type="vanished">First image in folder.</translation>
+    </message>
+    <message>
+        <source>Bilder (%1);;Alle Dateien (*)</source>
+        <translation type="vanished">Images (%1);;All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="703" />
+        <source>Bild öffnen</source>
+        <translation>Open image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="715" />
+        <source>Änderungen speichern?</source>
+        <translation>Save changes?</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="716" />
+        <source>Das eingefügte Bild wurde noch nicht gespeichert. Jetzt speichern?</source>
+        <translation>The pasted image has not been saved yet. Save it now?</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="717" />
+        <source>„%1“ wurde verändert. Änderungen speichern?</source>
+        <translation>“%1” has been modified. Save changes?</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="748" />
+        <location filename="../src/MainWindow.cpp" line="842" />
+        <location filename="../src/MainWindow.cpp" line="860" />
+        <source>Gespeichert: %1</source>
+        <translation>Saved: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="769" />
+        <source>PNG (*.png)</source>
+        <translation>PNG (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="770" />
+        <source>JPEG (*.jpg *.jpeg)</source>
+        <translation>JPEG (*.jpg *.jpeg)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="772" />
+        <source>WebP (*.webp)</source>
+        <translation>WebP (*.webp)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="773" />
+        <source>BMP (*.bmp)</source>
+        <translation>BMP (*.bmp)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="775" />
+        <source>TIFF (*.tif *.tiff)</source>
+        <translation>TIFF (*.tif *.tiff)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="807" />
+        <source>Speichern unter</source>
+        <translation>Save as</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="828" />
+        <source>Qualität</source>
+        <translation>Quality</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="828" />
+        <source>Qualität (1–100):</source>
+        <translation>Quality (1–100):</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="886" />
+        <location filename="../src/MainWindow.cpp" line="896" />
+        <source>Speichern fehlgeschlagen</source>
+        <translation>Saving failed</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="887" />
+        <source>Datei kann nicht geschrieben werden:
+%1
+
+%2</source>
+        <translation>Cannot write file:
+%1
+
+%2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="897" />
+        <source>Fehler beim Speichern von
+%1
+
+%2</source>
+        <translation>Error while saving
+%1
+
+%2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="909" />
+        <source>Das Bild ist nicht gespeichert – nichts zu löschen.</source>
+        <translation>The image is not saved – nothing to delete.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="913" />
+        <source>Löschen</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="913" />
+        <source>„%1“ in den Papierkorb verschieben?</source>
+        <translation>Move “%1” to the trash?</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="920" />
+        <source>Kein Papierkorb</source>
+        <translation>No trash</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="921" />
+        <source>„%1“ kann nicht in den Papierkorb verschoben werden.
+Endgültig löschen?</source>
+        <translation>“%1” cannot be moved to the trash.
+Delete permanently?</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="925" />
+        <source>Löschen fehlgeschlagen</source>
+        <translation>Deleting failed</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="925" />
+        <source>„%1“ konnte nicht gelöscht werden.</source>
+        <translation>“%1” could not be deleted.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="944" />
+        <source>Gelöscht: %1</source>
+        <translation>Deleted: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="953" />
+        <location filename="../src/MainWindow.cpp" line="958" />
+        <location filename="../src/MainWindow.cpp" line="963" />
+        <location filename="../src/MainWindow.cpp" line="967" />
+        <location filename="../src/MainWindow.cpp" line="1586" />
+        <source>Umbenennen</source>
+        <translation>Rename</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="953" />
+        <source>Neuer Dateiname:</source>
+        <translation>New file name:</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="958" />
+        <source>Der Name darf keinen Schrägstrich enthalten.</source>
+        <translation>The name must not contain a slash.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="963" />
+        <source>„%1“ gibt es bereits.</source>
+        <translation>“%1” already exists.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="967" />
+        <source>Umbenennen fehlgeschlagen.</source>
+        <translation>Renaming failed.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="989" />
+        <source>Quelle</source>
+        <translation>Source</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="989" />
+        <location filename="../src/MainWindow.cpp" line="1619" />
+        <source>Zwischenablage</source>
+        <translation>Clipboard</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="993" />
+        <source>Datei</source>
+        <translation>File</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="994" />
+        <source>Ordner</source>
+        <translation>Folder</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="995" />
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="996" />
+        <source>Dateigröße</source>
+        <translation>File size</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="997" />
+        <source>Geändert</source>
+        <translation>Modified</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="999" />
+        <source>Bildgröße</source>
+        <translation>Image size</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="999" />
+        <source>%1 × %2 Pixel</source>
+        <translation>%1 × %2 pixels</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1000" />
+        <source>Megapixel</source>
+        <translation>Megapixels</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1001" />
+        <source>Transparenz</source>
+        <translation>Transparency</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1001" />
+        <source>ja</source>
+        <translation>yes</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1001" />
+        <source>nein</source>
+        <translation>no</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1002" />
+        <source>Im Speicher</source>
+        <translation>In memory</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1006" />
+        <source>Position</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1004" />
+        <location filename="../src/MainWindow.cpp" line="1006" />
+        <source>%1 von %2</source>
+        <translation>%1 of %2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="212" />
+        <source>&amp;EXIF-Daten …</source>
+        <translation>&amp;EXIF data …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="213" />
+        <source>RAW voll &amp;entwickeln</source>
+        <translation>&amp;Develop RAW fully</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="214" />
+        <source>PDF &amp;teilen …</source>
+        <translation>Sp&amp;lit PDF …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="215" />
+        <source>&amp;Text erkennen (OCR) …</source>
+        <translation>Recognize &amp;text (OCR) …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="218" />
+        <source>Leertaste</source>
+        <translation>Space</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="228" />
+        <source>Nächste &amp;Seite</source>
+        <translation>Next pa&amp;ge</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="229" />
+        <source>Vorherige S&amp;eite</source>
+        <translation>Previous pag&amp;e</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="230" />
+        <source>Ton &amp;aus/an</source>
+        <translation>&amp;Mute/unmute</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="403" />
+        <source>Keine Bilder oder Videos in diesem Ordner.</source>
+        <translation>No images or videos in this folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="483" />
+        <source>Letzte Seite.</source>
+        <translation>Last page.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="483" />
+        <source>Erste Seite.</source>
+        <translation>First page.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="506" />
+        <source>Letzte Datei im Ordner.</source>
+        <translation>Last file in folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="506" />
+        <source>Erste Datei im Ordner.</source>
+        <translation>First file in folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="570" />
+        <source>Videowiedergabe nicht verfügbar (libmpv)</source>
+        <translation>Video playback not available (libmpv)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="644" />
+        <source>Das Bild wurde bereits bearbeitet – zum Entwickeln erst speichern oder verwerfen.</source>
+        <translation>The image has already been edited – save or discard first to develop.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="657" />
+        <source>RAW konnte nicht entwickelt werden: %1</source>
+        <translation>Could not develop RAW: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="670" />
+        <source>RAW voll entwickelt.</source>
+        <translation>RAW fully developed.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="678" />
+        <source>Zum Teilen zuerst eine PDF öffnen.</source>
+        <translation>Open a PDF first to split it.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="688" />
+        <source>Keine EXIF-Daten verfügbar.</source>
+        <translation>No EXIF data available.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="702" />
+        <source>Bilder und Videos (%1);;Alle Dateien (*)</source>
+        <translation>Images and videos (%1);;All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="790" />
+        <source>%1_Bild_%2s.png</source>
+        <translation>%1_frame_%2s.png</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="793" />
+        <source>%1_Seite_%2.png</source>
+        <translation>%1_page_%2.png</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="902" />
+        <source>Gespeichert, aber EXIF-Daten konnten nicht übernommen werden: %1</source>
+        <translation>Saved, but EXIF data could not be copied: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1004" />
+        <source>Seite</source>
+        <translation>Page</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1015" />
+        <source>Kamera</source>
+        <translation>Camera</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1016" />
+        <source>Aufgenommen</source>
+        <translation>Taken</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1021" />
+        <source>Belichtung</source>
+        <translation>Exposure</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1023" />
+        <source>Ort</source>
+        <translation>Location</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1024" />
+        <source>Titel</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1025" />
+        <source>Beschreibung</source>
+        <translation>Description</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1026" />
+        <source>Stichwörter</source>
+        <translation>Keywords</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1028" />
+        <source>Bewertung</source>
+        <translation>Rating</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1032" />
+        <location filename="../src/MainWindow.cpp" line="1588" />
+        <source>Bildinformationen</source>
+        <translation>Image information</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1037" />
+        <source>Alle EXIF-Daten …</source>
+        <translation>All EXIF data …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1068" />
+        <source>Nichts rückgängig zu machen.</source>
+        <translation>Nothing to undo.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1084" />
+        <source>Kein Videobild verfügbar.</source>
+        <translation>No video frame available.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1088" />
+        <source>Videobild kopiert.</source>
+        <translation>Video frame copied.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1096" />
+        <source>Auswahl kopiert.</source>
+        <translation>Selection copied.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1096" />
+        <source>Bild kopiert.</source>
+        <translation>Image copied.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1103" />
+        <source>Die Zwischenablage ist leer.</source>
+        <translation>The clipboard is empty.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1121" />
+        <source>Die Zwischenablage enthält kein Bild.</source>
+        <translation>The clipboard does not contain an image.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1143" />
+        <source>Zuerst mit der linken Maustaste einen Bereich markieren.</source>
+        <translation>First select an area with the left mouse button.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1295" />
+        <source>Sprache</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1295" />
+        <source>Die neue Sprache gilt nach einem Neustart von Kiek an.</source>
+        <translation>The new language takes effect after restarting Kiek an.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1301" />
+        <source>Plugin-Ordner:</source>
+        <translation>Plugin folders:</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1304" />
+        <source>Geladene Plugins:</source>
+        <translation>Loaded plugins:</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1306" />
+        <source>keine</source>
+        <translation>none</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1314" />
+        <source>Fehler:</source>
+        <translation>Errors:</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1320" />
+        <source>Plugins</source>
+        <translation>Plugins</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1439" />
+        <source>Vorschlag der KI%1 – Strg+S speichert, Strg+Z verwirft</source>
+        <translation>AI proposal%1 – Ctrl+S saves, Ctrl+Z discards</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1547" />
+        <source>Nächstes Bild</source>
+        <translation>Next image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1547" />
+        <source>Leertaste, Bild ab, →</source>
+        <translation>Space, Page Down, →</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1548" />
+        <source>Vorheriges Bild</source>
+        <translation>Previous image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1548" />
+        <source>Rücktaste, Bild auf, ←</source>
+        <translation>Backspace, Page Up, ←</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1549" />
+        <source>Erstes / letztes Bild</source>
+        <translation>First / last image</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1549" />
+        <source>Pos1 / Ende</source>
+        <translation>Home / End</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1550" />
+        <source>Blättern</source>
+        <translation>Browse</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1550" />
+        <source>Mausrad</source>
+        <translation>Mouse wheel</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1551" />
+        <source>Zoomen</source>
+        <translation>Zoom</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1551" />
+        <source>Strg + Mausrad, + / −</source>
+        <translation>Ctrl + mouse wheel, + / −</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1552" />
+        <source>Originalgröße (100 %)</source>
+        <translation>Original size (100 %)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1552" />
+        <source>Strg+H</source>
+        <translation>Ctrl+H</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1553" />
+        <source>An Fenster anpassen</source>
+        <translation>Fit to window</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1553" />
+        <source>F</source>
+        <translation>F</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1554" />
+        <source>Verschieben (wenn gezoomt)</source>
+        <translation>Pan (when zoomed)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1554" />
+        <source>Pfeiltasten, rechte Maustaste ziehen</source>
+        <translation>Arrow keys, drag with right mouse button</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1555" />
+        <source>Vollbild</source>
+        <translation>Full screen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1555" />
+        <source>Eingabe, F11, Doppelklick</source>
+        <translation>Enter, F11, double-click</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1556" />
+        <source>Vollbild beenden / Auswahl aufheben / Beenden</source>
+        <translation>Leave full screen / clear selection / quit</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1556" />
+        <source>Esc</source>
+        <translation>Esc</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1557" />
+        <source>Bereich auswählen</source>
+        <translation>Select area</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1557" />
+        <source>Linke Maustaste ziehen</source>
+        <translation>Drag with left mouse button</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1558" />
+        <source>Alles auswählen</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1558" />
+        <source>Strg+A</source>
+        <translation>Ctrl+A</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1559" />
+        <source>Auf Auswahl zuschneiden</source>
+        <translation>Crop to selection</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1559" />
+        <source>Strg+Y</source>
+        <translation>Ctrl+Y</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1560" />
+        <source>Kopieren / Einfügen</source>
+        <translation>Copy / paste</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1560" />
+        <source>Strg+C / Strg+V</source>
+        <translation>Ctrl+C / Ctrl+V</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1561" />
+        <source>Rechts / links drehen</source>
+        <translation>Rotate right / left</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1561" />
+        <source>R / L</source>
+        <translation>R / L</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1562" />
+        <source>Horizontal / vertikal spiegeln</source>
+        <translation>Flip horizontally / vertically</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1562" />
+        <source>H / V</source>
+        <translation>H / V</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1563" />
+        <source>Größe ändern</source>
+        <translation>Resize</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1563" />
+        <source>Strg+R</source>
+        <translation>Ctrl+R</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1564" />
+        <source>Graustufen</source>
+        <translation>Grayscale</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1564" />
+        <source>Strg+G</source>
+        <translation>Ctrl+G</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1565" />
+        <source>Schwarzweiß</source>
+        <translation>Black and white</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1565" />
+        <source>Strg+Umschalt+B</source>
+        <translation>Ctrl+Shift+B</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1566" />
+        <source>Negativ</source>
+        <translation>Negative</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1566" />
+        <source>Strg+Umschalt+N</source>
+        <translation>Ctrl+Shift+N</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1567" />
+        <source>Farben anpassen</source>
+        <translation>Adjust colors</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1567" />
+        <source>Umschalt+G</source>
+        <translation>Shift+G</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1568" />
+        <source>Gradationskurven</source>
+        <translation>Curves</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1568" />
+        <source>Strg+M</source>
+        <translation>Ctrl+M</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1569" />
+        <source>Automatische Farbkorrektur</source>
+        <translation>Auto color correction</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1569" />
+        <source>Umschalt+U</source>
+        <translation>Shift+U</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1570" />
+        <source>Histogramm ausgleichen</source>
+        <translation>Equalize histogram</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1570" />
+        <source>Strg+Umschalt+E</source>
+        <translation>Ctrl+Shift+E</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1571" />
+        <source>Schärfen</source>
+        <translation>Sharpen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1571" />
+        <source>Umschalt+S</source>
+        <translation>Shift+S</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1572" />
+        <source>Effekte-Browser</source>
+        <translation>Effects browser</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1572" />
+        <source>Strg+E</source>
+        <translation>Ctrl+E</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1573" />
+        <source>Histogramm anzeigen</source>
+        <translation>Show histogram</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1573" />
+        <source>Umschalt+H</source>
+        <translation>Shift+H</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1574" />
+        <source>Einstellungen</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1574" />
+        <source>P</source>
+        <translation>P</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1575" />
+        <source>E</source>
+        <translation>E</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1575" />
+        <source>EXIF-Daten</source>
+        <translation>EXIF data</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1576" />
+        <source>Strg+D</source>
+        <translation>Ctrl+D</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1576" />
+        <source>RAW voll entwickeln (sonst eingebettete Vorschau)</source>
+        <translation>Develop RAW fully (otherwise embedded preview)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1577" />
+        <source>Strg+T</source>
+        <translation>Ctrl+T</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1577" />
+        <source>Text erkennen (OCR), mit Auswahl nur im markierten Bereich</source>
+        <translation>Recognize text (OCR); with a selection only in the marked area</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1578" />
+        <source>Strg+Bild ab / Strg+Bild auf</source>
+        <translation>Ctrl+Page Down / Ctrl+Page Up</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1578" />
+        <source>Nächste / vorherige Seite (PDF, TIFF)</source>
+        <translation>Next / previous page (PDF, TIFF)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1579" />
+        <source>Leertaste (Video)</source>
+        <translation>Space (video)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1579" />
+        <source>Abspielen / Pause</source>
+        <translation>Play / pause</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1580" />
+        <source>Umschalt+→ / ← (Video)</source>
+        <translation>Shift+→ / ← (video)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1580" />
+        <source>5 s vor / zurück (mit Strg: 60 s)</source>
+        <translation>5 s forward / back (with Ctrl: 60 s)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1581" />
+        <source>M (Video)</source>
+        <translation>M (video)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1581" />
+        <source>Ton aus / an</source>
+        <translation>Mute / unmute</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1582" />
+        <source>Strg+C (Video)</source>
+        <translation>Ctrl+C (video)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1582" />
+        <source>Aktuelles Videobild kopieren</source>
+        <translation>Copy current video frame</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1583" />
+        <source>Rückgängig</source>
+        <translation>Undo</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1583" />
+        <source>Strg+Z</source>
+        <translation>Ctrl+Z</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1584" />
+        <source>Öffnen</source>
+        <translation>Open</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1584" />
+        <source>O</source>
+        <translation>O</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1585" />
+        <source>Speichern / Speichern unter</source>
+        <translation>Save / save as</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1585" />
+        <source>Strg+S / S</source>
+        <translation>Ctrl+S / S</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1586" />
+        <source>F2</source>
+        <translation>F2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1587" />
+        <source>In den Papierkorb</source>
+        <translation>Move to trash</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1587" />
+        <source>Entf</source>
+        <translation>Del</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1588" />
+        <source>I</source>
+        <translation>I</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1596" />
+        <source>Tastenkürzel</source>
+        <translation>Keyboard shortcuts</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1604" />
+        <source>Über Kiek an</source>
+        <translation>About Kiek an</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1605" />
+        <source>&lt;h3&gt;Kiek an %1&lt;/h3&gt;&lt;p&gt;Schneller, schlanker Bildbetrachter.&lt;/p&gt;&lt;p&gt;Copyright © 2026 Carl Kliefert&lt;/p&gt;&lt;p&gt;Freie Software unter der GNU General Public License, Version 3 oder später.&lt;/p&gt;</source>
+        <translation>&lt;h3&gt;Kiek an %1&lt;/h3&gt;&lt;p&gt;Fast, lightweight image viewer.&lt;/p&gt;&lt;p&gt;Copyright © 2026 Carl Kliefert&lt;/p&gt;&lt;p&gt;Free software under the GNU General Public License, version 3 or later.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1623" />
+        <source> – Seite %1 von %2</source>
+        <translation> – page %1 of %2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1638" />
+        <source>Kann nicht geöffnet werden: %1</source>
+        <translation>Cannot be opened: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1641" />
+        <source>Video</source>
+        <translation>Video</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1649" />
+        <source>Seite %1/%2</source>
+        <translation>Page %1/%2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1651" />
+        <source>RAW wird entwickelt …</source>
+        <translation>Developing RAW …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1653" />
+        <source>RAW-Vorschau (voll: %1 × %2, Strg+D entwickelt)</source>
+        <translation>RAW preview (full: %1 × %2, Ctrl+D develops)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1655" />
+        <source>Teil %1/%2 · Originalseite %3</source>
+        <translation>Part %1/%2 · original page %3</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1662" />
+        <source>Auswahl: %1 × %2 bei %3, %4</source>
+        <translation>Selection: %1 × %2 at %3, %4</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1665" />
+        <source>Lädt …</source>
+        <translation>Loading …</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1671" />
+        <source>Zwischenablage (nicht gespeichert)</source>
+        <translation>Clipboard (not saved)</translation>
+    </message>
+</context>
+<context>
+    <name>MpvWidget</name>
+    <message>
+        <location filename="../src/VideoView.cpp" line="165" />
+        <source>Videoausgabe konnte nicht eingerichtet werden (OpenGL).</source>
+        <translation>Video output could not be set up (OpenGL).</translation>
+    </message>
+</context>
+<context>
+    <name>OcrDialog</name>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="33" />
+        <source>Text erkennen</source>
+        <translation>Recognize text</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="36" />
+        <source>Sprache automatisch wählen</source>
+        <translation>Choose language automatically</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="40" />
+        <source>Erkennen</source>
+        <translation>Recognize</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="52" />
+        <source>Kopieren</source>
+        <translation>Copy</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="53" />
+        <source>Als Textdatei speichern …</source>
+        <translation>Save as text file …</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="76" />
+        <source>Text aus der Textebene der PDF (keine Texterkennung nötig). Mit „Erkennen“ wird die Seite trotzdem per OCR gelesen.</source>
+        <translation>Text from the PDF text layer (no recognition needed). “Recognize” reads the page with OCR anyway.</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="79" />
+        <source>Texterkennung nicht verfügbar: Tesseract oder ein Sprachpaket fehlt (z. B. sudo apt install tesseract-ocr-deu).</source>
+        <translation>Text recognition not available: Tesseract or a language pack is missing (e.g. sudo apt install tesseract-ocr-eng).</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="102" />
+        <source>Texterkennung läuft …</source>
+        <translation>Recognizing text …</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="109" />
+        <location filename="../src/OcrDialog.cpp" line="127" />
+        <source>Fehler: %1</source>
+        <translation>Error: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="132" />
+        <source>Kein Text gefunden. Liegt die Markierung auf dem Text?</source>
+        <translation>No text found. Does the selection cover the text?</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="138" />
+        <source>Sprache: %1 · Sicherheit: %2 %</source>
+        <translation>Language: %1 · Confidence: %2 %</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="140" />
+        <source> · Seite um %1° gedreht erkannt</source>
+        <translation> · page recognized rotated by %1°</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="142" />
+        <source>
+Der Text wirkt %1, das passende Sprachpaket fehlt aber (%2).</source>
+        <translation>
+The text looks %1, but the matching language pack is missing (%2).</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="146" />
+        <source>
+Geringe Sicherheit: Der Scan ist vielleicht unscharf oder zu niedrig aufgelöst.</source>
+        <translation>
+Low confidence: the scan may be blurry or too low-resolution.</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="154" />
+        <source>Text speichern</source>
+        <translation>Save text</translation>
+    </message>
+    <message>
+        <location filename="../src/OcrDialog.cpp" line="155" />
+        <source>Textdateien (*.txt)</source>
+        <translation>Text files (*.txt)</translation>
+    </message>
+</context>
+<context>
+    <name>PdfSplitDialog</name>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="38" />
+        <source>PDF teilen – %1</source>
+        <translation>Split PDF – %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="43" />
+        <source>%1 Seiten · %2 MB</source>
+        <translation>%1 pages · %2 MB</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="44" />
+        <source>PDF nicht lesbar: %1</source>
+        <translation>PDF not readable: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="46" />
+        <source>Nach Größe, höchstens</source>
+        <translation>By size, at most</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="50" />
+        <source> MB je Teil</source>
+        <translation> MB per part</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="52" />
+        <source>Claude Desktop nimmt PDFs bis 30 MB an; 25 MB lassen Spielraum.</source>
+        <translation>Claude Desktop accepts PDFs up to 30 MB; 25 MB leaves some margin.</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="54" />
+        <source>Nach Seitenzahl:</source>
+        <translation>By page count:</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="57" />
+        <source> Seiten je Teil</source>
+        <translation> pages per part</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="61" />
+        <source>Möglichst an Lesezeichen (Abschnittsanfängen) schneiden</source>
+        <translation>Cut at bookmarks (section starts) where possible</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="65" />
+        <source>…</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="67" />
+        <source>Zielordner</source>
+        <translation>Target folder</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="85" />
+        <source>Datei:</source>
+        <translation>File:</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="89" />
+        <source>Zielordner:</source>
+        <translation>Target folder:</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="91" />
+        <source>Die Originaldatei bleibt unverändert. Jeder Teil zeigt die Originalseitenzahlen und nennt Quelle und Seitenbereich; ein Teilungsprotokoll wird mitgeschrieben.</source>
+        <translation>The original file stays unchanged. Every part shows the original page numbers and names its source and page range; a split protocol is written as well.</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="99" />
+        <source>Teilen</source>
+        <translation>Split</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="100" />
+        <source>Ordner öffnen</source>
+        <translation>Open folder</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="101" />
+        <source>Protokoll öffnen</source>
+        <translation>Open protocol</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="148" />
+        <source>Teile …</source>
+        <translation>Splitting …</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="164" />
+        <source>Fehler: %1</source>
+        <translation type="unfinished">Error: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="168" />
+        <source>Fertig: %1 Teile. Protokoll: %2</source>
+        <translation>Done: %1 parts. Protocol: %2</translation>
+    </message>
+    <message>
+        <location filename="../src/PdfSplitDialog.cpp" line="172" />
+        <source>Teil %1: Seiten %2–%3 · %4 MB · %5
+</source>
+        <translation>Part %1: pages %2–%3 · %4 MB · %5
+</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="../src/ImageLoader.cpp" line="44" />
+        <source>PDF kann nicht geöffnet werden</source>
+        <translation>Cannot open PDF</translation>
+    </message>
+    <message>
+        <location filename="../src/ImageLoader.cpp" line="64" />
+        <source>PDF-Seite kann nicht gerendert werden</source>
+        <translation>Cannot render PDF page</translation>
+    </message>
+</context>
+<context>
+    <name>RahmenPlugin</name>
+    <message>
+        <location filename="../plugins/rahmen/RahmenPlugin.cpp" line="25" />
+        <source>Rahmen (Plugin)</source>
+        <translation>Frame (plugin)</translation>
+    </message>
+    <message>
+        <location filename="../plugins/rahmen/RahmenPlugin.cpp" line="31" />
+        <source>Breite</source>
+        <translation>Width</translation>
+    </message>
+    <message>
+        <location filename="../plugins/rahmen/RahmenPlugin.cpp" line="39" />
+        <source>Sofortbild (unten breiter)</source>
+        <translation>Instant photo (wider at bottom)</translation>
+    </message>
+    <message>
+        <location filename="../plugins/rahmen/RahmenPlugin.cpp" line="45" />
+        <source>Schwarzer Rahmen</source>
+        <translation>Black frame</translation>
+    </message>
+</context>
+<context>
+    <name>ResizeDialog</name>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="21" />
+        <source>Größe ändern</source>
+        <translation>Resize</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="25" />
+        <location filename="../src/ResizeDialog.cpp" line="30" />
+        <source> px</source>
+        <translation> px</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="36" />
+        <source> %</source>
+        <translation> %</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="39" />
+        <source>Seitenverhältnis beibehalten</source>
+        <translation>Keep aspect ratio</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="41" />
+        <source>Geglättet (bessere Qualität)</source>
+        <translation>Smooth (better quality)</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="45" />
+        <source>Original: %1 × %2 px</source>
+        <translation>Original: %1 × %2 px</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="46" />
+        <source>&amp;Breite:</source>
+        <translation>&amp;Width:</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="47" />
+        <source>&amp;Höhe:</source>
+        <translation>&amp;Height:</translation>
+    </message>
+    <message>
+        <location filename="../src/ResizeDialog.cpp" line="48" />
+        <source>&amp;Prozent:</source>
+        <translation>&amp;Percent:</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsDialog</name>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="46" />
+        <source>Einstellungen</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="49" />
+        <source>Systemsprache</source>
+        <translation>System language</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="54" />
+        <source>Bilder automatisch drehen (EXIF-Ausrichtung)</source>
+        <translation>Rotate images automatically (EXIF orientation)</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="56" />
+        <source>Kameras speichern hochkant aufgenommene Fotos oft quer und vermerken die Drehung nur in den EXIF-Daten. Ist dies aktiv, werden solche Fotos richtig herum angezeigt.</source>
+        <translation>Cameras often store portrait photos in landscape and record the rotation only in the EXIF data. When enabled, such photos are shown the right way up.</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="64" />
+        <source>Esc beendet das Programm (wie IrfanView)</source>
+        <translation>Esc quits the program (like IrfanView)</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="67" />
+        <source>Allgemein</source>
+        <translation>General</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="69" />
+        <source>Sprache:</source>
+        <translation>Language:</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="70" />
+        <source>Eine geänderte Sprache gilt nach einem Neustart.</source>
+        <translation>A changed language takes effect after a restart.</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="75" />
+        <source>Bilder</source>
+        <translation>Images</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="78" />
+        <source>JPEG-/WebP-Qualität beim Speichern:</source>
+        <translation>JPEG/WebP quality when saving:</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="81" />
+        <source>automatisch (%1)</source>
+        <translation>automatic (%1)</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="83" />
+        <source>Texterkennung: so viele Seiten werden gleichzeitig gelesen, je Seite ein einfädiger Tesseract-Prozess (wie bei ocrmypdf).</source>
+        <translation>Text recognition: this many pages are read at the same time, one single-threaded Tesseract process per page (as in ocrmypdf).</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="85" />
+        <source>Texterkennung, Seiten gleichzeitig:</source>
+        <translation>Text recognition, pages in parallel:</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="88" />
+        <source>KI-Schnittstelle (MCP)</source>
+        <translation>AI interface (MCP)</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="90" />
+        <source>KI-Assistenten dürfen das offene Fenster abfragen und steuern</source>
+        <translation>AI assistants may query and control the open window</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="92" />
+        <source>Erlaubt einem verbundenen Assistenten wie Claude, das angezeigte Bild und die Auswahl abzufragen, Dateien anzuzeigen und Bereiche zu markieren.</source>
+        <translation>Allows a connected assistant such as Claude to read the displayed image and the selection, show files and mark areas.</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="95" />
+        <source>Dateizugriff nur in diesen Ordnern (ein Ordner pro Zeile, leer = überall):</source>
+        <translation>File access only in these folders (one folder per line, empty = everywhere):</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="100" />
+        <source>Ordner hinzufügen …</source>
+        <translation>Add folder …</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="102" />
+        <source>Ordner für KI-Zugriff</source>
+        <translation>Folder for AI access</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="106" />
+        <source>Befehl für Claude kopieren</source>
+        <translation>Copy command for Claude</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="107" />
+        <source>Kopiert den Befehl, mit dem Claude Code Kiek an als MCP-Server einbindet.</source>
+        <translation>Copies the command that adds Kiek an to Claude Code as an MCP server.</translation>
+    </message>
+</context>
+<context>
+    <name>VideoView</name>
+    <message>
+        <location filename="../src/VideoView.cpp" line="365" />
+        <source>Abspielen / Pause (Leertaste)</source>
+        <translation>Play / pause (Space)</translation>
+    </message>
+    <message>
+        <location filename="../src/VideoView.cpp" line="390" />
+        <source>Ton aus (M)</source>
+        <translation>Mute (M)</translation>
+    </message>
+    <message>
+        <location filename="../src/VideoView.cpp" line="400" />
+        <source>Lautstärke</source>
+        <translation>Volume</translation>
+    </message>
+</context>
+</TS>
