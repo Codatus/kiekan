@@ -156,9 +156,14 @@ int main(int argc, char *argv[])
         QApplication::installTranslator(&appTranslator);
 
     // Standard-Dialogtexte von Qt (Knöpfe usw.)
+    // Linux: qtbase_de.qm im Qt-Verzeichnis; Windows-Paket: windeployqt fasst alles
+    // in translations/qt_de.qm neben der Programmdatei zusammen.
     QTranslator qtTranslator;
-    if (qtTranslator.load(locale, QStringLiteral("qtbase"), QStringLiteral("_"),
-                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+    const QString qtDir = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+    const QString appDir = QCoreApplication::applicationDirPath() + QStringLiteral("/translations");
+    if (qtTranslator.load(locale, QStringLiteral("qtbase"), QStringLiteral("_"), qtDir)
+        || qtTranslator.load(locale, QStringLiteral("qt"), QStringLiteral("_"), qtDir)
+        || qtTranslator.load(locale, QStringLiteral("qt"), QStringLiteral("_"), appDir))
         QApplication::installTranslator(&qtTranslator);
 
     MainWindow window;
