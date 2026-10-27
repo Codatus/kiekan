@@ -1,8 +1,8 @@
-# Kiek an
+# KiekAn!
 
 **Schneller, schlanker Bildbetrachter mit Bildbearbeitung, Texterkennung und KI-Schnittstelle.**
 
-Kiek an ist ein schneller Bildbetrachter für Linux, inspiriert von IrfanView. Er
+KiekAn! ist ein schneller Bildbetrachter für Linux, inspiriert von IrfanView. Er
 öffnet Bilder ohne Wartezeit, blättert flüssig durch große Ordner und beherrscht
 neben den gängigen Formaten auch HEIC, AVIF, Kamera-RAW, JPEG 2000, PSD, DjVu,
 PDF und Videos. Für den Alltag bringt er die wichtigen Werkzeuge mit:
@@ -11,9 +11,9 @@ Texterkennung mit automatischer Sprachwahl und das Teilen großer PDFs. Über ei
 eingebaute MCP-Schnittstelle können KI-Assistenten wie Claude mit Bildern und
 Dokumenten arbeiten.
 
-„Kiek an“ ist Plattdeutsch für „Guck mal an!“.
+„KiekAn!“ kommt vom plattdeutschen „KiekAn!!“ – „Guck mal an!“.
 
-*English:* Kiek an is a fast, lightweight image viewer for Linux, inspired by
+*English:* KiekAn! is a fast, lightweight image viewer for Linux, inspired by
 IrfanView, with editing, OCR with automatic language detection, PDF splitting and
 an MCP interface for AI assistants such as Claude. The user interface is
 available in German and English.
@@ -126,7 +126,7 @@ Geplant: Stapelkonvertierung und Batch-Umbenennen in der Oberfläche.
 
 ## Andere Systeme (Windows, weitere Distributionen)
 
-Kiek an hängt nur von Bibliotheken ab, nicht von externen Programmen (auch
+KiekAn! hängt nur von Bibliotheken ab, nicht von externen Programmen (auch
 nicht von exiftool – Metadaten liest und schreibt die Bibliothek exiv2).
 Alle Bausteine sind optional und auch unter Windows (MSYS2/vcpkg) verfügbar:
 Qt 6, libmpv, exiv2, Tesseract, qpdf, libheif, LibRaw, OpenJPEG, DjVuLibre.
@@ -138,7 +138,7 @@ Damit es überall gleich funktioniert:
 - Metadaten werden über Qt gelesen/geschrieben und von exiv2 nur im Speicher
   bearbeitet – keine Probleme mit Umlauten oder Windows-Pfaden; Speichern ist
   atomar.
-- Ohne Icon-Thema (Windows, schlanke Desktops) nutzt Kiek an Standard-Icons des
+- Ohne Icon-Thema (Windows, schlanke Desktops) nutzt KiekAn! Standard-Icons des
   Qt-Stils bzw. selbst gezeichnete (`KIEKAN_ICON_THEME=none` zum Ausprobieren).
 - Tesseract-Sprachdaten in `<Programmordner>/tessdata` werden automatisch
   verwendet (für eine Windows-Installation oder portable Fassung).
@@ -171,9 +171,9 @@ cd build && cpack -G DEB
 
 ## KI-Schnittstelle (MCP)
 
-Mit `kiekan --mcp` arbeitet Kiek an als MCP-Server (Model Context Protocol)
+Mit `kiekan --mcp` arbeitet KiekAn! als MCP-Server (Model Context Protocol)
 über stdin/stdout. Assistenten wie Claude können damit Bilder ansehen,
-untersuchen, bearbeiten und konvertieren – und mit dem offenen Kiek-an-Fenster
+untersuchen, bearbeiten und konvertieren – und mit dem offenen KiekAn!-Fenster
 zusammenarbeiten.
 
 Einbinden in Claude Code:
@@ -198,7 +198,7 @@ Claude Desktop (`claude_desktop_config.json`):
 | `list_filters` | verfügbare Filter (inkl. Plugins) mit Parametern |
 | `edit_image` | Kette aus Drehen, Spiegeln, Zuschneiden, Größe, Kurven, Filtern → neue Datei |
 | `convert_batch` | viele Dateien/ganzen Ordner umwandeln, verkleinern, bearbeiten |
-| `viewer_show` | Datei im Fenster öffnen (startet Kiek an bei Bedarf) |
+| `viewer_show` | Datei im Fenster öffnen (startet KiekAn! bei Bedarf) |
 | `viewer_state` | was der Benutzer gerade sieht, inkl. markiertem Bereich |
 | `viewer_get_image` | angezeigtes Bild bzw. markierten Bereich, auch mit ungespeicherten Änderungen |
 | `viewer_select` | einen Bereich im Fenster markieren, um darauf zu zeigen |
@@ -212,9 +212,9 @@ Claude Desktop (`claude_desktop_config.json`):
 
 ### Sicherheit: Freigaben, Prompt Injection, Protokoll
 
-Eine KI liest über Kiek an fremde Dateien. Text darin – Texterkennung,
+Eine KI liest über KiekAn! fremde Dateien. Text darin – Texterkennung,
 PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
-(„Prompt Injection“). Kiek an begrenzt deshalb, was eine KI tun kann:
+(„Prompt Injection“). KiekAn! begrenzt deshalb, was eine KI tun kann:
 
 - **Ordnerfreigaben** (Extras → Einstellungen → KI-Schnittstelle): Die KI liest
   nur in freigegebenen *Leseordnern* und speichert nur in *Schreibordnern*
@@ -225,26 +225,26 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
   und Metadaten ändern“ aus ist: kein `overwrite=true`, kein `write_metadata`.
 - **Werkzeug-Kennzeichnung**: Jedes Werkzeug meldet per MCP, ob es nur liest
   (`readOnlyHint`) oder Dateien verändern kann (`destructiveHint`). Claude
-  Desktop kann für Letztere nachfragen – dort für Kiek an die schreibenden
+  Desktop kann für Letztere nachfragen – dort für KiekAn! die schreibenden
   Werkzeuge auf „Immer fragen“ lassen.
 - **Fremden Text kennzeichnen**: Text aus Dateien steht zwischen
   `<<<FILE-CONTENT …>>>`-Markierungen mit zufälliger Kennung; die KI erhält
   die Anweisung, ihn nur als Daten zu behandeln.
-- **Verdächtiges melden**: Kiek an sucht nach typischen Mustern (deutsch und
+- **Verdächtiges melden**: KiekAn! sucht nach typischen Mustern (deutsch und
   englisch: „ignoriere alle bisherigen Anweisungen“, Rollenwechsel,
   Chat-Steuerzeichen, Aufforderungen zu Werkzeugaufrufen oder zum Versenden
   von Daten) sowie nach unsichtbaren Zeichen und verstecktem Unicode-Tag-Text.
   Funde stehen als `SECURITY NOTICE` vor dem Ergebnis, im Protokoll und – wenn
-  Kiek an offen ist – in einem Hinweisfenster.
+  KiekAn! offen ist – in einem Hinweisfenster.
 - **Vertrauenswürdige Ordner**: Leseordner, die nur eigene Dateien enthalten,
-  lassen sich als vertrauenswürdig markieren. Dort warnt Kiek an nicht bei
+  lassen sich als vertrauenswürdig markieren. Dort warnt KiekAn! nicht bei
   verdächtigem Text (Funde stehen nur grau im Protokoll); Kennzeichnung,
   Protokoll und Rechte bleiben. Für Download-, Temp- und Mail-Ordner rät der
   Dialog ab, ebenso für vertrauenswürdige Ordner, in denen die KI auch
   Dateien ersetzen darf.
 - **KI-Protokoll** (Extras → KI-Protokoll): jeder Werkzeugaufruf mit Zeit,
   Programm, gelesenen und geschriebenen Dateien und Warnungen; Datei
-  `ki-protokoll.jsonl` im Datenordner von Kiek an.
+  `ki-protokoll.jsonl` im Datenordner von KiekAn!
 
 Das senkt das Risiko, verhindert Prompt Injection aber nicht vollständig.
 Fremde Dokumente am besten in einem Chat ohne Web- oder E-Mail-Werkzeuge
@@ -275,7 +275,7 @@ wird gemessen, nicht geschätzt; geschnitten wird möglichst an Lesezeichen
 
 Tesseract verteilt einzelne Seiten über OpenMP auf mehrere Threads – das bringt
 kaum Tempo, belegt aber die Prozessoren (gemessen: +7 % Geschwindigkeit für
-doppelte Rechenlast). Kiek an startet die Erkennung deshalb wie ocrmypdf in
+doppelte Rechenlast). KiekAn! startet die Erkennung deshalb wie ocrmypdf in
 Hilfsprozessen (`kiekan --ocr-worker`) mit `OMP_THREAD_LIMIT=1` und liest
 stattdessen mehrere Seiten parallel. Die Grenze muss beim Prozessstart gesetzt
 sein, weil die OpenMP-Bibliothek sie beim Laden einliest.
@@ -302,13 +302,13 @@ und der Zugriff auf das offene Fenster abschalten. Die Fensterverbindung ist ein
 lokaler Socket, den nur der eigene Benutzer erreicht. Mit der Umgebungsvariable
 `KIEKAN_VIEWER_SOCKET=<name>` (für Fenster und `kiekan --mcp` gleich gesetzt)
 bekommt eine Instanz eine eigene Verbindung – praktisch für Tests neben einem
-normal laufenden Kiek an.
+normal laufenden KiekAn!
 
 ## Plugins
 
 Filter-Plugins sind Qt-Plugin-Bibliotheken, die die Schnittstelle aus
 [`include/kiekan/FilterInterface.h`](include/kiekan/FilterInterface.h)
-implementieren. Kiek an erzeugt für jeden Filter automatisch einen Dialog mit
+implementieren. KiekAn! erzeugt für jeden Filter automatisch einen Dialog mit
 Reglern und Live-Vorschau. Gesucht wird in
 
 - `<Programmordner>/plugins`
@@ -330,6 +330,6 @@ Dateien in `translations/`. Nach Codeänderungen aktualisieren:
 
 Copyright © 2026 Carl Kliefert
 
-Kiek an ist freie Software: Sie dürfen es unter den Bedingungen der
+KiekAn! ist freie Software: Sie dürfen es unter den Bedingungen der
 GNU General Public License, Version 3 oder (nach Ihrer Wahl) jeder späteren
 Version, weitergeben und verändern. Siehe [LICENSE](LICENSE).

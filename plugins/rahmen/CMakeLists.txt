@@ -1,4 +1,4 @@
-# Kiek an – Beispiel-Plugin „Rahmen“
+# KiekAn! – Beispiel-Plugin „Rahmen“
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 qt_add_plugin(kiekan_rahmen SHARED)

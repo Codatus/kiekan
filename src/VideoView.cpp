@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -137,7 +137,7 @@ MpvWidget::MpvWidget(QWidget *parent)
     mpv_set_option_string(m_mpv, "keep-open", "yes");          // letztes Bild stehen lassen
     mpv_set_option_string(m_mpv, "idle", "yes");
     mpv_set_option_string(m_mpv, "input-default-bindings", "no");
-    mpv_set_option_string(m_mpv, "audio-client-name", "Kiek an");
+    mpv_set_option_string(m_mpv, "audio-client-name", "KiekAn!");
     mpv_set_option_string(m_mpv, "screenshot-format", "png");
 
     if (mpv_initialize(m_mpv) < 0) {

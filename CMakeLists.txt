@@ -1,4 +1,4 @@
-# Kiek an – schneller Bildbetrachter
+# KiekAn! – schneller Bildbetrachter
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 cmake_minimum_required(VERSION 3.16)
@@ -184,28 +184,28 @@ target_link_libraries(kiekan PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Networ
 if(TARGET Qt6::Pdf)
     target_link_libraries(kiekan PRIVATE Qt6::Pdf)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_PDF)
-    message(STATUS "Kiek an: PDF-Anzeige aktiv")
+    message(STATUS "KiekAn!: PDF-Anzeige aktiv")
 endif()
 if(MPV_FOUND AND TARGET Qt6::OpenGLWidgets)
     target_sources(kiekan PRIVATE src/VideoView.cpp src/VideoView.h)
     target_link_libraries(kiekan PRIVATE PkgConfig::MPV Qt6::OpenGLWidgets)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_MPV)
-    message(STATUS "Kiek an: Videowiedergabe aktiv (libmpv ${MPV_VERSION})")
+    message(STATUS "KiekAn!: Videowiedergabe aktiv (libmpv ${MPV_VERSION})")
 endif()
 if(TESSERACT_FOUND)
     target_link_libraries(kiekan PRIVATE PkgConfig::TESSERACT)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_TESSERACT)
-    message(STATUS "Kiek an: Texterkennung aktiv (Tesseract ${TESSERACT_VERSION})")
+    message(STATUS "KiekAn!: Texterkennung aktiv (Tesseract ${TESSERACT_VERSION})")
 endif()
 if(QPDF_FOUND)
     target_link_libraries(kiekan PRIVATE PkgConfig::QPDF)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_QPDF)
-    message(STATUS "Kiek an: PDF teilen aktiv (qpdf ${QPDF_VERSION})")
+    message(STATUS "KiekAn!: PDF teilen aktiv (qpdf ${QPDF_VERSION})")
 endif()
 if(EXIV2_FOUND)
     target_link_libraries(kiekan PRIVATE PkgConfig::EXIV2)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_EXIV2)
-    message(STATUS "Kiek an: EXIF aktiv (exiv2 ${EXIV2_VERSION})")
+    message(STATUS "KiekAn!: EXIF aktiv (exiv2 ${EXIV2_VERSION})")
 endif()
 
 if(KIEKAN_BUILD_EXAMPLE_PLUGIN)
@@ -264,9 +264,9 @@ endif()
 # --- Debian-Paket (cpack -G DEB) ---------------------------------------------
 
 set(CPACK_PACKAGE_NAME "kiekan")
-set(CPACK_PACKAGE_VENDOR "Kiek an")
+set(CPACK_PACKAGE_VENDOR "KiekAn!")
 set(CPACK_PACKAGE_CONTACT "Carl Kliefert <228213888+Codatus@users.noreply.github.com>")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Kiek an - schneller, schlanker Bildbetrachter")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "KiekAn! - schneller, schlanker Bildbetrachter")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
@@ -277,7 +277,7 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-image-formats-plugins, libqt6svg6")
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-translations-l10n, tesseract-ocr-deu, tesseract-ocr-eng, tesseract-ocr-osd")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
-"Kiek an ist ein schneller Bildbetrachter im Stil von IrfanView.
+"KiekAn! ist ein schneller Bildbetrachter im Stil von IrfanView.
  Er zeigt Bilder sofort an, blaettert per Tastatur durch Ordner und bietet
  Bearbeitung: Drehen, Zuschneiden, Groesse aendern, Farben, Gradationskurven,
  Histogramm, Schaerfen, Effekte und Filter-Plugins.")

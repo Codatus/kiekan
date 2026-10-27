@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -335,7 +335,7 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
                                                 .arg(i + 1).arg(count).arg(src.fileName()).arg(a + 1).arg(b + 1).arg(n)},
                 {QStringLiteral("Keywords"), QStringLiteral("kiekan-teil=%1/%2; seiten=%3-%4; quelle=%5; quelle-seiten=%6; quelle-sha256=%7")
                                                  .arg(i + 1).arg(count).arg(a + 1).arg(b + 1).arg(src.fileName()).arg(n).arg(sourceHash)},
-                {QStringLiteral("Producer"), QStringLiteral("Kiek an %1 (qpdf)").arg(QCoreApplication::applicationVersion())},
+                {QStringLiteral("Producer"), QStringLiteral("KiekAn! %1 (qpdf)").arg(QCoreApplication::applicationVersion())},
             };
             std::unique_ptr<QPDF> out = buildPart(pdf, pages, a, b, info);
             const QString tmp = target + QStringLiteral(".part");
@@ -391,7 +391,7 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
         const QJsonObject manifest{
             {QStringLiteral("format"), QStringLiteral("kiekan-pdf-split/1")},
             {QStringLiteral("created"), QDateTime::currentDateTime().toString(Qt::ISODate)},
-            {QStringLiteral("tool"), QStringLiteral("Kiek an %1").arg(QCoreApplication::applicationVersion())},
+            {QStringLiteral("tool"), QStringLiteral("KiekAn! %1").arg(QCoreApplication::applicationVersion())},
             {QStringLiteral("source"), QJsonObject{{QStringLiteral("path"), r.source}, {QStringLiteral("file"), src.fileName()},
                                                    {QStringLiteral("title"), sourceTitle}, {QStringLiteral("pages"), n},
                                                    {QStringLiteral("bytes"), r.sourceBytes}, {QStringLiteral("sha256"), sourceHash},
@@ -418,7 +418,7 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
             md += QStringLiteral("- Titel: %1\n").arg(sourceTitle);
         md += QStringLiteral("- Seiten: %1 · Größe: %2\n").arg(n).arg(humanMB(r.sourceBytes));
         md += QStringLiteral("- SHA-256: `%1`\n").arg(sourceHash);
-        md += QStringLiteral("- Geteilt am %1 mit Kiek an %2\n").arg(QDateTime::currentDateTime().toString(QStringLiteral("dd.MM.yyyy HH:mm")),
+        md += QStringLiteral("- Geteilt am %1 mit KiekAn! %2\n").arg(QDateTime::currentDateTime().toString(QStringLiteral("dd.MM.yyyy HH:mm")),
                                                                        QCoreApplication::applicationVersion());
         if (opt.ranges.isEmpty() && opt.pagesPerPart <= 0)
             md += QStringLiteral("- Regel: höchstens %1 MB je Teil%2\n").arg(opt.maxMegabytes)
@@ -561,7 +561,7 @@ QJsonObject loadManifest(const QString &manifestPath, QString *error)
     const QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
     if (!doc.isObject() || doc.object().value(QLatin1String("format")).toString() != QLatin1String("kiekan-pdf-split/1")) {
         if (error)
-            *error = QStringLiteral("not a Kiek an split manifest: %1").arg(manifestPath);
+            *error = QStringLiteral("not a KiekAn! split manifest: %1").arg(manifestPath);
         return {};
     }
     return doc.object();

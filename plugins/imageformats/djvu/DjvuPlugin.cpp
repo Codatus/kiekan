@@ -1,4 +1,4 @@
-// Kiek an – DjVu (über DjVuLibre)
+// KiekAn! – DjVu (über DjVuLibre)
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //

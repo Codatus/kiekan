@@ -1,4 +1,4 @@
-// Kiek an – Beispiel-Plugin „Rahmen“
+// KiekAn! – Beispiel-Plugin „Rahmen“
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //

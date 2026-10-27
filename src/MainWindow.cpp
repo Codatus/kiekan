@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -253,7 +253,7 @@ void MainWindow::createActions()
     make(tr("Abbrechen / Beenden"), "", {K(Qt::Key_Escape)}, [this] { escape(); });
 
     QAction *help = make(tr("&Tastenkürzel"), "help-contents", {K(Qt::Key_F1)}, [this] { showHelp(); });
-    QAction *about = make(tr("Über &Kiek an"), "help-about", {}, [this] { showAbout(); });
+    QAction *about = make(tr("Über &KiekAn!"), "help-about", {}, [this] { showAbout(); });
 
     QMenu *file = menuBar()->addMenu(tr("&Datei"));
     file->addActions({open, saveAct, saveAsAct});
@@ -428,7 +428,7 @@ void MainWindow::showIndex(int index)
     m_undo.clear();
     m_loadError.clear();
 
-    // Teil einer mit Kiek an geteilten PDF? Dann Originalseiten anzeigen.
+    // Teil einer mit KiekAn! geteilten PDF? Dann Originalseiten anzeigen.
     m_partOf = m_partNumber = m_partFirstPage = 0;
     if (Media::isPdf(m_path)) {
         const PdfSplit::PartInfo part = PdfSplit::partInfo(m_path);
@@ -1296,7 +1296,7 @@ void MainWindow::showSettings()
     if (dlg.aiAccessChanged())
         updateViewerServer();
     if (languageChanged)
-        QMessageBox::information(this, tr("Sprache"), tr("Die neue Sprache gilt nach einem Neustart von Kiek an."));
+        QMessageBox::information(this, tr("Sprache"), tr("Die neue Sprache gilt nach einem Neustart von KiekAn!"));
 }
 
 void MainWindow::showPlugins()
@@ -1345,7 +1345,7 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
     if (cmd == QLatin1String("show")) {
         const QString path = req.value(QLatin1String("path")).toString();
         if (m_modified)
-            return error(QStringLiteral("the image in Kiek an has unsaved changes; ask the user to save or discard them first"));
+            return error(QStringLiteral("the image in KiekAn! has unsaved changes; ask the user to save or discard them first"));
         if (!QFileInfo::exists(path))
             return error(QStringLiteral("not found: ") + path);
         openPath(path);
@@ -1493,7 +1493,7 @@ void MainWindow::warnAboutInjection(const QJsonObject &req)
     for (int i = 0; i < std::min<qsizetype>(warnings.size(), 4); ++i)
         found << QStringLiteral("• %1").arg(warnings.at(i).toObject().value(QLatin1String("excerpt")).toString().left(160));
 
-    const QString text = tr("Eine KI hat über die Schnittstelle von Kiek an eine Datei gelesen, die Text enthält, "
+    const QString text = tr("Eine KI hat über die Schnittstelle von KiekAn! eine Datei gelesen, die Text enthält, "
                             "der wie eine Anweisung an eine KI aussieht oder versteckte Zeichen enthält "
                             "(mögliche „Prompt Injection“):\n\n%1\n\n%2\n\n"
                             "Die KI wurde gewarnt, diesen Text nicht zu befolgen. Prüfen Sie bitte, was die KI "
@@ -1507,7 +1507,7 @@ void MainWindow::warnAboutInjection(const QJsonObject &req)
         m_injectionWarning->raise();
         return;
     }
-    auto *box = new QMessageBox(QMessageBox::Warning, tr("Kiek an – Warnung zur KI"), text, QMessageBox::Close, this);
+    auto *box = new QMessageBox(QMessageBox::Warning, tr("KiekAn! – Warnung zur KI"), text, QMessageBox::Close, this);
     box->setAttribute(Qt::WA_DeleteOnClose);
     box->setModal(false);
     QPushButton *logButton = box->addButton(tr("KI-Protokoll anzeigen"), QMessageBox::ActionRole);
@@ -1656,8 +1656,8 @@ void MainWindow::showHelp()
 
 void MainWindow::showAbout()
 {
-    QMessageBox::about(this, tr("Über Kiek an"),
-        tr("<h3>Kiek an %1</h3>"
+    QMessageBox::about(this, tr("Über KiekAn!"),
+        tr("<h3>KiekAn! %1</h3>"
            "<p>Schneller, schlanker Bildbetrachter.</p>"
            "<p>Copyright © 2026 Carl Kliefert</p>"
            "<p>Freie Software unter der GNU General Public License, "

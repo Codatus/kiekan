@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     std::setlocale(LC_NUMERIC, "C");
     Metadata::initialize();
     setIdentity();
-    QApplication::setApplicationDisplayName(QStringLiteral("Kiek an"));
+    QApplication::setApplicationDisplayName(QStringLiteral("KiekAn!"));
     QApplication::setDesktopFileName(QStringLiteral("kiekan"));
     // Ohne Desktop-Integration (z. B. GNOME ohne Qt-Theme) kennt Qt kein
     // Icon-Thema; dann ein vorhandenes vollständiges Thema nehmen.

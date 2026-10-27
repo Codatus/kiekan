@@ -1,4 +1,4 @@
-// Kiek an – Bildformate HEIC/HEIF und AVIF (über libheif)
+// KiekAn! – Bildformate HEIC/HEIF und AVIF (über libheif)
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //

@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -136,7 +136,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     aiLayout->addWidget(m_overlapNote);
 
     m_aiTrustedDirs = dirEditor(tr("Vertrauenswürdig: Leseordner, die nur Ihre eigenen Dateien enthalten. Dort warnt "
-                                   "Kiek an nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben "
+                                   "KiekAn! nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben "
                                    "(nicht für Downloads, Mail-Anhänge oder eingegangene Post):"),
                                 AiGuard::trustedDirs(), tr("Ordner mit ausschließlich eigenen Dateien"));
     m_trustNote = new QLabel(this);
@@ -158,7 +158,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
         dlg.exec();
     });
     auto *copyCmd = new QPushButton(tr("Befehl für Claude kopieren"), this);
-    copyCmd->setToolTip(tr("Kopiert den Befehl, mit dem Claude Code Kiek an als MCP-Server einbindet."));
+    copyCmd->setToolTip(tr("Kopiert den Befehl, mit dem Claude Code KiekAn! als MCP-Server einbindet."));
     connect(copyCmd, &QPushButton::clicked, this, [] {
         QGuiApplication::clipboard()->setText(QStringLiteral("claude mcp add --scope user kiekan -- \"%1\" --mcp")
                                                   .arg(QCoreApplication::applicationFilePath()));

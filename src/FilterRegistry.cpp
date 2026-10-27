@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -372,7 +372,7 @@ void FilterRegistry::loadPlugins()
             auto *plugin = qobject_cast<Kiekan::FilterPlugin *>(root);
             if (!plugin) {
                 m_pluginErrors << QStringLiteral("%1: %2").arg(name,
-                    root ? Filters::tr("kein Kiek-an-Filter-Plugin") : loader.errorString());
+                    root ? Filters::tr("kein KiekAn!-Filter-Plugin") : loader.errorString());
                 if (!root)
                     loader.unload();
                 continue;

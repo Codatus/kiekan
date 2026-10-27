@@ -1,11 +1,11 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Öffentliche Schnittstelle für Filter-Plugins.
 //
 // Ein Plugin ist eine Qt-Plugin-Bibliothek (QPluginLoader), deren Wurzelobjekt
-// Kiekan::FilterPlugin implementiert. Kiek an sucht Plugins in
+// Kiekan::FilterPlugin implementiert. KiekAn! sucht Plugins in
 //   – <Programmordner>/plugins
 //   – ~/.local/share/kiekan/plugins
 //   – <Programmordner>/../lib/kiekan/plugins (installierte Plugins)

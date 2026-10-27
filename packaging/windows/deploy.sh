@@ -1,9 +1,9 @@
 #!/bin/bash
-# Kiek an – portables Windows-Paket aus einem MSYS2-UCRT64-Build erstellen.
+# KiekAn! – portables Windows-Paket aus einem MSYS2-UCRT64-Build erstellen.
 # Aufruf (in der MSYS2-Shell): packaging/windows/deploy.sh <build-ordner> <ziel-ordner>
 #
 # Ergebnis: ein Ordner mit kiekan.exe, allen benötigten DLLs, Qt-Plugins,
-# den Kiek-an-Bildformat- und Filter-Plugins und Tesseract-Sprachdaten.
+# den KiekAn!-Bildformat- und Filter-Plugins und Tesseract-Sprachdaten.
 set -euo pipefail
 
 BUILD="$1"
@@ -43,7 +43,7 @@ while true; do
     [ "$added" = 0 ] && break
 done
 
-# Tesseract-Sprachdaten (Kiek an findet sie in <Programmordner>/tessdata)
+# Tesseract-Sprachdaten (KiekAn! findet sie in <Programmordner>/tessdata)
 for lang in osd eng deu frk; do
     cp "$PREFIX/share/tessdata/$lang.traineddata" "$OUT/tessdata/"
 done

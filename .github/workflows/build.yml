@@ -1,4 +1,4 @@
-# Kiek an – automatischer Build
+# KiekAn! – automatischer Build
 # Baut und testet bei jeder Änderung; bei einem Tag v* wird das .deb als
 # Release veröffentlicht.
 name: Build

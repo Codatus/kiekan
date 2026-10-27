@@ -1,4 +1,4 @@
-// Kiek an – Filtertest
+// KiekAn! – Filtertest
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //

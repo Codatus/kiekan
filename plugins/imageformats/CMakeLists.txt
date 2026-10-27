@@ -1,10 +1,10 @@
-# Kiek an – zusätzliche Bildformate als Qt-Bildformat-Plugins
+# KiekAn! – zusätzliche Bildformate als Qt-Bildformat-Plugins
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Jedes Format ist ein QImageIOPlugin. Dadurch funktioniert es überall, wo
-# Kiek an Bilder liest: Anzeige, Vorladen, Kontaktabzug, Bearbeitung,
+# KiekAn! Bilder liest: Anzeige, Vorladen, Kontaktabzug, Bearbeitung,
 # Stapelkonvertierung, Texterkennung und KI-Schnittstelle.
-# Kiek an lädt sie aus <Programmordner>/qtplugins/imageformats (Build) bzw.
+# KiekAn! lädt sie aus <Programmordner>/qtplugins/imageformats (Build) bzw.
 # <prefix>/lib/kiekan/qtplugins/imageformats (installiert).
 
 set(KIEKAN_QTPLUGIN_DIR "${CMAKE_BINARY_DIR}/qtplugins/imageformats")
@@ -24,7 +24,7 @@ function(kiekan_add_imageformat name)
     install(TARGETS kiekan_${name}
         LIBRARY DESTINATION ${KIEKAN_INSTALL_QTPLUGINDIR}
         RUNTIME DESTINATION ${KIEKAN_INSTALL_QTPLUGINDIR})
-    message(STATUS "Kiek an: Bildformat ${name}")
+    message(STATUS "KiekAn!: Bildformat ${name}")
 endfunction()
 
 # PSD/PSB: eigener Leser, keine Bibliothek nötig

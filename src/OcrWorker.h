@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,7 +17,7 @@
 // machen, aber die Prozessoren belegen. Die Grenze OMP_THREAD_LIMIT=1 muss
 // gesetzt sein, bevor die OpenMP-Bibliothek geladen wird – also beim
 // Prozessstart. Mehrere Seiten laufen stattdessen in parallelen Prozessen.
-// Nebenbei kann ein Tesseract-Absturz Kiek an nicht mehr mitreißen.
+// Nebenbei kann ein Tesseract-Absturz KiekAn! nicht mehr mitreißen.
 namespace OcrWorker {
 
 struct Job

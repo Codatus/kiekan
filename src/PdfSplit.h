@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -80,7 +80,7 @@ QJsonObject loadManifest(const QString &manifestPath, QString *error = nullptr);
 QStringList verify(const QJsonObject &manifest, const QString &manifestPath);
 
 // Informationen eines Teils, aus dessen eigenen PDF-Angaben gelesen
-// (funktioniert auch ohne Protokoll). part == 0: kein Kiek-an-Teil.
+// (funktioniert auch ohne Protokoll). part == 0: kein KiekAn!-Teil.
 struct PartInfo
 {
     int part = 0;

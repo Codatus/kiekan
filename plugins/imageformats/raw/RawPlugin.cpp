@@ -1,4 +1,4 @@
-// Kiek an – Kamera-RAW (über LibRaw)
+// KiekAn! – Kamera-RAW (über LibRaw)
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
@@ -6,7 +6,7 @@
 // gezeigt, sobald es brauchbar groß ist (mindestens 1000 Pixel) – das dauert
 // Millisekunden statt Sekunden (Fujifilm X-Trans: über 40 s). Das Bild trägt
 // dann den Text „kiekan-raw“ = „preview“ und „kiekan-raw-size“ = volle Größe,
-// damit Kiek an bei Bedarf voll entwickeln kann. Mit Qualität 100 (oder
+// damit KiekAn! bei Bedarf voll entwickeln kann. Mit Qualität 100 (oder
 // KIEKAN_RAW_DEVELOP=1) wird immer entwickelt: Kamera-Weißabgleich, 8 Bit, sRGB.
 //
 // Nur über die Dateiendung gewählt: CR2, NEF, DNG … sind intern TIFF-Dateien,

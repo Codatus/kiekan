@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,7 +12,7 @@
 class QLocalServer;
 
 // Verbindung zwischen der KI-Schnittstelle (kiekan --mcp) und einem offenen
-// Kiek-an-Fenster: eine JSON-Zeile hin, eine JSON-Zeile zurück, über einen
+// KiekAn!-Fenster: eine JSON-Zeile hin, eine JSON-Zeile zurück, über einen
 // lokalen Socket, auf den nur der eigene Benutzer zugreifen darf.
 namespace ViewerBridge {
 

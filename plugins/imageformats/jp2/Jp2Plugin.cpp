@@ -1,4 +1,4 @@
-// Kiek an – JPEG 2000 (über OpenJPEG)
+// KiekAn! – JPEG 2000 (über OpenJPEG)
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //

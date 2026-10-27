@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,7 +12,7 @@ namespace ViewerBridge {
 
 QString socketName()
 {
-    // Eigener Name, z. B. für Testinstanzen, die ein laufendes Kiek an des
+    // Eigener Name, z. B. für Testinstanzen, die ein laufendes KiekAn! des
     // Benutzers nicht stören sollen (Fenster und `kiekan --mcp` gleich setzen).
     const QString custom = qEnvironmentVariable("KIEKAN_VIEWER_SOCKET");
     if (!custom.isEmpty())
@@ -29,7 +29,7 @@ QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
     socket.connectToServer(socketName());
     if (!socket.waitForConnected(1000)) {
         if (error)
-            *error = QStringLiteral("no Kiek an window is running");
+            *error = QStringLiteral("no KiekAn! window is running");
         return {};
     }
     socket.write(QJsonDocument(req).toJson(QJsonDocument::Compact) + '\n');
@@ -39,7 +39,7 @@ QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
     while (!buffer.contains('\n')) {
         if (!socket.waitForReadyRead(timeoutMs)) {
             if (error)
-                *error = QStringLiteral("Kiek an window did not answer in time");
+                *error = QStringLiteral("KiekAn! window did not answer in time");
             return {};
         }
         buffer += socket.readAll();
@@ -48,7 +48,7 @@ QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
     const QJsonDocument doc = QJsonDocument::fromJson(buffer.left(buffer.indexOf('\n')), &parseError);
     if (!doc.isObject()) {
         if (error)
-            *error = QStringLiteral("invalid answer from Kiek an window");
+            *error = QStringLiteral("invalid answer from KiekAn! window");
         return {};
     }
     return doc.object();

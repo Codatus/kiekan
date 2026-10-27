@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -11,7 +11,7 @@
 #include "AiGuard.h"
 
 // MCP-Server (Model Context Protocol) über stdin/stdout: macht die
-// Bildfunktionen von Kiek an für KI-Assistenten wie Claude nutzbar.
+// Bildfunktionen von KiekAn! für KI-Assistenten wie Claude nutzbar.
 // Start: kiekan --mcp
 class McpServer : public QObject
 {

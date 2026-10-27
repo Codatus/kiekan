@@ -1,4 +1,4 @@
-// Kiek an – schneller Bildbetrachter
+// KiekAn! – schneller Bildbetrachter
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -143,7 +143,7 @@ private:
     bool m_rawPreview = false;      // Kamera-RAW: nur eingebettete Vorschau angezeigt
     bool m_developing = false;
     QSize m_rawFullSize;
-    int m_partOf = 0, m_partNumber = 0, m_partFirstPage = 0;   // Kiek-an-Teil einer geteilten PDF
+    int m_partOf = 0, m_partNumber = 0, m_partFirstPage = 0;   // KiekAn!-Teil einer geteilten PDF
     QString m_path;               // leer = Bild aus der Zwischenablage
     QString m_loadError;
     bool m_modified = false;

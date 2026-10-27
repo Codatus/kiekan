@@ -1,9 +1,9 @@
-// Kiek an – Test der Bildformat-Plugins
+// KiekAn! – Test der Bildformat-Plugins
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // formattest [--out ordner] datei…
-// Lädt jede Datei wie Kiek an (über die Plugins im Build-Ordner) und gibt
+// Lädt jede Datei wie KiekAn! (über die Plugins im Build-Ordner) und gibt
 // Format, Größe, Seitenzahl, Ladezeit und die Farbe der Bildmitte aus.
 
 #include <QCoreApplication>

@@ -1,4 +1,4 @@
-// Kiek an – Bildformat PSD/PSB (Photoshop)
+// KiekAn! – Bildformat PSD/PSB (Photoshop)
 // Copyright (C) 2026 Carl Kliefert
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
