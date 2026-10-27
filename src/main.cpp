@@ -135,7 +135,13 @@ int main(int argc, char *argv[])
             }
         }
     }
-    QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("kiekan"), QIcon(QStringLiteral(":/kiekan.svg"))));
+    // Kleine Größen: vereinfachter Fisch. Als Pixmaps, denn eine zweite
+    // SVG-Datei würde im SVG-Icon-Engine die große ersetzen.
+    QIcon appIcon(QStringLiteral(":/kiekan.svg"));
+    const QIcon smallIcon(QStringLiteral(":/kiekan-klein.svg"));
+    for (int size : {16, 22, 24, 32})
+        appIcon.addPixmap(smallIcon.pixmap(size));
+    QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("kiekan"), appIcon));
 
     // Qt begrenzt Bilder standardmäßig auf 256 MB im Speicher; große Fotos
     // und Panoramen sollen trotzdem aufgehen.

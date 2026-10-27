@@ -130,7 +130,7 @@ qt_add_executable(kiekan WIN32
 qt_add_resources(kiekan "icons"
     PREFIX "/"
     BASE "data"
-    FILES data/kiekan.svg
+    FILES data/kiekan.svg data/kiekan-klein.svg
 )
 
 # Übersetzungen: Quelltexte sind deutsch, weitere Sprachen als .ts-Dateien.
@@ -257,6 +257,12 @@ if(UNIX AND NOT APPLE)
             DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
     install(FILES data/kiekan.svg
             DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+    # Vereinfachter Fisch für kleine Größen (ohne Kiemen und Flosse)
+    foreach(size 16 22 24 32)
+        install(FILES data/kiekan-klein.svg
+                DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${size}x${size}/apps
+                RENAME kiekan.svg)
+    endforeach()
     install(FILES LICENSE README.md
             DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif()
