@@ -185,9 +185,10 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
     auto *trustCaption = new QLabel(tr("Vertrauenswürdig: Haken bei den Leseordnern, die nur Ihre eigenen Dateien "
                                        "enthalten. Dort warnt KiekAn! nicht bei verdächtigem Text; Kennzeichnung, "
-                                       "Protokoll und Rechte bleiben. Schreibordner gelten nie als vertrauenswürdig "
-                                       "(dort legt die KI selbst Dateien ab). Nicht für Downloads, Mail-Anhänge oder "
-                                       "eingegangene Post:"), this);
+                                       "Protokoll und Rechte bleiben. Was die KI in Schreibordnern ablegt, gilt nur als "
+                                       "vertrauenswürdig, wenn es aus einem angehakten Ordner stammt, seitdem unverändert "
+                                       "ist und die KI keine eigenen Metadaten hineingeschrieben hat. Nicht für Downloads, "
+                                       "Mail-Anhänge oder eingegangene Post:"), this);
     trustCaption->setWordWrap(true);
     aiLayout->addWidget(trustCaption);
     m_aiTrusted = new QListWidget(this);

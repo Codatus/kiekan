@@ -24,7 +24,8 @@ bool allowOverwrite();                // vorhandene Dateien ersetzen, Metadaten 
 void setAllowOverwrite(bool on);
 // Vertrauenswürdige Ordner: nur eigene Dateien. Dort keine Warnungen bei
 // verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben unverändert.
-// Wirksam nur für Ordner aus der Leseliste; Schreibordner nie.
+// Wirksam nur für Ordner aus der Leseliste. Dateien in Schreibordnern gelten
+// nur über ihre Herkunft als vertrauenswürdig (siehe recordProvenance).
 QStringList trustedDirs();
 void setTrustedDirs(const QStringList &dirs);
 
@@ -34,8 +35,15 @@ QStringList effectiveReadRoots();
 QStringList effectiveWriteRoots();
 bool effectiveOverwrite();            // auch KIEKAN_MCP_ALLOW_OVERWRITE=1
 QStringList effectiveTrustedRoots();  // auch KIEKAN_MCP_TRUSTED_ROOTS
-// Liegen alle Pfade in vertrauenswürdigen Ordnern? (leer = nein)
+// Sind alle Pfade vertrauenswürdig? (leer = nein) Dateien in Schreibordnern:
+// nur, wenn das Herkunftsregister vertrauenswürdige Quellen belegt, die Datei
+// seither unverändert ist und die KI keine eigenen Metadaten geschrieben hat.
 bool isTrusted(const QStringList &resolvedPaths);
+
+// Herkunftsregister (ki-herkunft.json im Datenordner): die KI hat `output`
+// aus `sources` erzeugt bzw. eigene Metadaten in `path` geschrieben.
+void recordProvenance(const QString &output, const QStringList &sources);
+void markAiMetadata(const QString &path);
 
 QString normalized(const QString &path);
 bool isInside(const QString &resolvedPath, const QStringList &roots);

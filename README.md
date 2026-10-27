@@ -240,9 +240,13 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
 - **Vertrauenswürdige Ordner**: Unter den Leseordnern lassen sich die
   ankreuzen, die nur eigene Dateien enthalten. Dort warnt KiekAn! nicht bei
   verdächtigem Text (Funde stehen nur grau im Protokoll); Kennzeichnung,
-  Protokoll und Rechte bleiben. Schreibordner gelten nie als vertrauenswürdig,
-  weil die KI dort selbst Dateien ablegt. Für Download-, Temp- und Mail-Ordner
-  rät der Dialog ab.
+  Protokoll und Rechte bleiben. Dateien, die die KI in Schreibordnern ablegt,
+  gelten nur dann als vertrauenswürdig, wenn sie nachweislich aus einem
+  vertrauenswürdigen Ordner stammen, seitdem unverändert sind und die KI keine
+  eigenen Metadaten hineingeschrieben hat (Herkunftsregister
+  `ki-herkunft.json` im Datenordner). So kann eingeschleuster Text aus fremden
+  Dateien nicht über eine KI-Kopie „vertrauenswürdig“ werden. Für Download-,
+  Temp- und Mail-Ordner rät der Dialog ab.
 - **KI-Protokoll** (Extras → KI-Protokoll): jeder Werkzeugaufruf mit Zeit,
   Programm, gelesenen und geschriebenen Dateien und Warnungen; Datei
   `ki-protokoll.jsonl` im Datenordner von KiekAn!

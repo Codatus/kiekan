@@ -8,7 +8,9 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
 #include <QJsonDocument>
+#include <QLockFile>
 #include <QCoreApplication>
 #include <QRandomGenerator>
 #include <QRegularExpression>
@@ -177,6 +179,126 @@ QStringList effectiveTrustedRoots()
     return out;
 }
 
+// --- Herkunft von KI-Dateien -------------------------------------------------------
+//
+// Was die KI in Schreibordnern ablegt, kann Text aus fremden Dateien enthalten
+// (übernommene Metadaten). Solche Dateien gelten nur als vertrauenswürdig, wenn
+// das Register belegt, dass sie aus vertrauenswürdigen Quellen entstanden und
+// seither unverändert sind, und die KI keine eigenen Metadaten hineingeschrieben hat.
+
+namespace {
+
+constexpr int kMaxProvenance = 20000;
+
+QString provenancePath()
+{
+    return QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).filePath(QStringLiteral("ki-herkunft.json"));
+}
+
+QJsonObject loadProvenance()
+{
+    QFile f(provenancePath());
+    if (!f.open(QIODevice::ReadOnly))
+        return {};
+    return QJsonDocument::fromJson(f.readAll()).object().value(QLatin1String("files")).toObject();
+}
+
+void saveProvenance(QJsonObject files)
+{
+    // Einträge zu gelöschten Dateien entfernen, Größe begrenzen
+    for (auto it = files.begin(); it != files.end();) {
+        if (!QFileInfo::exists(it.key()))
+            it = files.erase(it);
+        else
+            ++it;
+    }
+    while (files.size() > kMaxProvenance)
+        files.erase(files.begin());
+    const QString path = provenancePath();
+    QDir().mkpath(QFileInfo(path).absolutePath());
+    QFile f(path + QStringLiteral(".neu"));
+    if (!f.open(QIODevice::WriteOnly))
+        return;
+    f.write(QJsonDocument(QJsonObject{{QStringLiteral("format"), QStringLiteral("kiekan-ki-herkunft/1")},
+                                      {QStringLiteral("files"), files}}).toJson(QJsonDocument::Compact));
+    f.close();
+    QFile::remove(path);
+    QFile::rename(f.fileName(), path);
+}
+
+// Mehrere MCP-Prozesse können gleichzeitig laufen.
+template<typename Fn>
+void updateProvenance(Fn change)
+{
+    QDir().mkpath(QFileInfo(provenancePath()).absolutePath());
+    QLockFile lock(provenancePath() + QStringLiteral(".lock"));
+    if (!lock.tryLock(3000))
+        return;
+    QJsonObject files = loadProvenance();
+    change(files);
+    saveProvenance(files);
+}
+
+QJsonObject fileStamp(const QString &path)
+{
+    const QFileInfo fi(path);
+    return {{QStringLiteral("size"), double(fi.size())},
+            {QStringLiteral("mtime"), double(fi.lastModified().toMSecsSinceEpoch())}};
+}
+
+bool trustedPath(const QString &path, const QStringList &roots, const QStringList &writeRoots,
+                 const QJsonObject &provenance, int depth)
+{
+    if (!isInside(path, writeRoots))
+        return isInside(path, roots);
+    if (depth > 8)
+        return false;
+    const QJsonObject e = provenance.value(path).toObject();
+    if (e.isEmpty() || e.value(QLatin1String("ai_metadata")).toBool())
+        return false;
+    const QJsonObject now = fileStamp(path);
+    if (e.value(QLatin1String("size")) != now.value(QLatin1String("size"))
+        || e.value(QLatin1String("mtime")) != now.value(QLatin1String("mtime")))
+        return false;   // seit dem Schreiben verändert
+    const QJsonArray sources = e.value(QLatin1String("sources")).toArray();
+    if (sources.isEmpty())
+        return false;
+    for (const QJsonValue &src : sources)
+        if (!trustedPath(src.toString(), roots, writeRoots, provenance, depth + 1))
+            return false;
+    return true;
+}
+
+} // namespace
+
+void recordProvenance(const QString &output, const QStringList &sources)
+{
+    const QString out = normalized(output);
+    QJsonArray src;
+    for (const QString &s : sources)
+        src.append(normalized(s));
+    updateProvenance([&](QJsonObject &files) {
+        QJsonObject e = fileStamp(out);
+        e.insert(QStringLiteral("sources"), src);
+        e.insert(QStringLiteral("time"), QDateTime::currentDateTime().toString(Qt::ISODate));
+        files.insert(out, e);
+    });
+}
+
+void markAiMetadata(const QString &path)
+{
+    const QString p = normalized(path);
+    updateProvenance([&](QJsonObject &files) {
+        QJsonObject e = files.value(p).toObject();
+        const QJsonObject stamp = fileStamp(p);
+        for (auto it = stamp.constBegin(); it != stamp.constEnd(); ++it)
+            e.insert(it.key(), it.value());
+        e.insert(QStringLiteral("ai_metadata"), true);
+        e.insert(QStringLiteral("time"), QDateTime::currentDateTime().toString(Qt::ISODate));
+        files.insert(p, e);
+    });
+}
+
 bool isTrusted(const QStringList &resolvedPaths)
 {
     if (resolvedPaths.isEmpty())
@@ -184,11 +306,17 @@ bool isTrusted(const QStringList &resolvedPaths)
     const QStringList roots = effectiveTrustedRoots();
     if (roots.isEmpty())
         return false;
-    // In Schreibordnern legt die KI selbst Dateien ab – die gelten nie als eigene.
-    const QStringList written = effectiveWriteRoots();
-    for (const QString &p : resolvedPaths)
-        if (!isInside(p, roots) || isInside(p, written))
+    const QStringList writeRoots = effectiveWriteRoots();
+    QJsonObject provenance;
+    bool loaded = false;
+    for (const QString &p : resolvedPaths) {
+        if (isInside(p, writeRoots) && !loaded) {
+            provenance = loadProvenance();
+            loaded = true;
+        }
+        if (!trustedPath(p, roots, writeRoots, provenance, 0))
             return false;
+    }
     return true;
 }
 

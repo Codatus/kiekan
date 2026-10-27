@@ -948,6 +948,7 @@ QJsonArray McpServer::editImage(const QJsonObject &args)
     QStringList log;
     const QImage result = EditOps::apply(source, args.value(QLatin1String("operations")).toArray(), &log);
     writeImage(result, output, integer(args, "quality", 90), input);
+    AiGuard::recordProvenance(output, {input});
 
     QString text = QStringLiteral("saved %1 (%2x%3, %4)\n").arg(output).arg(result.width()).arg(result.height())
                        .arg(humanBytes(QFileInfo(output).size()));
@@ -1030,6 +1031,7 @@ QJsonArray McpServer::convertBatch(const QJsonObject &args)
                 if (maxSize > 0)
                     img = EditOps::scaledToMax(img, maxSize);
                 writeImage(img, out, quality, in);
+                AiGuard::recordProvenance(out, {in});
                 if (g_audit)
                     g_audit->written << out;
                 ++done;
@@ -1283,6 +1285,7 @@ QJsonArray McpServer::writeMetadata(const QJsonObject &args)
     QString error;
     if (!Metadata::writeDescriptive(path, f, &error))
         fail(QStringLiteral("could not write metadata: ") + error);
+    AiGuard::markAiMetadata(path);   // von der KI verfasster Text: nie vertrauenswürdig
 
     const Metadata::Summary s = Metadata::summary(path);
     QJsonObject now{{QStringLiteral("title"), s.title}, {QStringLiteral("description"), s.description},
@@ -1504,6 +1507,13 @@ QJsonArray McpServer::splitPdf(const QJsonObject &args)
         for (const PdfSplit::Part &p : r.parts)
             g_audit->written << partsDir.filePath(p.file);
         g_audit->written << r.manifestJson << r.manifestMarkdown;
+    }
+    {
+        const QDir partsDir = QFileInfo(r.manifestJson).dir();
+        for (const PdfSplit::Part &p : r.parts)
+            AiGuard::recordProvenance(partsDir.filePath(p.file), {path});
+        AiGuard::recordProvenance(r.manifestJson, {path});
+        AiGuard::recordProvenance(r.manifestMarkdown, {path});
     }
 
     QString text = QStringLiteral("split %1 (%2 pages, %3 MB) into %4 parts in %5\nmanifest: %6\nreadable summary: %7\n\n"

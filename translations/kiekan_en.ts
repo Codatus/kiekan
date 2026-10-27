@@ -3,17 +3,20 @@
 <context>
     <name>AiGuard</name>
     <message numerus="yes">
-        <location filename="../src/AiGuard.cpp" line="242" />
+        <location filename="../src/AiGuard.cpp" line="370" />
         <source>%1 (%n Datei(en))</source>
-        <translation><numerusform>%1 (%n file)</numerusform><numerusform>%1 (%n files)</numerusform></translation>
+        <translation>
+            <numerusform>%1 (%n file)</numerusform>
+            <numerusform>%1 (%n files)</numerusform>
+        </translation>
     </message>
     <message>
-        <location filename="../src/AiGuard.cpp" line="274" />
+        <location filename="../src/AiGuard.cpp" line="402" />
         <source>%1: hier kommen fremde Dateien an (Downloads, Mail, Temp) – nicht empfohlen</source>
         <translation>%1: files from others arrive here (downloads, mail, temp) – not recommended</translation>
     </message>
     <message>
-        <location filename="../src/AiGuard.cpp" line="276" />
+        <location filename="../src/AiGuard.cpp" line="404" />
         <source>%1: umfasst auch Downloads und Mail-Anhänge – nicht empfohlen</source>
         <translation>%1: also includes downloads and mail attachments – not recommended</translation>
     </message>
@@ -2087,7 +2090,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location filename="../src/SettingsDialog.cpp" line="115" />
-        <location filename="../src/SettingsDialog.cpp" line="238" />
+        <location filename="../src/SettingsDialog.cpp" line="239" />
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
@@ -2137,27 +2140,32 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Folder the AI may read</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="282" />
+        <location filename="../src/SettingsDialog.cpp" line="186" />
+        <source>Vertrauenswürdig: Haken bei den Leseordnern, die nur Ihre eigenen Dateien enthalten. Dort warnt KiekAn! nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben. Was die KI in Schreibordnern ablegt, gilt nur als vertrauenswürdig, wenn es aus einem angehakten Ordner stammt, seitdem unverändert ist und die KI keine eigenen Metadaten hineingeschrieben hat. Nicht für Downloads, Mail-Anhänge oder eingegangene Post:</source>
+        <translation>Trusted: tick the read folders that contain only your own files. KiekAn! does not warn about suspicious text there; marking, log and permissions stay. Files the AI puts into write folders only count as trusted if they come from a ticked folder, are unchanged since and the AI has not written its own metadata into them. Not for downloads, mail attachments or incoming post:</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="283" />
         <source>(erst Leseordner eintragen)</source>
         <translation>(enter read folders first)</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="310" />
+        <location filename="../src/SettingsDialog.cpp" line="311" />
         <source>Leseordner liegen im Schreibbereich (%1). Die KI kann dann neue Dateien zwischen Ihre Originale legen</source>
         <translation>Read folders lie inside the write area (%1). The AI can then put new files among your originals</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="314" />
+        <location filename="../src/SettingsDialog.cpp" line="315" />
         <source> und – weil Ersetzen erlaubt ist – auch Ihre Originale verändern. Eine eingeschleuste Anweisung in einer Datei könnte das ausnutzen. Besser: einen eigenen, leeren Unterordner zum Schreiben wählen.</source>
         <translation> and – because replacing is allowed – also change your originals. An instruction injected into a file could exploit this. Better: choose a separate, empty subfolder for writing.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="321" />
+        <location filename="../src/SettingsDialog.cpp" line="322" />
         <source>Im Schreibordner liegen bereits Dateien, die die KI ersetzen dürfte: %1</source>
         <translation>The write folder already contains files the AI could replace: %1</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="324" />
+        <location filename="../src/SettingsDialog.cpp" line="325" />
         <source>Hinweis: </source>
         <translation>Note: </translation>
     </message>
@@ -2177,29 +2185,29 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Off: the AI only creates new files and changes nothing that exists.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="205" />
+        <location filename="../src/SettingsDialog.cpp" line="206" />
         <source>Text aus Dateien (Texterkennung, PDF-Text, Metadaten, Dateinamen) wird der KI als fremder Inhalt gekennzeichnet und auf eingeschleuste Anweisungen geprüft. Jeder Zugriff steht im KI-Protokoll.</source>
         <translation>Text from files (OCR, PDF text, metadata, file names) is marked as untrusted content for the AI and checked for injected instructions. Every access is recorded in the AI log.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="213" />
+        <location filename="../src/SettingsDialog.cpp" line="214" />
         <source>KI-Protokoll anzeigen …</source>
         <translation>Show AI log …</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="244" />
+        <location filename="../src/SettingsDialog.cpp" line="245" />
         <source>KI-Schnittstelle</source>
         <translation>AI interface</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="303" />
+        <location filename="../src/SettingsDialog.cpp" line="304" />
         <source>Hinweis zu vertrauenswürdigen Ordnern:
 • </source>
         <translation>Note on trusted folders:
 • </translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="316" />
+        <location filename="../src/SettingsDialog.cpp" line="317" />
         <source>. Vorhandene Dateien bleiben unverändert, solange Ersetzen nicht erlaubt ist.</source>
         <translation>. Existing files stay unchanged as long as replacing is not allowed.</translation>
     </message>
@@ -2224,17 +2232,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Write: folders in which the AI may create new files (empty = the AI may not save anything). The AI may also read these folders – usually a separate, empty subfolder of a read folder:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="186" />
-        <source>Vertrauenswürdig: Haken bei den Leseordnern, die nur Ihre eigenen Dateien enthalten. Dort warnt KiekAn! nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben. Schreibordner gelten nie als vertrauenswürdig (dort legt die KI selbst Dateien ab). Nicht für Downloads, Mail-Anhänge oder eingegangene Post:</source>
-        <translation>Trusted: tick the read folders that contain only your own files. KiekAn! does not warn about suspicious text there; marking, log and permissions stay. Write folders are never trusted (the AI puts its own files there). Not for downloads, mail attachments or incoming post:</translation>
-    </message>
-    <message>
-        <location filename="../src/SettingsDialog.cpp" line="218" />
+        <location filename="../src/SettingsDialog.cpp" line="219" />
         <source>Befehl für Claude kopieren</source>
         <translation>Copy command for Claude</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="219" />
+        <location filename="../src/SettingsDialog.cpp" line="220" />
         <source>Kopiert den Befehl, mit dem Claude Code KiekAn! als MCP-Server einbindet.</source>
         <translation>Copies the command that adds KiekAn! to Claude Code as an MCP server.</translation>
     </message>
