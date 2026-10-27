@@ -51,6 +51,8 @@ private:
     QPlainTextEdit *m_aiWriteDirs;
     QCheckBox *m_aiOverwrite;
     QLabel *m_overlapNote;
+    QPlainTextEdit *m_aiTrustedDirs = nullptr;
+    QLabel *m_trustNote = nullptr;
     QSpinBox *m_ocrJobs;
     bool m_initialAutoRotate;
     bool m_initialAiAccess;

@@ -1,6 +1,24 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="en" sourcelanguage="de">
 <context>
+    <name>AiGuard</name>
+    <message>
+        <location filename="../src/AiGuard.cpp" line="250" />
+        <source>%1: hier kommen fremde Dateien an (Downloads, Mail, Temp) – nicht empfohlen</source>
+        <translation>%1: files from others arrive here (downloads, mail, temp) – not recommended</translation>
+    </message>
+    <message>
+        <location filename="../src/AiGuard.cpp" line="252" />
+        <source>%1: umfasst auch Downloads und Mail-Anhänge – nicht empfohlen</source>
+        <translation>%1: also includes downloads and mail attachments – not recommended</translation>
+    </message>
+    <message>
+        <location filename="../src/AiGuard.cpp" line="254" />
+        <source>%1: ist nicht zum Lesen freigegeben und hat daher keine Wirkung</source>
+        <translation>%1: is not released for reading and therefore has no effect</translation>
+    </message>
+</context>
+<context>
     <name>AiLogDialog</name>
     <message>
         <location filename="../src/AiLogDialog.cpp" line="39" />
@@ -90,7 +108,12 @@
         <translation>(with overwrite)</translation>
     </message>
     <message>
-        <location filename="../src/AiLogDialog.cpp" line="154" />
+        <location filename="../src/AiLogDialog.cpp" line="138" />
+        <source>(eigener Ordner, nicht gewarnt) %1: «%2»</source>
+        <translation>(own folder, no warning) %1: «%2»</translation>
+    </message>
+    <message>
+        <location filename="../src/AiLogDialog.cpp" line="158" />
         <source>%1 Einträge, davon %2 mit Dateiänderungen und %3 mit Warnungen. Gelb: Dateien geschrieben; rot: verdächtiger Text in einer Datei. Protokolldatei: %4</source>
         <translation>%1 entries, %2 with file changes and %3 with warnings. Yellow: files written; red: suspicious text in a file. Log file: %4</translation>
     </message>
@@ -2064,7 +2087,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location filename="../src/SettingsDialog.cpp" line="69" />
-        <location filename="../src/SettingsDialog.cpp" line="168" />
+        <location filename="../src/SettingsDialog.cpp" line="179" />
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
@@ -2104,62 +2127,84 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Text recognition, pages in parallel:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="116" />
+        <location filename="../src/SettingsDialog.cpp" line="118" />
         <source>Lesen: Ordner, deren Bilder und Dokumente die KI öffnen darf (ein Ordner pro Zeile; leer = keine):</source>
         <translation>Read: folders whose images and documents the AI may open (one folder per line; empty = none):</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="118" />
+        <location filename="../src/SettingsDialog.cpp" line="120" />
         <source>Ordner, den die KI lesen darf</source>
         <translation>Folder the AI may read</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="119" />
+        <location filename="../src/SettingsDialog.cpp" line="121" />
         <source>Schreiben: Ordner, in denen die KI neue Dateien anlegen darf (leer = die KI darf nichts speichern). Diese Ordner darf sie auch lesen:</source>
         <translation>Write: folders in which the AI may create new files (empty = the AI may not save anything). The AI may also read these folders:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="121" />
+        <location filename="../src/SettingsDialog.cpp" line="123" />
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="123" />
+        <location filename="../src/SettingsDialog.cpp" line="125" />
         <source>KI darf vorhandene Dateien ersetzen und Metadaten in Dateien ändern (nur in den Schreibordnern)</source>
         <translation>AI may replace existing files and change metadata in files (only in the write folders)</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="126" />
+        <location filename="../src/SettingsDialog.cpp" line="128" />
         <source>Aus: Die KI legt nur neue Dateien an und verändert nichts Vorhandenes.</source>
         <translation>Off: the AI only creates new files and changes nothing that exists.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="135" />
+        <location filename="../src/SettingsDialog.cpp" line="137" />
+        <source>Vertrauenswürdig: Leseordner, die nur Ihre eigenen Dateien enthalten. Dort warnt Kiek an nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben (nicht für Downloads, Mail-Anhänge oder eingegangene Post):</source>
+        <translation>Trusted: read folders that contain only your own files. Kiek an does not warn about suspicious text there; marking, log and permissions stay (not for downloads, mail attachments or incoming post):</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="140" />
+        <source>Ordner mit ausschließlich eigenen Dateien</source>
+        <translation>Folder with your own files only</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="146" />
         <source>Text aus Dateien (Texterkennung, PDF-Text, Metadaten, Dateinamen) wird der KI als fremder Inhalt gekennzeichnet und auf eingeschleuste Anweisungen geprüft. Jeder Zugriff steht im KI-Protokoll.</source>
         <translation>Text from files (OCR, PDF text, metadata, file names) is marked as untrusted content for the AI and checked for injected instructions. Every access is recorded in the AI log.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="143" />
+        <location filename="../src/SettingsDialog.cpp" line="154" />
         <source>KI-Protokoll anzeigen …</source>
         <translation>Show AI log …</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="169" />
+        <location filename="../src/SettingsDialog.cpp" line="180" />
         <source>KI-Schnittstelle</source>
         <translation>AI interface</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="202" />
+        <location filename="../src/SettingsDialog.cpp" line="211" />
+        <source>%1: vertrauenswürdig und zugleich beschreibbar mit Ersetzen – die riskanteste Kombination</source>
+        <translation>%1: trusted and also writable with replacing – the riskiest combination</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="214" />
+        <source>Hinweis zu vertrauenswürdigen Ordnern:
+• </source>
+        <translation>Note on trusted folders:
+• </translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="224" />
         <source>Hinweis: Schreib- und Leseordner überschneiden sich (%1). Die KI kann dann neue Dateien zwischen Ihre Originale legen</source>
         <translation>Note: write and read folders overlap (%1). The AI can then put new files among your originals</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="206" />
+        <location filename="../src/SettingsDialog.cpp" line="228" />
         <source> und – weil Ersetzen erlaubt ist – auch Ihre Originale verändern. Eine eingeschleuste Anweisung in einer Datei könnte das ausnutzen.</source>
         <translation> and – because replacing is allowed – also change your originals. An instruction injected into a file could exploit this.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="208" />
+        <location filename="../src/SettingsDialog.cpp" line="230" />
         <source>. Vorhandene Dateien bleiben unverändert, solange Ersetzen nicht erlaubt ist.</source>
         <translation>. Existing files stay unchanged as long as replacing is not allowed.</translation>
     </message>
@@ -2174,17 +2219,17 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Allows a connected assistant such as Claude to read the displayed image and the selection, show files and mark areas.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="103" />
+        <location filename="../src/SettingsDialog.cpp" line="105" />
         <source>Ordner hinzufügen …</source>
         <translation>Add folder …</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="148" />
+        <location filename="../src/SettingsDialog.cpp" line="159" />
         <source>Befehl für Claude kopieren</source>
         <translation>Copy command for Claude</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="149" />
+        <location filename="../src/SettingsDialog.cpp" line="160" />
         <source>Kopiert den Befehl, mit dem Claude Code Kiek an als MCP-Server einbindet.</source>
         <translation>Copies the command that adds Kiek an to Claude Code as an MCP server.</translation>
     </message>

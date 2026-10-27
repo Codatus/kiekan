@@ -134,6 +134,10 @@ void AiLogDialog::reload()
             warn << QStringLiteral("%1: «%2»").arg(w.toObject().value(QLatin1String("kind")).toString(),
                                                    w.toObject().value(QLatin1String("excerpt")).toString());
 
+        for (const QJsonValue &w : e.value(QLatin1String("trusted_findings")).toArray())
+            warn << tr("(eigener Ordner, nicht gewarnt) %1: «%2»").arg(w.toObject().value(QLatin1String("kind")).toString(),
+                                                                     w.toObject().value(QLatin1String("excerpt")).toString());
+
         const QList<QTableWidgetItem *> items{time, new QTableWidgetItem(tool), result,
                                               new QTableWidgetItem(files), new QTableWidgetItem(warn.join(QLatin1Char('\n')))};
         for (int c = 0; c < items.size(); ++c) {

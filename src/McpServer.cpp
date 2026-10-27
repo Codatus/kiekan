@@ -248,6 +248,7 @@ struct CallAudit
     QStringList written;
     QList<AiGuard::Finding> findings;
     QStringList flaggedSources;
+    QList<AiGuard::Finding> trustedFindings;   // in eigenen Ordnern: nur protokolliert
 };
 CallAudit *g_audit = nullptr;
 
@@ -306,15 +307,21 @@ void requireOverwriteAllowed()
                             "user to allow replacing files (Einstellungen → KI-Schnittstelle)."));
 }
 
-// Text aus einer Datei für die Antwort: markiert und geprüft.
-QString untrusted(const QString &text, const QString &source)
+// Text aus einer Datei für die Antwort: markiert und geprüft. Stammt er
+// ausschließlich aus vertrauenswürdigen Ordnern, werden Funde nur protokolliert.
+QString untrusted(const QString &text, const QString &source, const QStringList &paths = {})
 {
+    const bool trusted = AiGuard::isTrusted(paths);
     QList<AiGuard::Finding> found;
-    const QString wrapped = AiGuard::wrapUntrusted(text, source, &found);
+    const QString wrapped = AiGuard::wrapUntrusted(text, source, &found, trusted);
     if (g_audit && !found.isEmpty()) {
-        g_audit->findings += found;
-        if (!g_audit->flaggedSources.contains(source))
-            g_audit->flaggedSources << source;
+        if (trusted) {
+            g_audit->trustedFindings += found;
+        } else {
+            g_audit->findings += found;
+            if (!g_audit->flaggedSources.contains(source))
+                g_audit->flaggedSources << source;
+        }
     }
     return wrapped;
 }
@@ -612,14 +619,15 @@ QJsonObject McpServer::callTool(const QString &name, const QJsonObject &args)
         result = {{QStringLiteral("content"), QJsonArray{textContent(e.message)}}, {QStringLiteral("isError"), true}};
     }
     g_audit = nullptr;
-    logCall(name, args, audit.read, audit.written, audit.findings, audit.flaggedSources, error);
+    logCall(name, args, audit.read, audit.written, audit.findings, audit.flaggedSources, audit.trustedFindings, error);
     return result;
 }
 
 // Jeder Werkzeugaufruf landet im KI-Protokoll; Auffälligkeiten meldet Kiek an
 // zusätzlich im offenen Fenster.
 void McpServer::logCall(const QString &tool, const QJsonObject &args, const QStringList &read, const QStringList &written,
-                        const QList<AiGuard::Finding> &findings, const QStringList &sources, const QString &error)
+                        const QList<AiGuard::Finding> &findings, const QStringList &sources,
+                        const QList<AiGuard::Finding> &trustedFindings, const QString &error)
 {
     auto limited = [](const QStringList &list) {
         QJsonArray a;
@@ -647,6 +655,11 @@ void McpServer::logCall(const QString &tool, const QJsonObject &args, const QStr
         entry.insert(QStringLiteral("warnings"), warn);
         entry.insert(QStringLiteral("sources"), QJsonArray::fromStringList(sources));
     }
+    QJsonArray quiet;
+    for (const AiGuard::Finding &f : trustedFindings)
+        quiet.append(QJsonObject{{QStringLiteral("kind"), f.kind}, {QStringLiteral("excerpt"), f.excerpt}});
+    if (!quiet.isEmpty())
+        entry.insert(QStringLiteral("trusted_findings"), quiet);
     AiGuard::appendLog(entry);
 
     if (!warn.isEmpty()) {
@@ -710,7 +723,7 @@ QJsonArray McpServer::listMedia(const QJsonObject &args)
     }
     QString text = QStringLiteral("%1 (%2 entries%3)\nname\ttype\tdimensions\tbytes\tmodified\n")
                        .arg(dir).arg(count).arg(truncated ? QStringLiteral(", truncated") : QString());
-    text += untrusted(lines.join(QLatin1Char('\n')), QStringLiteral("file names in ") + dir);
+    text += untrusted(lines.join(QLatin1Char('\n')), QStringLiteral("file names in ") + dir, {dir});
     return {textContent(text)};
 }
 
@@ -776,7 +789,7 @@ QJsonArray McpServer::imageInfo(const QJsonObject &args)
         info.insert(QStringLiteral("descriptive"), d);
     }
     return {textContent(untrusted(QString::fromUtf8(QJsonDocument(info).toJson(QJsonDocument::Indented)),
-                                  QStringLiteral("information about ") + path))};
+                                  QStringLiteral("information about ") + path, {path}))};
 }
 
 QJsonArray McpServer::viewImage(const QJsonObject &args)
@@ -827,7 +840,7 @@ QJsonArray McpServer::readMetadata(const QJsonObject &args)
     }
     if (lines.isEmpty())
         return {textContent(error.isEmpty() ? QStringLiteral("no matching metadata") : QStringLiteral("no metadata: ") + error)};
-    return {textContent(untrusted(lines.join(QLatin1Char('\n')), QStringLiteral("metadata of ") + path))};
+    return {textContent(untrusted(lines.join(QLatin1Char('\n')), QStringLiteral("metadata of ") + path, {path}))};
 }
 
 QJsonArray McpServer::histogram(const QJsonObject &args)
@@ -1225,7 +1238,7 @@ QJsonArray McpServer::contactSheet(const QJsonObject &args)
     QString text = QStringLiteral("images %1-%2 of %3").arg(start + 1).arg(start + count).arg(total);
     if (start + count < total)
         text += QStringLiteral(" (more: call again with start=%1)").arg(start + count);
-    text += QLatin1Char('\n') + untrusted(index.join(QLatin1Char('\n')), QStringLiteral("file names"));
+    text += QLatin1Char('\n') + untrusted(index.join(QLatin1Char('\n')), QStringLiteral("file names"), files.mid(start, count));
     content.prepend(textContent(text));
     return content;
 }
@@ -1327,7 +1340,7 @@ QJsonArray McpServer::extractText(const QJsonObject &args)
             if (text.count(QRegularExpression(QStringLiteral("\\S"))) >= 20) {
                 metas[page] = {{QStringLiteral("page"), page}, {QStringLiteral("method"), QStringLiteral("pdf text layer")}};
                 blocks[page] = QStringLiteral("=== page %1 (pdf text layer) ===\n%2").arg(page)
-                                   .arg(untrusted(text, QStringLiteral("%1, page %2").arg(path).arg(page)));
+                                   .arg(untrusted(text, QStringLiteral("%1, page %2").arg(path).arg(page), {path}));
                 continue;
             }
         }
@@ -1422,7 +1435,7 @@ QJsonArray McpServer::extractText(const QJsonObject &args)
             }
             const QString block = QStringLiteral("=== page %1 (ocr, %2, confidence %3) ===\n%4")
                                       .arg(page).arg(r.languages).arg(qRound(r.confidence))
-                                      .arg(untrusted(body, QStringLiteral("%1, page %2").arg(path).arg(page)));
+                                      .arg(untrusted(body, QStringLiteral("%1, page %2").arg(path).arg(page), {path}));
             blocks[page] = block;
         }
     }
@@ -1524,7 +1537,7 @@ QJsonArray McpServer::pdfParts(const QJsonObject &args)
             else
                 text += QStringLiteral("\noriginal page %1 is not in this part").arg(page);
         }
-        return {textContent(untrusted(text, QStringLiteral("split information for ") + path))};
+        return {textContent(untrusted(text, QStringLiteral("split information for ") + path, {path}))};
     }
 
     QString error;
@@ -1573,5 +1586,5 @@ QJsonArray McpServer::pdfParts(const QJsonObject &args)
         text += problems.isEmpty() ? QStringLiteral("\nverify: all parts present and unchanged, source unchanged")
                                    : QStringLiteral("\nverify found problems:\n- ") + problems.join(QStringLiteral("\n- "));
     }
-    return {textContent(untrusted(text, QStringLiteral("split information for ") + path))};
+    return {textContent(untrusted(text, QStringLiteral("split information for ") + path, {path}))};
 }

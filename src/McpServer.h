@@ -33,7 +33,8 @@ private:
 
     QJsonObject callTool(const QString &name, const QJsonObject &args);
     void logCall(const QString &tool, const QJsonObject &args, const QStringList &read, const QStringList &written,
-                 const QList<AiGuard::Finding> &findings, const QStringList &sources, const QString &error);
+                 const QList<AiGuard::Finding> &findings, const QStringList &sources,
+                 const QList<AiGuard::Finding> &trustedFindings, const QString &error);
 
     // Werkzeuge
     QJsonArray listMedia(const QJsonObject &args);

@@ -20,6 +20,7 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSettings>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QTabWidget>
 #include <QThread>
@@ -96,9 +97,11 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     aiLayout->addWidget(m_aiAccess);
 
     auto dirEditor = [this, aiLayout](const QString &label, const QStringList &dirs, const QString &dialogTitle) {
-        aiLayout->addWidget(new QLabel(label, this));
+        auto *caption = new QLabel(label, this);
+        caption->setWordWrap(true);
+        aiLayout->addWidget(caption);
         auto *edit = new QPlainTextEdit(dirs.join(QLatin1Char('\n')), this);
-        edit->setFixedHeight(edit->fontMetrics().lineSpacing() * 4 + 12);
+        edit->setFixedHeight(edit->fontMetrics().lineSpacing() * 3 + 12);
         aiLayout->addWidget(edit);
         auto *add = new QPushButton(tr("Ordner hinzufügen …"), this);
         connect(add, &QPushButton::clicked, this, [this, edit, dialogTitle] {
@@ -131,6 +134,15 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_overlapNote->setWordWrap(true);
     m_overlapNote->setStyleSheet(QStringLiteral("color: #b35900"));
     aiLayout->addWidget(m_overlapNote);
+
+    m_aiTrustedDirs = dirEditor(tr("Vertrauenswürdig: Leseordner, die nur Ihre eigenen Dateien enthalten. Dort warnt "
+                                   "Kiek an nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben "
+                                   "(nicht für Downloads, Mail-Anhänge oder eingegangene Post):"),
+                                AiGuard::trustedDirs(), tr("Ordner mit ausschließlich eigenen Dateien"));
+    m_trustNote = new QLabel(this);
+    m_trustNote->setWordWrap(true);
+    m_trustNote->setStyleSheet(QStringLiteral("color: #b35900"));
+    aiLayout->addWidget(m_trustNote);
 
     auto *aiNote = new QLabel(tr("Text aus Dateien (Texterkennung, PDF-Text, Metadaten, Dateinamen) wird der KI als "
                                "fremder Inhalt gekennzeichnet und auf eingeschleuste Anweisungen geprüft. Jeder "
@@ -166,7 +178,12 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
     auto *tabs = new QTabWidget(this);
     tabs->addTab(generalPage, tr("Allgemein"));
-    tabs->addTab(aiPage, tr("KI-Schnittstelle"));
+    auto *aiScroll = new QScrollArea(this);
+    aiScroll->setWidget(aiPage);
+    aiScroll->setWidgetResizable(true);
+    aiScroll->setFrameShape(QFrame::NoFrame);
+    aiScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    tabs->addTab(aiScroll, tr("KI-Schnittstelle"));
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
@@ -193,6 +210,17 @@ QStringList dirLines(const QPlainTextEdit *edit)
 // Hinweis, wenn die KI dort schreiben darf, wo auch die Originale liegen.
 void SettingsDialog::updateOverlapNote()
 {
+    if (m_trustNote && m_aiTrustedDirs) {
+        QStringList concerns = AiGuard::trustConcerns(dirLines(m_aiTrustedDirs), dirLines(m_aiReadDirs), dirLines(m_aiWriteDirs));
+        if (m_aiOverwrite->isChecked()) {
+            for (const QString &pair : AiGuard::overlaps(dirLines(m_aiTrustedDirs), dirLines(m_aiWriteDirs)))
+                concerns << tr("%1: vertrauenswürdig und zugleich beschreibbar mit Ersetzen – die riskanteste "
+                               "Kombination").arg(pair);
+        }
+        m_trustNote->setText(concerns.isEmpty() ? QString() : tr("Hinweis zu vertrauenswürdigen Ordnern:\n• ") + concerns.join(QStringLiteral("\n• ")));
+        m_trustNote->setVisible(!concerns.isEmpty());
+    }
+
     const QStringList pairs = AiGuard::overlaps(dirLines(m_aiReadDirs), dirLines(m_aiWriteDirs));
     if (pairs.isEmpty()) {
         m_overlapNote->clear();
@@ -222,6 +250,7 @@ bool SettingsDialog::apply()
     AiGuard::setReadDirs(dirLines(m_aiReadDirs));
     AiGuard::setWriteDirs(dirLines(m_aiWriteDirs));
     AiGuard::setAllowOverwrite(m_aiOverwrite->isChecked());
+    AiGuard::setTrustedDirs(dirLines(m_aiTrustedDirs));
     QSettings().setValue(QStringLiteral("ocr/jobs"), m_ocrJobs->value());
     return langChanged;
 }

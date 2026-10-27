@@ -236,6 +236,12 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
   von Daten) sowie nach unsichtbaren Zeichen und verstecktem Unicode-Tag-Text.
   Funde stehen als `SECURITY NOTICE` vor dem Ergebnis, im Protokoll und – wenn
   Kiek an offen ist – in einem Hinweisfenster.
+- **Vertrauenswürdige Ordner**: Leseordner, die nur eigene Dateien enthalten,
+  lassen sich als vertrauenswürdig markieren. Dort warnt Kiek an nicht bei
+  verdächtigem Text (Funde stehen nur grau im Protokoll); Kennzeichnung,
+  Protokoll und Rechte bleiben. Für Download-, Temp- und Mail-Ordner rät der
+  Dialog ab, ebenso für vertrauenswürdige Ordner, in denen die KI auch
+  Dateien ersetzen darf.
 - **KI-Protokoll** (Extras → KI-Protokoll): jeder Werkzeugaufruf mit Zeit,
   Programm, gelesenen und geschriebenen Dateien und Warnungen; Datei
   `ki-protokoll.jsonl` im Datenordner von Kiek an.
@@ -245,7 +251,7 @@ Fremde Dokumente am besten in einem Chat ohne Web- oder E-Mail-Werkzeuge
 auswerten.
 
 Für Tests lassen sich Freigaben auch per Umgebung setzen:
-`KIEKAN_MCP_ROOTS`, `KIEKAN_MCP_WRITE_ROOTS` (Ordner, durch `:` bzw. `;`
+`KIEKAN_MCP_ROOTS`, `KIEKAN_MCP_WRITE_ROOTS`, `KIEKAN_MCP_TRUSTED_ROOTS` (Ordner, durch `:` bzw. `;`
 getrennt) und `KIEKAN_MCP_ALLOW_OVERWRITE=1`.
 
 ### PDFs teilen
