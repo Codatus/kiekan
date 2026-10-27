@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(kiekan
-    VERSION 0.9.0
+    VERSION 0.9.1
     DESCRIPTION "Schneller, schlanker Bildbetrachter"
     LANGUAGES CXX)
 

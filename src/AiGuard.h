@@ -24,6 +24,7 @@ bool allowOverwrite();                // vorhandene Dateien ersetzen, Metadaten 
 void setAllowOverwrite(bool on);
 // Vertrauenswürdige Ordner: nur eigene Dateien. Dort keine Warnungen bei
 // verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben unverändert.
+// Wirksam nur für Ordner aus der Leseliste; Schreibordner nie.
 QStringList trustedDirs();
 void setTrustedDirs(const QStringList &dirs);
 
@@ -39,12 +40,15 @@ bool isTrusted(const QStringList &resolvedPaths);
 QString normalized(const QString &path);
 bool isInside(const QString &resolvedPath, const QStringList &roots);
 
-// Schreibordner, die zugleich Leseordner sind oder sich mit ihnen überschneiden
-// (für den Hinweis in den Einstellungen): Paare „Schreibordner → Leseordner“.
+// Leseordner, die in einem Schreibordner liegen oder ihm gleichen – dort
+// könnte die KI zwischen Originalen schreiben (Hinweis in den Einstellungen):
+// Paare „Schreibordner ↔ Leseordner“. Ein Schreib-Unterordner zählt nicht.
 QStringList overlaps(const QStringList &read, const QStringList &write);
+// Schreibordner, in denen schon Dateien liegen (die die KI ersetzen dürfte).
+QStringList nonEmptyWriteDirs(const QStringList &write);
 
 // Bedenken zu vertrauenswürdigen Ordnern für den Einstellungsdialog:
-// Download-, Temp- und Mail-Ordner, Ordner ohne Lesefreigabe.
+// Download-, Temp- und Mail-Ordner, das ganze Home-Verzeichnis.
 QStringList trustConcerns(const QStringList &trusted, const QStringList &read, const QStringList &write);
 
 // --- Text aus Dateien ------------------------------------------------------------

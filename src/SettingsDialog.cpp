@@ -17,6 +17,8 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QListWidget>
+#include <QMouseEvent>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSettings>
@@ -41,6 +43,47 @@ void setAiViewerAccess(bool on) { QSettings().setValue(QStringLiteral("ai/viewer
 
 } // namespace Settings
 
+namespace {
+
+// Beschriftung, die beim Anklicken ihr Kästchen umschaltet.
+class CheckCaption : public QLabel
+{
+public:
+    CheckCaption(const QString &text, QCheckBox *box, QWidget *parent)
+        : QLabel(text, parent), m_box(box)
+    {
+        setWordWrap(true);
+        setBuddy(box);
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        if (event->button() == Qt::LeftButton && m_box->isEnabled())
+            m_box->toggle();
+    }
+
+private:
+    QCheckBox *m_box;
+};
+
+// Kontrollkästchen mit umbrechendem Text: Lange Texte sollen sich der
+// Fensterbreite anpassen, statt das Fenster zu verbreitern.
+QCheckBox *wrappingCheckBox(const QString &text, QWidget *parent, QWidget **row)
+{
+    auto *box = new QCheckBox(parent);
+    auto *caption = new CheckCaption(text, box, parent);
+    auto *w = new QWidget(parent);
+    auto *l = new QHBoxLayout(w);
+    l->setContentsMargins(0, 0, 0, 0);
+    l->addWidget(box, 0, Qt::AlignTop);
+    l->addWidget(caption, 1);
+    *row = w;
+    return box;
+}
+
+} // namespace
+
 SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent)
     , m_initialAutoRotate(Settings::autoRotate())
@@ -54,7 +97,8 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_language->addItem(QStringLiteral("English"), QStringLiteral("en"));
     m_language->setCurrentIndex(std::max(0, m_language->findData(Settings::language())));
 
-    m_autoRotate = new QCheckBox(tr("Bilder automatisch drehen (EXIF-Ausrichtung)"), this);
+    QWidget *autoRotateRow = nullptr;
+    m_autoRotate = wrappingCheckBox(tr("Bilder automatisch drehen (EXIF-Ausrichtung)"), this, &autoRotateRow);
     m_autoRotate->setChecked(m_initialAutoRotate);
     m_autoRotate->setToolTip(tr("Kameras speichern hochkant aufgenommene Fotos oft quer und vermerken "
                                 "die Drehung nur in den EXIF-Daten. Ist dies aktiv, werden solche "
@@ -64,7 +108,8 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_quality->setRange(1, 100);
     m_quality->setValue(Settings::jpegQuality());
 
-    m_escape = new QCheckBox(tr("Esc beendet das Programm (wie IrfanView)"), this);
+    QWidget *escapeRow = nullptr;
+    m_escape = wrappingCheckBox(tr("Esc beendet das Programm (wie IrfanView)"), this, &escapeRow);
     m_escape->setChecked(Settings::escapeQuits());
 
     auto *general = new QGroupBox(tr("Allgemein"), this);
@@ -73,11 +118,11 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     auto *note = new QLabel(tr("Eine geänderte Sprache gilt nach einem Neustart."), this);
     note->setStyleSheet(QStringLiteral("color: gray"));
     gForm->addRow(QString(), note);
-    gForm->addRow(m_escape);
+    gForm->addRow(escapeRow);
 
     auto *images = new QGroupBox(tr("Bilder"), this);
     auto *iForm = new QFormLayout(images);
-    iForm->addRow(m_autoRotate);
+    iForm->addRow(autoRotateRow);
     iForm->addRow(tr("JPEG-/WebP-Qualität beim Speichern:"), m_quality);
     m_ocrJobs = new QSpinBox(this);
     m_ocrJobs->setRange(0, 64);
@@ -90,11 +135,12 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     // KI-Schnittstelle (MCP)
     auto *aiPage = new QWidget(this);
     auto *aiLayout = new QVBoxLayout(aiPage);
-    m_aiAccess = new QCheckBox(tr("KI-Assistenten dürfen das offene Fenster abfragen und steuern"), this);
+    QWidget *aiAccessRow = nullptr;
+    m_aiAccess = wrappingCheckBox(tr("KI-Assistenten dürfen das offene Fenster abfragen und steuern"), this, &aiAccessRow);
     m_aiAccess->setChecked(m_initialAiAccess);
     m_aiAccess->setToolTip(tr("Erlaubt einem verbundenen Assistenten wie Claude, das angezeigte Bild und "
                               "die Auswahl abzufragen, Dateien anzuzeigen und Bereiche zu markieren."));
-    aiLayout->addWidget(m_aiAccess);
+    aiLayout->addWidget(aiAccessRow);
 
     auto dirEditor = [this, aiLayout](const QString &label, const QStringList &dirs, const QString &dialogTitle) {
         auto *caption = new QLabel(label, this);
@@ -120,14 +166,16 @@ SettingsDialog::SettingsDialog(QWidget *parent)
                                 "(ein Ordner pro Zeile; leer = keine):"),
                              AiGuard::readDirs(), tr("Ordner, den die KI lesen darf"));
     m_aiWriteDirs = dirEditor(tr("Schreiben: Ordner, in denen die KI neue Dateien anlegen darf "
-                                 "(leer = die KI darf nichts speichern). Diese Ordner darf sie auch lesen:"),
+                                 "(leer = die KI darf nichts speichern). Diese Ordner darf sie auch lesen – üblich ist "
+                                 "ein eigener, leerer Unterordner eines Leseordners:"),
                               AiGuard::writeDirs(), tr("Ordner für Dateien der KI"));
 
-    m_aiOverwrite = new QCheckBox(tr("KI darf vorhandene Dateien ersetzen und Metadaten in Dateien ändern "
-                                     "(nur in den Schreibordnern)"), this);
+    QWidget *overwriteRow = nullptr;
+    m_aiOverwrite = wrappingCheckBox(tr("KI darf vorhandene Dateien ersetzen und Metadaten in Dateien ändern "
+                                        "(nur in den Schreibordnern)"), this, &overwriteRow);
     m_aiOverwrite->setChecked(AiGuard::allowOverwrite());
     m_aiOverwrite->setToolTip(tr("Aus: Die KI legt nur neue Dateien an und verändert nichts Vorhandenes."));
-    aiLayout->addWidget(m_aiOverwrite);
+    aiLayout->addWidget(overwriteRow);
     connect(m_aiOverwrite, &QCheckBox::toggled, this, &SettingsDialog::updateOverlapNote);
 
     m_overlapNote = new QLabel(this);
@@ -135,10 +183,20 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_overlapNote->setStyleSheet(QStringLiteral("color: #b35900"));
     aiLayout->addWidget(m_overlapNote);
 
-    m_aiTrustedDirs = dirEditor(tr("Vertrauenswürdig: Leseordner, die nur Ihre eigenen Dateien enthalten. Dort warnt "
-                                   "KiekAn! nicht bei verdächtigem Text; Kennzeichnung, Protokoll und Rechte bleiben "
-                                   "(nicht für Downloads, Mail-Anhänge oder eingegangene Post):"),
-                                AiGuard::trustedDirs(), tr("Ordner mit ausschließlich eigenen Dateien"));
+    auto *trustCaption = new QLabel(tr("Vertrauenswürdig: Haken bei den Leseordnern, die nur Ihre eigenen Dateien "
+                                       "enthalten. Dort warnt KiekAn! nicht bei verdächtigem Text; Kennzeichnung, "
+                                       "Protokoll und Rechte bleiben. Schreibordner gelten nie als vertrauenswürdig "
+                                       "(dort legt die KI selbst Dateien ab). Nicht für Downloads, Mail-Anhänge oder "
+                                       "eingegangene Post:"), this);
+    trustCaption->setWordWrap(true);
+    aiLayout->addWidget(trustCaption);
+    m_aiTrusted = new QListWidget(this);
+    m_aiTrusted->setFixedHeight(m_aiTrusted->fontMetrics().lineSpacing() * 4 + 12);
+    m_aiTrusted->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    aiLayout->addWidget(m_aiTrusted);
+    connect(m_aiTrusted, &QListWidget::itemChanged, this, &SettingsDialog::updateOverlapNote);
+    connect(m_aiReadDirs, &QPlainTextEdit::textChanged, this, &SettingsDialog::refreshTrustedList);
+    refreshTrustedList();
     m_trustNote = new QLabel(this);
     m_trustNote->setWordWrap(true);
     m_trustNote->setStyleSheet(QStringLiteral("color: #b35900"));
@@ -207,35 +265,64 @@ QStringList dirLines(const QPlainTextEdit *edit)
 
 } // namespace
 
-// Hinweis, wenn die KI dort schreiben darf, wo auch die Originale liegen.
+// Auswahl vertrauenswürdiger Ordner: nur aus der aktuellen Leseliste.
+void SettingsDialog::refreshTrustedList()
+{
+    if (!m_aiTrusted)
+        return;
+    QStringList checked = m_aiTrusted->count() ? checkedTrusted() : AiGuard::trustedDirs();
+    const QSignalBlocker block(m_aiTrusted);
+    m_aiTrusted->clear();
+    for (const QString &dir : dirLines(m_aiReadDirs)) {
+        auto *item = new QListWidgetItem(dir, m_aiTrusted);
+        item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+        item->setCheckState(checked.contains(dir) ? Qt::Checked : Qt::Unchecked);
+    }
+    if (m_aiTrusted->count() == 0) {
+        auto *item = new QListWidgetItem(tr("(erst Leseordner eintragen)"), m_aiTrusted);
+        item->setFlags(Qt::NoItemFlags);
+    }
+    updateOverlapNote();
+}
+
+QStringList SettingsDialog::checkedTrusted() const
+{
+    QStringList out;
+    for (int i = 0; i < m_aiTrusted->count(); ++i)
+        if (m_aiTrusted->item(i)->checkState() == Qt::Checked)
+            out << m_aiTrusted->item(i)->text();
+    return out;
+}
+
+// Hinweise: wenn Originale im Schreibbereich liegen, wenn ersetzbare Dateien
+// im Schreibordner liegen, und zu riskanten vertrauenswürdigen Ordnern.
 void SettingsDialog::updateOverlapNote()
 {
-    if (m_trustNote && m_aiTrustedDirs) {
-        QStringList concerns = AiGuard::trustConcerns(dirLines(m_aiTrustedDirs), dirLines(m_aiReadDirs), dirLines(m_aiWriteDirs));
-        if (m_aiOverwrite->isChecked()) {
-            for (const QString &pair : AiGuard::overlaps(dirLines(m_aiTrustedDirs), dirLines(m_aiWriteDirs)))
-                concerns << tr("%1: vertrauenswürdig und zugleich beschreibbar mit Ersetzen – die riskanteste "
-                               "Kombination").arg(pair);
-        }
+    if (m_trustNote && m_aiTrusted) {
+        const QStringList concerns = AiGuard::trustConcerns(checkedTrusted(), dirLines(m_aiReadDirs), dirLines(m_aiWriteDirs));
         m_trustNote->setText(concerns.isEmpty() ? QString() : tr("Hinweis zu vertrauenswürdigen Ordnern:\n• ") + concerns.join(QStringLiteral("\n• ")));
         m_trustNote->setVisible(!concerns.isEmpty());
     }
 
+    QStringList notes;
     const QStringList pairs = AiGuard::overlaps(dirLines(m_aiReadDirs), dirLines(m_aiWriteDirs));
-    if (pairs.isEmpty()) {
-        m_overlapNote->clear();
-        m_overlapNote->hide();
-        return;
+    if (!pairs.isEmpty()) {
+        QString text = tr("Leseordner liegen im Schreibbereich (%1). Die KI kann dann neue Dateien zwischen Ihre "
+                          "Originale legen")
+                           .arg(pairs.join(QStringLiteral("; ")));
+        text += m_aiOverwrite->isChecked()
+            ? tr(" und – weil Ersetzen erlaubt ist – auch Ihre Originale verändern. Eine eingeschleuste Anweisung "
+                 "in einer Datei könnte das ausnutzen. Besser: einen eigenen, leeren Unterordner zum Schreiben wählen.")
+            : tr(". Vorhandene Dateien bleiben unverändert, solange Ersetzen nicht erlaubt ist.");
+        notes << text;
+    } else if (m_aiOverwrite->isChecked()) {
+        const QStringList filled = AiGuard::nonEmptyWriteDirs(dirLines(m_aiWriteDirs));
+        if (!filled.isEmpty())
+            notes << tr("Im Schreibordner liegen bereits Dateien, die die KI ersetzen dürfte: %1")
+                         .arg(filled.join(QStringLiteral("; ")));
     }
-    QString text = tr("Hinweis: Schreib- und Leseordner überschneiden sich (%1). Die KI kann dann neue Dateien "
-                      "zwischen Ihre Originale legen")
-                       .arg(pairs.join(QStringLiteral("; ")));
-    text += m_aiOverwrite->isChecked()
-        ? tr(" und – weil Ersetzen erlaubt ist – auch Ihre Originale verändern. Eine eingeschleuste Anweisung in "
-             "einer Datei könnte das ausnutzen.")
-        : tr(". Vorhandene Dateien bleiben unverändert, solange Ersetzen nicht erlaubt ist.");
-    m_overlapNote->setText(text);
-    m_overlapNote->show();
+    m_overlapNote->setText(notes.isEmpty() ? QString() : tr("Hinweis: ") + notes.join(QLatin1Char(' ')));
+    m_overlapNote->setVisible(!notes.isEmpty());
 }
 
 bool SettingsDialog::apply()
@@ -250,7 +337,7 @@ bool SettingsDialog::apply()
     AiGuard::setReadDirs(dirLines(m_aiReadDirs));
     AiGuard::setWriteDirs(dirLines(m_aiWriteDirs));
     AiGuard::setAllowOverwrite(m_aiOverwrite->isChecked());
-    AiGuard::setTrustedDirs(dirLines(m_aiTrustedDirs));
+    AiGuard::setTrustedDirs(checkedTrusted());
     QSettings().setValue(QStringLiteral("ocr/jobs"), m_ocrJobs->value());
     return langChanged;
 }

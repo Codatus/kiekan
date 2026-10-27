@@ -219,8 +219,9 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
 - **Ordnerfreigaben** (Extras → Einstellungen → KI-Schnittstelle): Die KI liest
   nur in freigegebenen *Leseordnern* und speichert nur in *Schreibordnern*
   (die sie auch lesen darf). Ohne Freigabe hat sie keinen Dateizugriff bzw.
-  darf nichts speichern. Überschneiden sich Lese- und Schreibordner, weist der
-  Dialog darauf hin.
+  darf nichts speichern. Üblich ist ein eigener, leerer Unterordner eines
+  Leseordners zum Schreiben. Liegen Leseordner selbst im Schreibbereich, weist
+  der Dialog darauf hin.
 - **Nichts Vorhandenes ändern**, solange „KI darf vorhandene Dateien ersetzen
   und Metadaten ändern“ aus ist: kein `overwrite=true`, kein `write_metadata`.
 - **Werkzeug-Kennzeichnung**: Jedes Werkzeug meldet per MCP, ob es nur liest
@@ -236,12 +237,12 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
   von Daten) sowie nach unsichtbaren Zeichen und verstecktem Unicode-Tag-Text.
   Funde stehen als `SECURITY NOTICE` vor dem Ergebnis, im Protokoll und – wenn
   KiekAn! offen ist – in einem Hinweisfenster.
-- **Vertrauenswürdige Ordner**: Leseordner, die nur eigene Dateien enthalten,
-  lassen sich als vertrauenswürdig markieren. Dort warnt KiekAn! nicht bei
+- **Vertrauenswürdige Ordner**: Unter den Leseordnern lassen sich die
+  ankreuzen, die nur eigene Dateien enthalten. Dort warnt KiekAn! nicht bei
   verdächtigem Text (Funde stehen nur grau im Protokoll); Kennzeichnung,
-  Protokoll und Rechte bleiben. Für Download-, Temp- und Mail-Ordner rät der
-  Dialog ab, ebenso für vertrauenswürdige Ordner, in denen die KI auch
-  Dateien ersetzen darf.
+  Protokoll und Rechte bleiben. Schreibordner gelten nie als vertrauenswürdig,
+  weil die KI dort selbst Dateien ablegt. Für Download-, Temp- und Mail-Ordner
+  rät der Dialog ab.
 - **KI-Protokoll** (Extras → KI-Protokoll): jeder Werkzeugaufruf mit Zeit,
   Programm, gelesenen und geschriebenen Dateien und Warnungen; Datei
   `ki-protokoll.jsonl` im Datenordner von KiekAn!

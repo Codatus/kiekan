@@ -167,7 +167,14 @@ void setTrustedDirs(const QStringList &dirs) { QSettings().setValue(kTrusted, di
 
 QStringList effectiveTrustedRoots()
 {
-    return cleanList(trustedDirs() + envList("KIEKAN_MCP_TRUSTED_ROOTS"));
+    // Nur Ordner, die selbst zum Lesen freigegeben sind (auch wenn die
+    // Einstellungsdatei von Hand bearbeitet wurde).
+    const QStringList readable = cleanList(readDirs() + envList("KIEKAN_MCP_ROOTS"));
+    QStringList out;
+    for (const QString &t : cleanList(trustedDirs() + envList("KIEKAN_MCP_TRUSTED_ROOTS")))
+        if (readable.contains(t, kPathCase))
+            out << t;
+    return out;
 }
 
 bool isTrusted(const QStringList &resolvedPaths)
@@ -177,8 +184,10 @@ bool isTrusted(const QStringList &resolvedPaths)
     const QStringList roots = effectiveTrustedRoots();
     if (roots.isEmpty())
         return false;
+    // In Schreibordnern legt die KI selbst Dateien ab – die gelten nie als eigene.
+    const QStringList written = effectiveWriteRoots();
     for (const QString &p : resolvedPaths)
-        if (!isInside(p, roots))
+        if (!isInside(p, roots) || isInside(p, written))
             return false;
     return true;
 }
@@ -214,10 +223,24 @@ QStringList overlaps(const QStringList &read, const QStringList &write)
 {
     const QStringList r = cleanList(read), w = cleanList(write);
     QStringList out;
+    // Ein eigener Unterordner zum Schreiben innerhalb eines Leseordners ist der
+    // Normalfall; heikel ist nur, wenn Leseordner im Schreibbereich liegen.
     for (const QString &wd : w)
         for (const QString &rd : r)
-            if (isInside(wd, {rd}) || isInside(rd, {wd}))
+            if (isInside(rd, {wd}))
                 out << QStringLiteral("%1 ↔ %2").arg(wd, rd);
+    return out;
+}
+
+QStringList nonEmptyWriteDirs(const QStringList &write)
+{
+    QStringList out;
+    for (const QString &wd : cleanList(write)) {
+        const QDir dir(wd);
+        const qsizetype n = dir.entryList(QDir::Files | QDir::NoDotAndDotDot).size();
+        if (n > 0)
+            out << QCoreApplication::translate("AiGuard", "%1 (%n Datei(en))", nullptr, int(n)).arg(wd);
+    }
     return out;
 }
 
@@ -239,7 +262,8 @@ QStringList trustConcerns(const QStringList &trusted, const QStringList &read, c
             << home + QStringLiteral("/AppData/Local/Packages");
 #endif
     foreign = cleanList(foreign);
-    const QStringList readable = cleanList(read + write);
+    Q_UNUSED(read)
+    Q_UNUSED(write)
     QStringList out;
     for (const QString &t : cleanList(trusted)) {
         bool risky = false;
@@ -250,8 +274,6 @@ QStringList trustConcerns(const QStringList &trusted, const QStringList &read, c
             out << QCoreApplication::translate("AiGuard", "%1: hier kommen fremde Dateien an (Downloads, Mail, Temp) – nicht empfohlen").arg(t);
         else if (t == QDir::cleanPath(home) || t == QStringLiteral("/"))
             out << QCoreApplication::translate("AiGuard", "%1: umfasst auch Downloads und Mail-Anhänge – nicht empfohlen").arg(t);
-        if (!isInside(t, readable))
-            out << QCoreApplication::translate("AiGuard", "%1: ist nicht zum Lesen freigegeben und hat daher keine Wirkung").arg(t);
     }
     return out;
 }

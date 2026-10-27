@@ -9,6 +9,8 @@
 class QCheckBox;
 class QComboBox;
 class QLabel;
+class QLayout;
+class QListWidget;
 class QPlainTextEdit;
 class QSpinBox;
 
@@ -51,7 +53,10 @@ private:
     QPlainTextEdit *m_aiWriteDirs;
     QCheckBox *m_aiOverwrite;
     QLabel *m_overlapNote;
-    QPlainTextEdit *m_aiTrustedDirs = nullptr;
+    void refreshTrustedList();
+    QStringList checkedTrusted() const;
+
+    QListWidget *m_aiTrusted = nullptr;
     QLabel *m_trustNote = nullptr;
     QSpinBox *m_ocrJobs;
     bool m_initialAutoRotate;
