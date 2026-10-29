@@ -39,6 +39,8 @@ bool autoRotate() { return QSettings().value(QStringLiteral("autoRotate"), true)
 void setAutoRotate(bool on) { QSettings().setValue(QStringLiteral("autoRotate"), on); }
 int jpegQuality() { return QSettings().value(QStringLiteral("jpegQuality"), 90).toInt(); }
 void setJpegQuality(int q) { QSettings().setValue(QStringLiteral("jpegQuality"), q); }
+bool losslessJpeg() { return QSettings().value(QStringLiteral("losslessJpeg"), true).toBool(); }
+void setLosslessJpeg(bool on) { QSettings().setValue(QStringLiteral("losslessJpeg"), on); }
 bool escapeQuits() { return QSettings().value(QStringLiteral("escapeQuits"), true).toBool(); }
 void setEscapeQuits(bool on) { QSettings().setValue(QStringLiteral("escapeQuits"), on); }
 bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), true).toBool(); }
@@ -130,6 +132,13 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     auto *images = new QGroupBox(tr("Bilder"), this);
     auto *iForm = new QFormLayout(images);
     iForm->addRow(autoRotateRow);
+    QWidget *losslessRow = nullptr;
+    m_lossless = wrappingCheckBox(tr("JPEGs verlustfrei drehen und spiegeln (ohne Neukodierung)"), this, &losslessRow);
+    m_lossless->setChecked(Settings::losslessJpeg());
+    m_lossless->setToolTip(tr("Wurde ein JPEG nur gedreht oder gespiegelt, ordnet KiekAn! beim Speichern die "
+                              "komprimierten Bildblöcke um, statt neu zu kodieren. Passen die Bildmaße nicht "
+                              "zu den Blöcken, wird nur die EXIF-Ausrichtung geändert – auch das ist verlustfrei."));
+    iForm->addRow(losslessRow);
     iForm->addRow(tr("JPEG-/WebP-Qualität beim Speichern:"), m_quality);
     m_ocrJobs = new QSpinBox(this);
     m_ocrJobs->setRange(0, 64);
@@ -346,6 +355,7 @@ bool SettingsDialog::apply()
     Settings::setAutoRotate(m_autoRotate->isChecked());
     Settings::setJpegQuality(m_quality->value());
     Settings::setEscapeQuits(m_escape->isChecked());
+    Settings::setLosslessJpeg(m_lossless->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
     AiGuard::setReadDirs(dirLines(m_aiReadDirs));
     AiGuard::setWriteDirs(dirLines(m_aiWriteDirs));

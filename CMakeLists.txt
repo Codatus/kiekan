@@ -85,7 +85,10 @@ endif()
 if(KIEKAN_WITH_EXIF AND PkgConfig_FOUND)
     pkg_check_modules(EXIV2 IMPORTED_TARGET exiv2)
 endif()
-kiekan_fix_pkg_includes(PkgConfig::MPV PkgConfig::TESSERACT PkgConfig::QPDF PkgConfig::EXIV2)
+if(PkgConfig_FOUND)
+    pkg_check_modules(TURBOJPEG IMPORTED_TARGET libturbojpeg)
+endif()
+kiekan_fix_pkg_includes(PkgConfig::MPV PkgConfig::TESSERACT PkgConfig::QPDF PkgConfig::EXIV2 PkgConfig::TURBOJPEG)
 
 include(GNUInstallDirs)
 set(KIEKAN_INSTALL_PLUGINDIR "${CMAKE_INSTALL_LIBDIR}/kiekan/plugins")
@@ -113,6 +116,8 @@ qt_add_executable(kiekan WIN32
     src/SettingsDialog.cpp
     src/FileAssoc.cpp
     src/FileAssoc.h
+    src/LosslessJpeg.cpp
+    src/LosslessJpeg.h
     src/SettingsDialog.h
     src/Metadata.cpp
     src/Metadata.h
@@ -234,6 +239,13 @@ if(EXIV2_FOUND)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_EXIV2)
     message(STATUS "KiekAn!: EXIF aktiv (exiv2 ${EXIV2_VERSION})")
 endif()
+if(TURBOJPEG_FOUND)
+    target_link_libraries(kiekan PRIVATE PkgConfig::TURBOJPEG)
+    target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_TURBOJPEG)
+    message(STATUS "KiekAn!: verlustfreies JPEG-Drehen aktiv (libjpeg-turbo ${TURBOJPEG_VERSION})")
+else()
+    message(STATUS "KiekAn!: JPEG verlustfrei drehen nur über die EXIF-Ausrichtung (libturbojpeg fehlt)")
+endif()
 
 if(KIEKAN_BUILD_EXAMPLE_PLUGIN)
     add_subdirectory(plugins/rahmen)
@@ -268,6 +280,18 @@ if(BUILD_TESTING)
     target_link_libraries(filtertest PRIVATE Qt6::Core Qt6::Gui Threads::Threads)
     add_test(NAME filter COMMAND filtertest)
 
+    if(EXIV2_FOUND)
+        qt_add_executable(losslesstest tests/losslesstest.cpp src/LosslessJpeg.cpp src/Metadata.cpp)
+        target_include_directories(losslesstest PRIVATE src)
+        target_link_libraries(losslesstest PRIVATE Qt6::Core Qt6::Gui PkgConfig::EXIV2)
+        target_compile_definitions(losslesstest PRIVATE KIEKAN_HAVE_EXIV2)
+        if(TURBOJPEG_FOUND)
+            target_link_libraries(losslesstest PRIVATE PkgConfig::TURBOJPEG)
+            target_compile_definitions(losslesstest PRIVATE KIEKAN_HAVE_TURBOJPEG)
+        endif()
+        add_test(NAME verlustfrei COMMAND losslesstest)
+        set_tests_properties(verlustfrei PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+    endif()
     if(UNIX AND NOT APPLE)
         qt_add_executable(assoctest tests/assoctest.cpp src/FileAssoc.cpp)
         target_include_directories(assoctest PRIVATE src)

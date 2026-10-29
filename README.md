@@ -204,7 +204,7 @@ Ubuntu/Debian:
 
 ```bash
 sudo apt install cmake g++ ninja-build qt6-base-dev qt6-base-dev-tools qt6-l10n-tools libqt6svg6-dev libqt6opengl6-dev qt6-image-formats-plugins qt6-translations-l10n \
-    libmpv-dev libexiv2-dev qt6-pdf-dev libtesseract-dev libqpdf-dev libheif-dev libraw-dev libopenjp2-7-dev libdjvulibre-dev tesseract-ocr-deu tesseract-ocr-eng tesseract-ocr-osd
+    libmpv-dev libexiv2-dev qt6-pdf-dev libtesseract-dev libqpdf-dev libheif-dev libraw-dev libopenjp2-7-dev libdjvulibre-dev libturbojpeg0-dev tesseract-ocr-deu tesseract-ocr-eng tesseract-ocr-osd
 cmake -S . -B build -G Ninja
 cmake --build build
 ./build/kiekan
@@ -218,14 +218,14 @@ Fedora:
 
 ```bash
 sudo dnf install cmake gcc-c++ ninja-build rpm-build qt6-qtbase-devel qt6-qtsvg-devel qt6-qttools-devel qt6-qtimageformats qt6-qtpdf-devel \
-    mpv-devel exiv2-devel tesseract-devel leptonica-devel qpdf-devel libheif-devel LibRaw-devel openjpeg2-devel djvulibre-devel tesseract-langpack-deu
+    mpv-devel exiv2-devel tesseract-devel leptonica-devel qpdf-devel libheif-devel LibRaw-devel openjpeg2-devel djvulibre-devel turbojpeg-devel tesseract-langpack-deu
 ```
 
 openSUSE Tumbleweed:
 
 ```bash
 sudo zypper install cmake gcc-c++ ninja rpm-build qt6-base-devel qt6-svg-devel qt6-tools-linguist qt6-linguist-devel qt6-imageformats qt6-pdf-devel qt6-opengl-devel \
-    mpv-devel libexiv2-devel tesseract-ocr-devel leptonica-devel qpdf-devel libheif-devel libraw-devel openjpeg2-devel libdjvulibre-devel tesseract-ocr-traineddata-deu
+    mpv-devel libexiv2-devel tesseract-ocr-devel leptonica-devel qpdf-devel libheif-devel libraw-devel openjpeg2-devel libdjvulibre-devel 'pkgconfig(libturbojpeg)' tesseract-ocr-traineddata-deu
 ```
 
 Arch Linux: siehe [`packaging/arch/PKGBUILD`](packaging/arch/PKGBUILD).

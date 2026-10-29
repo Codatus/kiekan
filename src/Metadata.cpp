@@ -461,6 +461,46 @@ bool writeDescriptive(const QString &path, const DescriptiveFields &f, QString *
     }
 }
 
+bool setOrientation(QByteArray &data, int orientation, bool swapDimensions, QString *error)
+{
+    try {
+        OpenImage o;
+        o.data = data;
+        o.image = Exiv2::ImageFactory::open(reinterpret_cast<const Exiv2::byte *>(o.data.constData()), o.data.size());
+        o.image->readMetadata();
+        Exiv2::ExifData exif = o.image->exifData();
+        Exiv2::XmpData xmp = o.image->xmpData();
+        if (swapDimensions)
+            Exiv2::ExifThumb(exif).erase();   // zeigt sonst die alte Lage
+        exif["Exif.Image.Orientation"] = uint16_t(orientation);
+        if (xmp.findKey(Exiv2::XmpKey("Xmp.tiff.Orientation")) != xmp.end())
+            xmp["Xmp.tiff.Orientation"] = std::to_string(orientation);
+        if (swapDimensions) {
+            const auto wIt = exif.findKey(Exiv2::ExifKey("Exif.Photo.PixelXDimension"));
+            const auto hIt = exif.findKey(Exiv2::ExifKey("Exif.Photo.PixelYDimension"));
+            if (wIt != exif.end() && hIt != exif.end()) {
+                const auto w = uint32_t(toInteger(*wIt));
+                const auto h = uint32_t(toInteger(*hIt));
+                exif["Exif.Photo.PixelXDimension"] = h;
+                exif["Exif.Photo.PixelYDimension"] = w;
+            }
+        }
+        o.image->setExifData(exif);
+        o.image->setXmpData(xmp);
+        o.image->writeMetadata();
+        Exiv2::BasicIo &io = o.image->io();
+        const auto size = io.size();
+        const Exiv2::byte *bytes = io.mmap();
+        data = QByteArray(reinterpret_cast<const char *>(bytes), qsizetype(size));
+        io.munmap();
+        return true;
+    } catch (const std::exception &e) {
+        if (error)
+            *error = QString::fromLocal8Bit(e.what());
+        return false;
+    }
+}
+
 struct Snapshot::Data
 {
     Exiv2::ExifData exif;
@@ -539,6 +579,12 @@ struct Snapshot::Data {};
 bool available() { return false; }
 void initialize() {}
 bool canWrite(const QString &) { return false; }
+bool setOrientation(QByteArray &, int, bool, QString *error)
+{
+    if (error)
+        *error = QStringLiteral("this build has no metadata support");
+    return false;
+}
 bool writeDescriptive(const QString &, const DescriptiveFields &, QString *error)
 {
     if (error)

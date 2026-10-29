@@ -8,7 +8,7 @@ arch=('x86_64' 'aarch64')
 url="https://github.com/Codatus/kiekan"
 license=('GPL-3.0-or-later')
 depends=('qt6-base' 'qt6-svg' 'qt6-imageformats' 'qt6-webengine' 'mpv' 'exiv2'
-         'tesseract' 'leptonica' 'qpdf' 'libheif' 'libraw' 'openjpeg2' 'djvulibre'
+         'tesseract' 'leptonica' 'qpdf' 'libheif' 'libraw' 'openjpeg2' 'djvulibre' 'libjpeg-turbo'
          'hicolor-icon-theme')
 makedepends=('cmake' 'ninja' 'qt6-tools')
 optdepends=('tesseract-data-deu: Texterkennung Deutsch'

@@ -82,7 +82,11 @@ private:
     bool confirmDiscard();
 
     // Bearbeiten
-    void applyEdit(const QImage &result);
+    // geoOp: LosslessJpeg::Op bei reinem Drehen/Spiegeln, sonst 0
+    void applyEdit(const QImage &result, int geoOp = 0);
+    void resetEdits();
+    enum class Lossless { NotApplicable, Saved, Cancelled };
+    Lossless saveLossless(const QString &target);
     void undo();
     void copy();
     void paste();
@@ -148,6 +152,9 @@ private:
     QString m_loadError;
     bool m_modified = false;
     QVector<QImage> m_undo;
+    // Seit dem Laden/Speichern: nur Drehungen/Spiegelungen? (für verlustfreies JPEG)
+    QVector<int> m_editOps;
+    bool m_editOpsValid = true;
     quint64 m_scanGeneration = 0;
     bool m_wasMaximized = false;
 

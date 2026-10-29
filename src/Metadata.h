@@ -66,6 +66,11 @@ struct DescriptiveFields
     std::optional<int> rating;             // 0..5
 };
 bool canWrite(const QString &path);
+
+// Für verlustfreies Drehen: EXIF-Ausrichtung in den Dateidaten setzen
+// (1..8), bei vertauschten Seiten die Maßangaben tauschen und das alte
+// Vorschaubild entfernen. Arbeitet nur im Speicher.
+bool setOrientation(QByteArray &data, int orientation, bool swapDimensions, QString *error = nullptr);
 bool writeDescriptive(const QString &path, const DescriptiveFields &fields, QString *error = nullptr);
 
 // Hält die Metadaten einer Datei fest, bevor sie überschrieben wird, und

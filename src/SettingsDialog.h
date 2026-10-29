@@ -22,6 +22,8 @@ bool autoRotate();           // EXIF-Ausrichtung beim Laden anwenden
 void setAutoRotate(bool on);
 int jpegQuality();
 void setJpegQuality(int q);
+bool losslessJpeg();          // JPEG nur gedreht/gespiegelt: ohne Neukodierung speichern
+void setLosslessJpeg(bool on);
 bool escapeQuits();
 void setEscapeQuits(bool on);
 bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern
@@ -46,6 +48,7 @@ private:
     QCheckBox *m_autoRotate;
     QSpinBox *m_quality;
     QCheckBox *m_escape;
+    QCheckBox *m_lossless;
     QCheckBox *m_aiAccess;
     void updateOverlapNote();
 

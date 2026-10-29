@@ -4,6 +4,8 @@
 
 #include "MainWindow.h"
 
+#include "LosslessJpeg.h"
+
 #include "AiLogDialog.h"
 #include "CurvesDialog.h"
 #include "EditOps.h"
@@ -345,7 +347,7 @@ void MainWindow::openPath(const QString &path)
         m_index = -1;
         m_path.clear();
         m_loadError.clear();
-        m_undo.clear();
+        resetEdits();
         m_view->clear();
         scanDirectory(fi.absoluteFilePath(), QString());
         return;
@@ -425,7 +427,7 @@ void MainWindow::showIndex(int index)
     m_page = 0;
     m_pageCount = 1;
     m_modified = false;
-    m_undo.clear();
+    resetEdits();
     m_loadError.clear();
 
     // Teil einer mit KiekAn! geteilten PDF? Dann Originalseiten anzeigen.
@@ -491,7 +493,7 @@ void MainWindow::pageStep(int delta)
         return;
     m_page = target;
     m_modified = false;
-    m_undo.clear();
+    resetEdits();
     showPage();
     // Nachbarseiten vorladen
     if (target + delta >= 0 && target + delta < m_pageCount)
@@ -742,10 +744,22 @@ bool MainWindow::save()
     if (!QImageWriter::supportedImageFormats().contains(format))
         return saveAs();   // z. B. GIF: Qt kann es lesen, aber nicht schreiben
 
+    const Lossless lossless = saveLossless(m_path);
+    if (lossless == Lossless::Cancelled)
+        return false;
+    if (lossless == Lossless::Saved) {
+        m_loader->remove(m_path);
+        m_modified = false;
+        m_editOps.clear();
+        updateTitle();
+        updateStatus();
+        return true;
+    }
     const int quality = QSettings().value(QStringLiteral("jpegQuality"), 90).toInt();
     if (!writeImage(m_path, format, quality, m_view->image()))
         return false;
     m_loader->remove(m_path);
+    m_editOps.clear();
     m_modified = false;
     updateTitle();
     updateStatus();
@@ -826,8 +840,12 @@ bool MainWindow::saveAs()
         }
     }
 
+    const Lossless losslessResult = !videoFrame && format == "jpeg" ? saveLossless(file) : Lossless::NotApplicable;
+    if (losslessResult == Lossless::Cancelled)
+        return false;
+    const bool lossless = losslessResult == Lossless::Saved;
     int quality = settings.value(QStringLiteral("jpegQuality"), 90).toInt();
-    if (format == "jpeg" || format == "webp") {
+    if (!lossless && (format == "jpeg" || format == "webp")) {
         bool ok = false;
         quality = QInputDialog::getInt(this, tr("Qualität"), tr("Qualität (1–100):"),
                                        quality, 1, 100, 1, &ok);
@@ -836,7 +854,7 @@ bool MainWindow::saveAs()
         settings.setValue(QStringLiteral("jpegQuality"), quality);
     }
 
-    if (!writeImage(file, format, quality, image))
+    if (!lossless && !writeImage(file, format, quality, image))
         return false;
 
     settings.setValue(QStringLiteral("lastDir"), QFileInfo(file).absolutePath());
@@ -851,6 +869,7 @@ bool MainWindow::saveAs()
     m_loader->remove(saved);
     m_path = saved;
     m_modified = false;
+    m_editOps.clear();
 
     // Ordner neu einlesen, damit die neue Datei beim Blättern auftaucht.
     if (m_files.isEmpty() || m_index < 0 || m_index >= m_files.size() || m_files.at(m_index) != saved) {
@@ -863,6 +882,39 @@ bool MainWindow::saveAs()
     updateStatus();
     message(tr("Gespeichert: %1").arg(QFileInfo(saved).fileName()));
     return true;
+}
+
+// JPEG nur gedreht/gespiegelt: ohne Neukodierung speichern. NotApplicable:
+// kommt nicht in Frage oder der Benutzer will doch neu kodieren.
+MainWindow::Lossless MainWindow::saveLossless(const QString &target)
+{
+    if (!Settings::losslessJpeg() || m_kind != Kind::Image || m_path.isEmpty() || m_pageCount > 1
+        || !m_editOpsValid || !LosslessJpeg::isJpeg(m_path) || !LosslessJpeg::isJpeg(target))
+        return Lossless::NotApplicable;
+    LosslessJpeg::Op op = LosslessJpeg::Op::None;
+    for (int e : m_editOps) {
+        if (e == 0)
+            return Lossless::NotApplicable;   // andere Bearbeitung dabei
+        op = LosslessJpeg::compose(op, LosslessJpeg::Op(e));
+    }
+    if (op == LosslessJpeg::Op::None && target == m_path && m_editOps.isEmpty())
+        return Lossless::NotApplicable;
+    QString error;
+    switch (LosslessJpeg::apply(m_path, target, op, Settings::autoRotate(), &error)) {
+    case LosslessJpeg::Result::Pixels:
+        message(tr("Verlustfrei gespeichert: %1").arg(QFileInfo(target).fileName()));
+        return Lossless::Saved;
+    case LosslessJpeg::Result::Tag:
+        message(tr("Verlustfrei gespeichert (nur EXIF-Ausrichtung geändert): %1").arg(QFileInfo(target).fileName()));
+        return Lossless::Saved;
+    case LosslessJpeg::Result::Failed:
+        break;
+    }
+    const auto answer = QMessageBox::question(
+        this, tr("Verlustfrei nicht möglich"),
+        tr("Das JPEG lässt sich nicht verlustfrei drehen:\n%1\n\nStattdessen neu kodieren (mit leichtem Qualitätsverlust)?").arg(error),
+        QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
+    return answer == QMessageBox::Yes ? Lossless::NotApplicable : Lossless::Cancelled;
 }
 
 bool MainWindow::writeImage(const QString &path, const QByteArray &format, int quality, const QImage &image)
@@ -1047,10 +1099,18 @@ void MainWindow::showInfo()
 
 // --- Bearbeiten ------------------------------------------------------------
 
-void MainWindow::applyEdit(const QImage &result)
+void MainWindow::resetEdits()
+{
+    m_undo.clear();
+    m_editOps.clear();
+    m_editOpsValid = true;
+}
+
+void MainWindow::applyEdit(const QImage &result, int geoOp)
 {
     if (result.isNull())
         return;
+    m_editOps.append(geoOp);
     stopAnimation();   // Bearbeitung friert das aktuelle Einzelbild ein
     m_undo.append(m_view->image());
     qsizetype total = 0;
@@ -1073,6 +1133,12 @@ void MainWindow::undo()
         return;
     }
     m_view->replaceImage(m_undo.takeLast());
+    // Hinter den letzten Speicherstand zurück: Datei und Anzeige passen nicht mehr
+    // über reine Drehungen zusammen.
+    if (m_editOps.isEmpty())
+        m_editOpsValid = false;
+    else
+        m_editOps.removeLast();
     // Erst wenn alle Schritte zurückgenommen sind, entspricht das Bild der Datei.
     m_modified = !m_undo.isEmpty() || m_path.isEmpty();
     updateTitle();
@@ -1131,7 +1197,7 @@ void MainWindow::paste()
     img = img.convertToFormat(img.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied
                                                     : QImage::Format_RGB32);
     m_path.clear();
-    m_undo.clear();
+    resetEdits();
     m_loadError.clear();
     m_modified = true;
     m_view->setImage(img);
@@ -1171,14 +1237,17 @@ void MainWindow::rotate(int degrees)
 {
     if (!m_view->hasImage())
         return;
-    applyEdit(m_view->image().transformed(QTransform().rotate(degrees)));
+    const int d = ((degrees % 360) + 360) % 360;
+    const LosslessJpeg::Op op = d == 90 ? LosslessJpeg::Op::Rot90 : d == 180 ? LosslessJpeg::Op::Rot180 : LosslessJpeg::Op::Rot270;
+    applyEdit(m_view->image().transformed(QTransform().rotate(degrees)), int(op));
 }
 
 void MainWindow::flip(bool horizontal)
 {
     if (!m_view->hasImage())
         return;
-    applyEdit(m_view->image().mirrored(horizontal, !horizontal));
+    applyEdit(m_view->image().mirrored(horizontal, !horizontal),
+              int(horizontal ? LosslessJpeg::Op::FlipH : LosslessJpeg::Op::FlipV));
 }
 
 // --- Bildkorrekturen und Effekte -------------------------------------------

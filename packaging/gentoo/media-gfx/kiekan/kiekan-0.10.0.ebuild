@@ -21,6 +21,7 @@ DEPEND="
 	media-libs/libraw:=
 	media-libs/openjpeg:2=
 	app-text/djvu
+	media-libs/libjpeg-turbo:=
 	exif? ( media-gfx/exiv2:= )
 	ocr? (
 		app-text/tesseract:=
