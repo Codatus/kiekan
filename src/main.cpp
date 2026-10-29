@@ -51,11 +51,14 @@ void useBundledTessdata()
 }
 
 // Eigene Bildformat-Plugins (HEIC, RAW, JPEG 2000, DjVu, PSD) finden:
-// im Build neben dem Programm, installiert unter lib/kiekan/qtplugins.
+// im Build neben dem Programm, installiert unter <libdir>/kiekan/qtplugins.
 void addPluginPaths()
 {
     const QString dir = QCoreApplication::applicationDirPath();
     QCoreApplication::addLibraryPath(dir + QStringLiteral("/qtplugins"));
+#ifdef KIEKAN_QTPLUGIN_RELDIR
+    QCoreApplication::addLibraryPath(QDir::cleanPath(dir + QStringLiteral("/" KIEKAN_QTPLUGIN_RELDIR)));
+#endif
     QCoreApplication::addLibraryPath(QDir::cleanPath(dir + QStringLiteral("/../lib/kiekan/qtplugins")));
 }
 

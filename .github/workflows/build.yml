@@ -13,23 +13,40 @@ permissions:
   contents: write
 
 jobs:
-  ubuntu:
-    runs-on: ubuntu-22.04
+  linux:
+    # Je Distribution ein eigenes .deb, weil die Bibliotheksversionen abweichen
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:22.04
+            suffix: ubuntu22.04
+          - image: ubuntu:24.04
+            suffix: ubuntu24.04
+          - image: debian:12
+            suffix: debian12
+          - image: debian:13
+            suffix: debian13
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Abhängigkeiten installieren
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build g++ pkg-config \
-            qt6-base-dev qt6-base-dev-tools qt6-l10n-tools libqt6svg6-dev qt6-pdf-dev \
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ pkg-config file dpkg-dev \
+            qt6-base-dev qt6-base-dev-tools qt6-l10n-tools libqt6svg6-dev qt6-pdf-dev libqt6opengl6-dev \
             libgl-dev libmpv-dev libexiv2-dev libtesseract-dev libqpdf-dev \
             libheif-dev libraw-dev libopenjp2-7-dev libdjvulibre-dev
 
       - name: Bauen
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+                -DKIEKAN_DEB_SUFFIX=${{ matrix.suffix }}
           cmake --build build
 
       - name: Testen
@@ -40,9 +57,20 @@ jobs:
       - name: Debian-Paket
         run: cd build && cpack -G DEB
 
+      - name: Paket installieren und Rauchtest
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          apt-get install -y ./build/kiekan_*.deb
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+                         '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | kiekan --mcp | tee mcp.out
+          grep -q '"extract_text"' mcp.out
+
       - uses: actions/upload-artifact@v4
         with:
-          name: kiekan-deb
+          name: kiekan-${{ matrix.suffix }}
           path: build/*.deb
 
       - name: Release veröffentlichen

@@ -32,6 +32,7 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSaveFile>
+#include <QSet>
 #include <QSettings>
 #include <QTransform>
 
@@ -999,6 +1000,7 @@ QJsonArray McpServer::convertBatch(const QJsonObject &args)
 
     int done = 0, skipped = 0, failed = 0;
     QStringList report;
+    QSet<QString> produced;   // gleichnamige Quellen (bild.png, bild.heic) nicht gegenseitig überschreiben
     for (const QString &in : inputs) {
         if (Media::isVideo(in))
             continue;
@@ -1015,7 +1017,10 @@ QJsonArray McpServer::convertBatch(const QJsonObject &args)
             QString base = QFileInfo(in).completeBaseName();
             if (pages > 1)
                 base += QStringLiteral("_page-%1").arg(page + 1);
-            const QString out = QDir(outDir).filePath(base + QLatin1Char('.') + format);
+            QString out = QDir(outDir).filePath(base + QLatin1Char('.') + format);
+            if (produced.contains(out))
+                out = QDir(outDir).filePath(base + QLatin1Char('_') + QFileInfo(in).suffix().toLower() + QLatin1Char('.') + format);
+            produced.insert(out);
             if (QFileInfo::exists(out) && !overwrite) {
                 ++skipped;
                 report << QStringLiteral("skipped (exists): %1").arg(out);

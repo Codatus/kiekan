@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(kiekan
-    VERSION 0.9.2
+    VERSION 0.9.3
     DESCRIPTION "Schneller, schlanker Bildbetrachter"
     LANGUAGES CXX)
 
@@ -172,6 +172,12 @@ file(RELATIVE_PATH KIEKAN_PLUGIN_RELDIR
     "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
     "${CMAKE_INSTALL_PREFIX}/${KIEKAN_INSTALL_PLUGINDIR}")
 target_compile_definitions(kiekan PRIVATE KIEKAN_PLUGIN_RELDIR="${KIEKAN_PLUGIN_RELDIR}")
+# Ebenso die eigenen Bildformat-Plugins; Debian/Ubuntu installieren nach
+# lib/<Architektur>, nicht nach lib.
+file(RELATIVE_PATH KIEKAN_QTPLUGIN_RELDIR
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/kiekan/qtplugins")
+target_compile_definitions(kiekan PRIVATE KIEKAN_QTPLUGIN_RELDIR="${KIEKAN_QTPLUGIN_RELDIR}")
 
 if(MSVC)
     target_compile_options(kiekan PRIVATE /W4)
@@ -191,6 +197,9 @@ if(MPV_FOUND AND TARGET Qt6::OpenGLWidgets)
     target_link_libraries(kiekan PRIVATE PkgConfig::MPV Qt6::OpenGLWidgets)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_MPV)
     message(STATUS "KiekAn!: Videowiedergabe aktiv (libmpv ${MPV_VERSION})")
+elseif(KIEKAN_WITH_VIDEO)
+    message(WARNING "KiekAn!: ohne Videowiedergabe – libmpv-dev und Qt6 OpenGLWidgets "
+                    "(Debian/Ubuntu: libqt6opengl6-dev) werden gebraucht")
 endif()
 if(TESSERACT_FOUND)
     target_link_libraries(kiekan PRIVATE PkgConfig::TESSERACT)
@@ -275,12 +284,21 @@ set(CPACK_PACKAGE_CONTACT "Carl Kliefert <228213888+Codatus@users.noreply.github
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "KiekAn! - schneller, schlanker Bildbetrachter")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+# Pakete hängen an den Bibliotheksversionen ihrer Distribution; mit
+# -DKIEKAN_DEB_SUFFIX=ubuntu24.04 steht das im Dateinamen.
+set(KIEKAN_DEB_SUFFIX "" CACHE STRING "Distribution im Namen des .deb (z. B. ubuntu24.04)")
+if(KIEKAN_DEB_SUFFIX)
+    set(CPACK_DEBIAN_FILE_NAME "kiekan_${PROJECT_VERSION}_${KIEKAN_DEB_SUFFIX}_amd64.deb")
+else()
+    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+endif()
 set(CPACK_DEBIAN_PACKAGE_SECTION "graphics")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Bildformat-Plugins und Qt-Übersetzungen werden zur Laufzeit geladen und
 # tauchen daher nicht in den automatisch ermittelten Abhängigkeiten auf.
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-image-formats-plugins, libqt6svg6")
+# Ab Qt 6.6 (z. B. Debian 13) liegen SVG-Bild- und Symbol-Plugins in qt6-svg-plugins,
+# ab libheif 1.16 die Decoder für HEIC (libde265) und AVIF (dav1d/aom) in eigenen Paketen.
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-qpa-plugins, qt6-image-formats-plugins, libqt6svg6, qt6-svg-plugins | libqt6svg6 (<< 6.6), libheif-plugin-libde265 | libheif1 (<< 1.16), libheif-plugin-dav1d | libheif-plugin-aomdec | libheif1 (<< 1.16)")
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-translations-l10n, tesseract-ocr-deu, tesseract-ocr-eng, tesseract-ocr-osd")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
 "KiekAn! ist ein schneller Bildbetrachter im Stil von IrfanView.

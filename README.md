@@ -11,7 +11,7 @@ Texterkennung mit automatischer Sprachwahl und das Teilen großer PDFs. Über ei
 eingebaute MCP-Schnittstelle können KI-Assistenten wie Claude mit Bildern und
 Dokumenten arbeiten.
 
-„KiekAn!“ kommt vom plattdeutschen „KiekAn!!“ – „Guck mal an!“.
+„KiekAn!“ kommt vom plattdeutschen „Kiek an!“ – „Guck mal an!“.
 
 *English:* KiekAn! is a fast, lightweight image viewer for Linux, inspired by
 IrfanView, with editing, OCR with automatic language detection, PDF splitting and
@@ -20,18 +20,19 @@ available in German and English.
 
 ## Installation
 
-Fertige Pakete für Ubuntu/Debian liegen unter
-[Releases](../../releases):
+Fertige Pakete liegen unter [Releases](../../releases) – je eines für
+Ubuntu 22.04, Ubuntu 24.04, Debian 12 und Debian 13 (Linux Mint 21/22 nehmen das
+Ubuntu-Paket gleicher Basis). Das passende Paket herunterladen und installieren:
 
 ```bash
-sudo apt install ./kiekan_<version>_amd64.deb
+sudo apt install ./kiekan_<version>_ubuntu24.04_amd64.deb
 ```
 
 Für Windows 10/11 gibt es ein portables ZIP (`KiekAn-<version>-windows-x64.zip`):
 entpacken und `kiekan.exe` starten – ohne Installation. Es enthält alle
 Bibliotheken und die Tesseract-Sprachdaten für Deutsch, Englisch und Fraktur.
 
-## Funktionen (Stand 0.8)
+## Funktionen
 
 - Bilder sofort anzeigen, Ordner per Tastatur oder Mausrad durchblättern
 - Vorladen der Nachbarbilder im Hintergrund, damit das Blättern ohne Wartezeit läuft
@@ -152,7 +153,7 @@ Benötigt: CMake ≥ 3.16, einen C++17-Compiler und Qt ≥ 6.2.
 Ubuntu/Debian:
 
 ```bash
-sudo apt install cmake g++ ninja-build qt6-base-dev qt6-base-dev-tools qt6-l10n-tools libqt6svg6-dev qt6-image-formats-plugins qt6-translations-l10n \
+sudo apt install cmake g++ ninja-build qt6-base-dev qt6-base-dev-tools qt6-l10n-tools libqt6svg6-dev libqt6opengl6-dev qt6-image-formats-plugins qt6-translations-l10n \
     libmpv-dev libexiv2-dev qt6-pdf-dev libtesseract-dev libqpdf-dev libheif-dev libraw-dev libopenjp2-7-dev libdjvulibre-dev tesseract-ocr-deu tesseract-ocr-eng tesseract-ocr-osd
 cmake -S . -B build -G Ninja
 cmake --build build
