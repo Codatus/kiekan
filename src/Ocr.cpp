@@ -185,7 +185,7 @@ QString languageName(const QString &code)
 
 namespace {
 
-enum class Distro { Debian, Fedora, Suse, Arch, Bundled };
+enum class Distro { Debian, Fedora, Suse, Arch, Gentoo, Bundled };
 
 // Paketfamilie aus /etc/os-release; Flatpak und Windows bringen die
 // Sprachdaten selbst mit.
@@ -209,6 +209,8 @@ Distro distro()
             return Distro::Fedora;
         if (ids.contains(QLatin1String("arch")))
             return Distro::Arch;
+        if (ids.contains(QLatin1String("gentoo")))
+            return Distro::Gentoo;
         return Distro::Debian;
 #endif
     }();
@@ -227,6 +229,8 @@ QString packageName(const QString &code)
         return QStringLiteral("tesseract-ocr-traineddata-") + c;
     case Distro::Arch:
         return QStringLiteral("tesseract-data-") + c;
+    case Distro::Gentoo:
+        return QStringLiteral("app-text/tessdata_fast");
     case Distro::Bundled:
         return c + QStringLiteral(".traineddata");
     case Distro::Debian:
@@ -245,6 +249,9 @@ QString installCommand(const QString &code)
         return QStringLiteral("sudo zypper install ") + pkg;
     case Distro::Arch:
         return QStringLiteral("sudo pacman -S ") + pkg;
+    case Distro::Gentoo:
+        // Sprachen wählt Gentoo über L10N (z. B. L10N="de en" in make.conf).
+        return QStringLiteral("L10N=\"…\" (/etc/portage/make.conf); sudo emerge --changed-use ") + pkg;
     case Distro::Bundled:
         return QStringLiteral("%1 → tessdata (TESSDATA_PREFIX)").arg(pkg);
     case Distro::Debian:
