@@ -1,0 +1,33 @@
+# Maintainer: Carl Kliefert <228213888+Codatus@users.noreply.github.com>
+# PKGBUILD für Arch Linux und Manjaro (Vorlage für das AUR)
+pkgname=kiekan
+pkgver=0.10.0
+pkgrel=1
+pkgdesc="Fast, lightweight image viewer with editing, OCR and an MCP interface for AI assistants"
+arch=('x86_64' 'aarch64')
+url="https://github.com/Codatus/kiekan"
+license=('GPL-3.0-or-later')
+depends=('qt6-base' 'qt6-svg' 'qt6-imageformats' 'qt6-webengine' 'mpv' 'exiv2'
+         'tesseract' 'leptonica' 'qpdf' 'libheif' 'libraw' 'openjpeg2' 'djvulibre'
+         'hicolor-icon-theme')
+makedepends=('cmake' 'ninja' 'qt6-tools')
+optdepends=('tesseract-data-deu: Texterkennung Deutsch'
+            'tesseract-data-eng: Texterkennung Englisch'
+            'tesseract-data-osd: Erkennen gedrehter Seiten'
+            'qt6-translations: deutsche Qt-Dialoge')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cmake -S "$pkgname-$pkgver" -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr
+    cmake --build build
+}
+
+check() {
+    ctest --test-dir build --output-on-failure
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}

@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(kiekan
-    VERSION 0.9.3
+    VERSION 0.10.0
     DESCRIPTION "Schneller, schlanker Bildbetrachter"
     LANGUAGES CXX)
 
@@ -264,6 +264,8 @@ install(FILES include/kiekan/FilterInterface.h
 if(UNIX AND NOT APPLE)
     install(FILES data/kiekan.desktop
             DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+    install(FILES data/io.github.codatus.kiekan.metainfo.xml
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
     install(FILES data/kiekan.svg
             DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
     # Vereinfachter Fisch für kleine Größen (ohne Kiemen und Flosse)
@@ -276,7 +278,7 @@ if(UNIX AND NOT APPLE)
             DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif()
 
-# --- Debian-Paket (cpack -G DEB) ---------------------------------------------
+# --- Pakete (cpack -G DEB / cpack -G RPM) ------------------------------------
 
 set(CPACK_PACKAGE_NAME "kiekan")
 set(CPACK_PACKAGE_VENDOR "KiekAn!")
@@ -285,12 +287,14 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "KiekAn! - schneller, schlanker Bildbetrac
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 # Pakete hängen an den Bibliotheksversionen ihrer Distribution; mit
-# -DKIEKAN_DEB_SUFFIX=ubuntu24.04 steht das im Dateinamen.
-set(KIEKAN_DEB_SUFFIX "" CACHE STRING "Distribution im Namen des .deb (z. B. ubuntu24.04)")
-if(KIEKAN_DEB_SUFFIX)
-    set(CPACK_DEBIAN_FILE_NAME "kiekan_${PROJECT_VERSION}_${KIEKAN_DEB_SUFFIX}_amd64.deb")
+# -DKIEKAN_PKG_SUFFIX=ubuntu24.04 bzw. fedora43 steht das im Dateinamen.
+set(KIEKAN_PKG_SUFFIX "" CACHE STRING "Distribution im Paketnamen (z. B. ubuntu24.04, fedora43)")
+if(KIEKAN_PKG_SUFFIX)
+    set(CPACK_DEBIAN_FILE_NAME "kiekan_${PROJECT_VERSION}_${KIEKAN_PKG_SUFFIX}_amd64.deb")
+    set(CPACK_RPM_FILE_NAME "kiekan-${PROJECT_VERSION}-1.${KIEKAN_PKG_SUFFIX}.x86_64.rpm")
 else()
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+    set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
 endif()
 set(CPACK_DEBIAN_PACKAGE_SECTION "graphics")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
@@ -305,4 +309,43 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
  Er zeigt Bilder sofort an, blaettert per Tastatur durch Ordner und bietet
  Bearbeitung: Drehen, Zuschneiden, Groesse aendern, Farben, Gradationskurven,
  Histogramm, Schaerfen, Effekte und Filter-Plugins.")
+
+# RPM: Bibliotheken ermittelt rpmbuild selbst; Laufzeit-Plugins heißen bei
+# Fedora und openSUSE verschieden.
+set(KIEKAN_RPM_FAMILY "" CACHE STRING "fedora oder suse (leer: aus /etc/os-release)")
+if(NOT KIEKAN_RPM_FAMILY AND EXISTS /etc/os-release)
+    file(STRINGS /etc/os-release _os_like REGEX "^ID(_LIKE)?=")
+    if(_os_like MATCHES "suse")
+        set(KIEKAN_RPM_FAMILY suse)
+    else()
+        set(KIEKAN_RPM_FAMILY fedora)
+    endif()
+endif()
+set(CPACK_RPM_PACKAGE_LICENSE "GPL-3.0-or-later")
+set(CPACK_RPM_PACKAGE_GROUP "Productivity/Graphics/Viewers")
+set(CPACK_RPM_PACKAGE_URL "https://github.com/Codatus/kiekan")
+set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
+set(CPACK_RPM_PACKAGE_AUTOREQ ON)
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+    /usr/share/applications /usr/share/metainfo /usr/share/icons /usr/share/icons/hicolor
+    /usr/share/icons/hicolor/scalable /usr/share/icons/hicolor/scalable/apps
+    /usr/share/icons/hicolor/16x16 /usr/share/icons/hicolor/16x16/apps
+    /usr/share/icons/hicolor/22x22 /usr/share/icons/hicolor/22x22/apps
+    /usr/share/icons/hicolor/24x24 /usr/share/icons/hicolor/24x24/apps
+    /usr/share/icons/hicolor/32x32 /usr/share/icons/hicolor/32x32/apps
+    /usr/include /usr/lib64 /usr/share/doc)
+if(KIEKAN_RPM_FAMILY STREQUAL "suse")
+    set(CPACK_RPM_PACKAGE_REQUIRES "qt6-imageformats, libQt6Svg6, libheif-dav1d")
+    set(KIEKAN_RPM_RECOMMENDS libheif-ffmpeg tesseract-ocr-traineddata-deu tesseract-ocr-traineddata-eng tesseract-ocr-traineddata-osd qt6-translations)
+else()
+    # HEIC braucht bei Fedora libheif-freeworld aus RPM Fusion (Patentgründe)
+    set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtimageformats, qt6-qtsvg")
+    set(KIEKAN_RPM_RECOMMENDS libheif-freeworld tesseract-langpack-deu tesseract-langpack-eng tesseract-osd qt6-qttranslations)
+endif()
+# CPack kennt kein Recommends; die Zeilen landen über den Spec-Kopf im Paket.
+set(_rec "")
+foreach(_p ${KIEKAN_RPM_RECOMMENDS})
+    string(APPEND _rec "\nRecommends: ${_p}")
+endforeach()
+set(CPACK_RPM_SPEC_MORE_DEFINE "%global kiekan_rpm 1${_rec}")
 include(CPack)

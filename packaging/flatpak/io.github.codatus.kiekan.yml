@@ -1,0 +1,165 @@
+# Flatpak-Manifest für KiekAn! (Vorlage für Flathub)
+# Bauen: flatpak-builder --user --install --force-clean build-flatpak packaging/flatpak/io.github.codatus.kiekan.yml
+app-id: io.github.codatus.kiekan
+runtime: org.kde.Platform
+runtime-version: '6.11'
+sdk: org.kde.Sdk
+# Die Qt-WebEngine-Basis bringt QtPdf mit
+base: io.qt.qtwebengine.BaseApp
+base-version: '6.11'
+command: kiekan
+rename-desktop-file: kiekan.desktop
+rename-icon: kiekan
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+  # Bildbetrachter: Bilder liegen überall, Bearbeitungen werden daneben gespeichert
+  - --filesystem=host
+  - --env=TESSDATA_PREFIX=/app/share/tessdata
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /lib/cmake
+  - /share/man
+  - /share/doc
+  - '*.la'
+  - '*.a'
+modules:
+  - name: exiv2
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DEXIV2_ENABLE_INIH=OFF
+      - -DEXIV2_BUILD_SAMPLES=OFF
+      - -DEXIV2_BUILD_EXIV2_COMMAND=OFF
+      - -DEXIV2_BUILD_UNIT_TESTS=OFF
+      - -DEXIV2_ENABLE_BMFF=ON
+    sources:
+      - type: git
+        url: https://github.com/Exiv2/exiv2.git
+        tag: v0.28.9
+        commit: b0859fc61fea5dedfc898aece6b15893ddf4314e
+
+  - name: libraw
+    buildsystem: simple
+    build-commands:
+      - autoreconf -fi
+      - ./configure --prefix=/app --disable-examples --disable-static
+      - make -j $FLATPAK_BUILDER_N_JOBS
+      - make install
+    sources:
+      - type: git
+        url: https://github.com/LibRaw/LibRaw.git
+        tag: 0.22.3
+        commit: cf02d66eb5c19d4e46df7aee0582e47a4918509a
+
+  - name: leptonica
+    config-opts:
+      - --disable-programs
+      - --disable-static
+    sources:
+      - type: git
+        url: https://github.com/DanBloomberg/leptonica.git
+        tag: 1.87.0
+        commit: 13275a278eb55b5746e33f95fbf5a2c8f604b3ab
+
+  - name: tesseract
+    config-opts:
+      - --disable-static
+      - --disable-graphics
+      - --disable-legacy
+      - --without-curl
+      - --without-archive
+    sources:
+      - type: git
+        url: https://github.com/tesseract-ocr/tesseract.git
+        tag: 5.5.4
+        commit: 7e548e6eff172f38f97664afe7f7ce40db36c8d6
+
+  - name: tessdata
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 -t /app/share/tessdata *.traineddata
+    sources:
+      - type: file
+        url: https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/deu.traineddata
+        sha256: 896b3b4956503ab9daa10285db330881b2d74b70d889b79262cc534b9ec699a4
+      - type: file
+        url: https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/eng.traineddata
+        sha256: daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047
+      - type: file
+        url: https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/osd.traineddata
+        sha256: e19f2ae860792fdf372cf48d8ce70ae5da3c4052962fe22e9de1f680c374bb0e
+      - type: file
+        url: https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/deu_latf.traineddata
+        sha256: d7c7d9ffdcddd676950fe4982c8733ed4adb63bdcdc4ef252cb461d97baf9815
+
+  - name: qpdf
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_STATIC_LIBS=OFF
+      - -DREQUIRE_CRYPTO_GNUTLS=ON
+      - -DUSE_IMPLICIT_CRYPTO=OFF
+      - -DBUILD_DOC=OFF
+    sources:
+      - type: git
+        url: https://github.com/qpdf/qpdf.git
+        tag: v12.4.2
+        commit: 4eba95899886e851cc41d76886483b347612f2a8
+
+  - name: djvulibre
+    config-opts:
+      - --disable-desktopfiles
+      - --disable-static
+    sources:
+      - type: archive
+        url: https://downloads.sourceforge.net/project/djvu/DjVuLibre/3.5.29/djvulibre-3.5.29.tar.gz
+        sha256: d3b4b03ae2bdca8516a36ef6eb27b777f0528c9eda26745d9962824a3fdfeccf
+
+  - name: libass
+    config-opts:
+      - --disable-static
+    sources:
+      - type: git
+        url: https://github.com/libass/libass.git
+        tag: 0.17.5
+        commit: 4a05d8127f525943ebf45fdc6497c9e665947f0d
+
+  - name: libplacebo
+    buildsystem: meson
+    config-opts:
+      - -Dvulkan=disabled
+      - -Ddemos=false
+      - -Dtests=false
+    sources:
+      - type: git
+        url: https://github.com/haasn/libplacebo.git
+        tag: v7.387.0
+        commit: 275f7dea27924cdd34ab2e6c20e448b6bc4fab65
+
+  - name: mpv
+    buildsystem: meson
+    config-opts:
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dlua=disabled
+      - -Djavascript=disabled
+      - -Dmanpage-build=disabled
+      - -Dvulkan=disabled
+    sources:
+      - type: git
+        url: https://github.com/mpv-player/mpv.git
+        tag: v0.41.0
+        commit: 41f6a645068483470267271e1d09966ca3b9f413
+
+  - name: kiekan
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: dir
+        path: ../..

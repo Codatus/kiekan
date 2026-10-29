@@ -64,7 +64,7 @@ check("read_metadata EXIF/GPS", not err and "Testkamera" in txt and "53" in txt,
 err, txt, _ = call("histogram", {"path": f"{B}/bild.png"})
 check("histogram", not err and len(txt) > 50, txt)
 err, txt, _ = call("list_filters", {})
-check("list_filters", not err and "id" in txt, txt)
+check("list_filters (mit Plugin rahmen)", not err and "rahmen" in txt, txt)
 err, txt, n = call("view_image", {"path": f"{B}/foto.jpg", "region": [100, 100, 300, 200], "grid": True})
 check("view_image Ausschnitt + Raster", not err and n == 1, txt)
 

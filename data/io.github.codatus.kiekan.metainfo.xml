@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream-Metadaten für Software-Center und Flathub -->
+<component type="desktop-application">
+  <id>io.github.codatus.kiekan</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>KiekAn!</name>
+  <summary>Fast, lightweight image viewer with editing, OCR and an AI interface</summary>
+  <summary xml:lang="de">Schneller, schlanker Bildbetrachter mit Bearbeitung, Texterkennung und KI-Schnittstelle</summary>
+
+  <developer id="io.github.codatus">
+    <name>Carl Kliefert</name>
+  </developer>
+
+  <description>
+    <p>
+      KiekAn! is a fast image viewer inspired by IrfanView. It opens images
+      without delay, flips smoothly through large folders and handles HEIC,
+      AVIF, camera RAW, JPEG 2000, PSD, DjVu, PDF and videos as well as the
+      common formats.
+    </p>
+    <p xml:lang="de">
+      KiekAn! ist ein schneller Bildbetrachter, inspiriert von IrfanView. Er
+      öffnet Bilder ohne Wartezeit, blättert flüssig durch große Ordner und
+      beherrscht neben den gängigen Formaten auch HEIC, AVIF, Kamera-RAW,
+      JPEG 2000, PSD, DjVu, PDF und Videos.
+    </p>
+    <p>Features:</p>
+    <p xml:lang="de">Funktionen:</p>
+    <ul>
+      <li>Crop, rotate, resize, colors, curves, sharpen and effects with live preview</li>
+      <li xml:lang="de">Zuschneiden, Drehen, Größe, Farben, Gradationskurven, Schärfen und Effekte mit Live-Vorschau</li>
+      <li>Text recognition (OCR) with automatic language detection</li>
+      <li xml:lang="de">Texterkennung (OCR) mit automatischer Sprachwahl</li>
+      <li>Shows and keeps EXIF, IPTC and XMP metadata</li>
+      <li xml:lang="de">Zeigt EXIF, IPTC und XMP und erhält sie beim Speichern</li>
+      <li>Splits large PDFs into documented parts</li>
+      <li xml:lang="de">Teilt große PDFs in dokumentierte Teile</li>
+      <li>Built-in MCP interface for AI assistants such as Claude, limited to folders you release</li>
+      <li xml:lang="de">Eingebaute MCP-Schnittstelle für KI-Assistenten wie Claude, beschränkt auf freigegebene Ordner</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">kiekan.desktop</launchable>
+  <provides>
+    <binary>kiekan</binary>
+  </provides>
+
+  <categories>
+    <category>Graphics</category>
+    <category>Viewer</category>
+  </categories>
+  <keywords>
+    <keyword>image</keyword>
+    <keyword>photo</keyword>
+    <keyword>viewer</keyword>
+    <keyword>OCR</keyword>
+    <keyword>IrfanView</keyword>
+    <keyword>MCP</keyword>
+    <keyword xml:lang="de">Bild</keyword>
+    <keyword xml:lang="de">Foto</keyword>
+    <keyword xml:lang="de">Betrachter</keyword>
+  </keywords>
+
+  <url type="homepage">https://github.com/Codatus/kiekan</url>
+  <url type="bugtracker">https://github.com/Codatus/kiekan/issues</url>
+  <url type="vcs-browser">https://github.com/Codatus/kiekan</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Viewing a photo</caption>
+      <caption xml:lang="de">Ein Foto ansehen</caption>
+      <image>https://raw.githubusercontent.com/Codatus/kiekan/v0.10.0/docs/screenshots/ansicht.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Curves with live preview</caption>
+      <caption xml:lang="de">Gradationskurven mit Live-Vorschau</caption>
+      <image>https://raw.githubusercontent.com/Codatus/kiekan/v0.10.0/docs/screenshots/kurven.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Text recognition</caption>
+      <caption xml:lang="de">Texterkennung</caption>
+      <image>https://raw.githubusercontent.com/Codatus/kiekan/v0.10.0/docs/screenshots/texterkennung.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Metadata</caption>
+      <caption xml:lang="de">Metadaten</caption>
+      <image>https://raw.githubusercontent.com/Codatus/kiekan/v0.10.0/docs/screenshots/metadaten.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+
+  <releases>
+    <release version="0.10.0" date="2026-10-29">
+      <description>
+        <p>First public release: packages for Ubuntu, Debian, Linux Mint, Pop!_OS, Fedora, openSUSE and Arch, Flatpak and Windows.</p>
+      </description>
+    </release>
+  </releases>
+</component>

@@ -1835,8 +1835,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
     </message>
     <message>
         <location filename="../src/OcrDialog.cpp" line="79" />
-        <source>Texterkennung nicht verfügbar: Tesseract oder ein Sprachpaket fehlt (z. B. sudo apt install tesseract-ocr-deu).</source>
-        <translation>Text recognition not available: Tesseract or a language pack is missing (e.g. sudo apt install tesseract-ocr-eng).</translation>
+        <source>Texterkennung nicht verfügbar: Tesseract oder ein Sprachpaket fehlt (z. B. %1).</source>
+        <translation>Text recognition not available: Tesseract or a language pack is missing (e.g. %1).</translation>
     </message>
     <message>
         <location filename="../src/OcrDialog.cpp" line="102" />

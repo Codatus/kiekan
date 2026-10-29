@@ -67,7 +67,9 @@ Result recognize(const QImage &image, const Options &options = {});
 
 // Anzeigename für einen Tesseract-Code („deu“ → „Deutsch“).
 QString languageName(const QString &code);
-// Paketname zum Nachinstallieren unter Debian/Ubuntu.
+// Paketname zum Nachinstallieren (passend zur Distribution).
 QString packageName(const QString &code);
+// Befehl zum Nachinstallieren, z. B. „sudo dnf install tesseract-langpack-deu“.
+QString installCommand(const QString &code);
 
 } // namespace Ocr

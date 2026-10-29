@@ -77,7 +77,7 @@ OcrDialog::OcrDialog(const QImage &image, const QString &pdfText, const QString 
                            "Mit „Erkennen“ wird die Seite trotzdem per OCR gelesen."));
     } else if (!Ocr::available()) {
         m_info->setText(tr("Texterkennung nicht verfügbar: Tesseract oder ein Sprachpaket fehlt "
-                           "(z. B. sudo apt install tesseract-ocr-deu)."));
+                           "(z. B. %1).").arg(Ocr::installCommand(QStringLiteral("deu"))));
     } else {
         startRecognition();
     }

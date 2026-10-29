@@ -1468,8 +1468,8 @@ QJsonArray McpServer::ocrLanguages(const QJsonObject &)
         {QStringLiteral("ocr_available"), Ocr::available()},
         {QStringLiteral("orientation_and_script_detection"), inst.osd},
         {QStringLiteral("installed"), langs},
-        {QStringLiteral("how_to_install"), QStringLiteral("Debian/Ubuntu: sudo apt install tesseract-ocr-<code> "
-                                                          "(e.g. tesseract-ocr-fra); all packs: tesseract-ocr-all")},
+        {QStringLiteral("how_to_install"), Ocr::installCommand(QStringLiteral("<code>"))
+                                               + QStringLiteral(" (e.g. ") + Ocr::installCommand(QStringLiteral("fra")) + QLatin1Char(')')},
     };
     return {textContent(QString::fromUtf8(QJsonDocument(info).toJson(QJsonDocument::Indented)))};
 }

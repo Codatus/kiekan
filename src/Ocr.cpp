@@ -6,6 +6,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
 #include <QHash>
 #include <QLocale>
 #include <QRegularExpression>
@@ -182,10 +183,74 @@ QString languageName(const QString &code)
     return code;
 }
 
+namespace {
+
+enum class Distro { Debian, Fedora, Suse, Arch, Bundled };
+
+// Paketfamilie aus /etc/os-release; Flatpak und Windows bringen die
+// Sprachdaten selbst mit.
+Distro distro()
+{
+    static const Distro d = [] {
+#ifdef Q_OS_WIN
+        return Distro::Bundled;
+#else
+        if (QFile::exists(QStringLiteral("/.flatpak-info")))
+            return Distro::Bundled;
+        QFile f(QStringLiteral("/etc/os-release"));
+        QString ids;
+        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+            for (const QByteArray &line : f.readAll().split('\n'))
+                if (line.startsWith("ID=") || line.startsWith("ID_LIKE="))
+                    ids += QString::fromUtf8(line) + QLatin1Char(' ');
+        if (ids.contains(QLatin1String("suse")))
+            return Distro::Suse;
+        if (ids.contains(QLatin1String("fedora")) || ids.contains(QLatin1String("rhel")))
+            return Distro::Fedora;
+        if (ids.contains(QLatin1String("arch")))
+            return Distro::Arch;
+        return Distro::Debian;
+#endif
+    }();
+    return d;
+}
+
+} // namespace
+
 QString packageName(const QString &code)
 {
     QString c = code;
+    switch (distro()) {
+    case Distro::Fedora:
+        return c == QLatin1String("osd") ? QStringLiteral("tesseract-osd") : QStringLiteral("tesseract-langpack-") + c;
+    case Distro::Suse:
+        return QStringLiteral("tesseract-ocr-traineddata-") + c;
+    case Distro::Arch:
+        return QStringLiteral("tesseract-data-") + c;
+    case Distro::Bundled:
+        return c + QStringLiteral(".traineddata");
+    case Distro::Debian:
+        break;
+    }
     return QStringLiteral("tesseract-ocr-") + c.replace(QLatin1Char('_'), QLatin1Char('-')).toLower();
+}
+
+QString installCommand(const QString &code)
+{
+    const QString pkg = packageName(code);
+    switch (distro()) {
+    case Distro::Fedora:
+        return QStringLiteral("sudo dnf install ") + pkg;
+    case Distro::Suse:
+        return QStringLiteral("sudo zypper install ") + pkg;
+    case Distro::Arch:
+        return QStringLiteral("sudo pacman -S ") + pkg;
+    case Distro::Bundled:
+        return QStringLiteral("%1 → tessdata (TESSDATA_PREFIX)").arg(pkg);
+    case Distro::Debian:
+        break;
+    }
+    return QStringLiteral("sudo apt install ") + pkg;
 }
 
 #ifdef KIEKAN_HAVE_TESSERACT
