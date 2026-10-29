@@ -17,6 +17,8 @@
   openjpeg,
   djvulibre,
   libjpeg_turbo,
+  libarchive,
+  curl,
 }:
 
 let
@@ -48,6 +50,9 @@ stdenv.mkDerivation {
     openjpeg
     djvulibre
     libjpeg_turbo
+    # tesseract.pc verlangt beide beim Linken
+    libarchive
+    curl
   ];
 
   doCheck = true;
