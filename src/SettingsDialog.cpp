@@ -6,9 +6,11 @@
 
 #include "AiGuard.h"
 #include "AiLogDialog.h"
+#include "FileAssoc.h"
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDesktopServices>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -25,6 +27,7 @@
 #include <QScrollArea>
 #include <QSpinBox>
 #include <QTabWidget>
+#include <QUrl>
 #include <QThread>
 #include <QVBoxLayout>
 
@@ -95,7 +98,11 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_language->addItem(tr("Systemsprache"), QString());
     m_language->addItem(QStringLiteral("Deutsch"), QStringLiteral("de"));
     m_language->addItem(QStringLiteral("English"), QStringLiteral("en"));
-    m_language->setCurrentIndex(std::max(0, m_language->findData(Settings::language())));
+    // Über den Text vergleichen: findData unterscheidet je nach Qt-Version
+    // zwischen leerer und Null-Zeichenkette.
+    for (int i = 0; i < m_language->count(); ++i)
+        if (m_language->itemData(i).toString() == Settings::language())
+            m_language->setCurrentIndex(i);
 
     QWidget *autoRotateRow = nullptr;
     m_autoRotate = wrappingCheckBox(tr("Bilder automatisch drehen (EXIF-Ausrichtung)"), this, &autoRotateRow);
@@ -219,8 +226,12 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     auto *copyCmd = new QPushButton(tr("Befehl für Claude kopieren"), this);
     copyCmd->setToolTip(tr("Kopiert den Befehl, mit dem Claude Code KiekAn! als MCP-Server einbindet."));
     connect(copyCmd, &QPushButton::clicked, this, [] {
-        QGuiApplication::clipboard()->setText(QStringLiteral("claude mcp add --scope user kiekan -- \"%1\" --mcp")
-                                                  .arg(QCoreApplication::applicationFilePath()));
+        // Im Flatpak ist der Programmpfad nur in der Sandbox gültig.
+        const QString flatpakId = qEnvironmentVariable("FLATPAK_ID");
+        const QString command = flatpakId.isEmpty()
+            ? QStringLiteral("\"%1\"").arg(QCoreApplication::applicationFilePath())
+            : QStringLiteral("flatpak run %1").arg(flatpakId);
+        QGuiApplication::clipboard()->setText(QStringLiteral("claude mcp add --scope user kiekan -- %1 --mcp").arg(command));
     });
     aiButtons->addWidget(logButton);
     aiButtons->addWidget(copyCmd);
@@ -243,6 +254,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     aiScroll->setFrameShape(QFrame::NoFrame);
     aiScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     tabs->addTab(aiScroll, tr("KI-Schnittstelle"));
+    tabs->addTab(createAssocPage(), tr("Dateizuordnung"));
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
@@ -341,6 +353,114 @@ bool SettingsDialog::apply()
     AiGuard::setTrustedDirs(checkedTrusted());
     QSettings().setValue(QStringLiteral("ocr/jobs"), m_ocrJobs->value());
     return langChanged;
+}
+
+// --- Dateizuordnung ----------------------------------------------------------
+
+QWidget *SettingsDialog::createAssocPage()
+{
+    auto *page = new QWidget(this);
+    auto *layout = new QVBoxLayout(page);
+
+    if (!FileAssoc::supported()) {
+        // Windows erlaubt Programmen nicht, sich selbst als Standard einzutragen.
+        auto *text = new QLabel(tr("So öffnen Sie Bilder mit KiekAn!:\n\n"
+                                   "1. Rechtsklick auf ein Bild → „Öffnen mit“ → „Andere App auswählen“.\n"
+                                   "2. „Weitere Apps“ → „Auf diesem PC nach einer anderen App suchen“ und kiekan.exe wählen.\n"
+                                   "3. „Immer diese App verwenden“ ankreuzen.\n\n"
+                                   "Das gilt jeweils für einen Dateityp (z. B. .jpg). PDFs und Videos "
+                                   "bleiben bei ihren bisherigen Programmen, solange Sie dort nichts ändern."), page);
+        text->setWordWrap(true);
+        layout->addWidget(text);
+        auto *open = new QPushButton(tr("Standard-Apps öffnen …"), page);
+        connect(open, &QPushButton::clicked, this, [] {
+            QDesktopServices::openUrl(QUrl(QStringLiteral("ms-settings:defaultapps")));
+        });
+        auto *row = new QHBoxLayout;
+        row->addWidget(open);
+        row->addStretch(1);
+        layout->addLayout(row);
+        layout->addStretch(1);
+        return page;
+    }
+
+    auto *intro = new QLabel(tr("Diese Dateitypen per Doppelklick mit KiekAn! öffnen:"), page);
+    intro->setWordWrap(true);
+    layout->addWidget(intro);
+
+    // Vorauswahl: der jetzige Stand; ist KiekAn! noch nirgends eingetragen,
+    // die Vorschläge (Bilder und RAW, nicht PDF und Videos).
+    const QList<FileAssoc::Group> groups = FileAssoc::groups();
+    bool anySet = false;
+    for (const FileAssoc::Group &g : groups)
+        anySet = anySet || FileAssoc::isDefault(g);
+    auto *grid = new QFormLayout;
+    for (const FileAssoc::Group &g : groups) {
+        QWidget *row = nullptr;
+        QCheckBox *box = wrappingCheckBox(g.label, page, &row);
+        box->setChecked(anySet ? FileAssoc::isDefault(g) : g.suggested);
+        auto *current = new QLabel(page);
+        current->setStyleSheet(QStringLiteral("color: gray"));
+        current->setIndent(box->sizeHint().width() + 6);
+        auto *cell = new QWidget(page);
+        auto *cellLayout = new QVBoxLayout(cell);
+        cellLayout->setContentsMargins(0, 0, 0, 4);
+        cellLayout->setSpacing(0);
+        cellLayout->addWidget(row);
+        cellLayout->addWidget(current);
+        grid->addRow(cell);
+        m_assocBoxes << qMakePair(g.key, box);
+        m_assocCurrent << qMakePair(g.key, current);
+    }
+    layout->addLayout(grid);
+
+    auto *apply = new QPushButton(tr("Zuordnung übernehmen"), page);
+    connect(apply, &QPushButton::clicked, this, &SettingsDialog::applyAssoc);
+    auto *row = new QHBoxLayout;
+    row->addWidget(apply);
+    row->addStretch(1);
+    layout->addLayout(row);
+
+    m_assocResult = new QLabel(page);
+    m_assocResult->setWordWrap(true);
+    layout->addWidget(m_assocResult);
+
+    auto *note = new QLabel(tr("Nicht angekreuzte Typen öffnen wieder mit dem Programm, das das System "
+                               "vorsieht. Geändert wird nur Ihre eigene Zuordnung (%1), nicht die "
+                               "anderer Benutzer.").arg(FileAssoc::userListFiles().join(QStringLiteral(", "))), page);
+    note->setWordWrap(true);
+    note->setStyleSheet(QStringLiteral("color: gray"));
+    layout->addWidget(note);
+    layout->addStretch(1);
+
+    refreshAssocStatus();
+    return page;
+}
+
+void SettingsDialog::refreshAssocStatus()
+{
+    const QList<FileAssoc::Group> groups = FileAssoc::groups();
+    for (const auto &[key, label] : m_assocCurrent) {
+        for (const FileAssoc::Group &g : groups) {
+            if (g.key != key)
+                continue;
+            const QString app = FileAssoc::currentDefault(g.mimeTypes.first());
+            label->setText(app.isEmpty() ? tr("derzeit: Vorgabe des Systems")
+                                         : tr("derzeit: %1").arg(app));
+        }
+    }
+}
+
+void SettingsDialog::applyAssoc()
+{
+    QStringList on, off;
+    for (const auto &[key, box] : m_assocBoxes)
+        (box->isChecked() ? on : off) << key;
+    const QString error = FileAssoc::apply(on, off);
+    m_assocResult->setStyleSheet(error.isEmpty() ? QString() : QStringLiteral("color: #b00020"));
+    m_assocResult->setText(error.isEmpty() ? tr("Übernommen. Neu geöffnete Dateien starten jetzt im gewählten Programm.")
+                                           : tr("Konnte die Zuordnung nicht speichern: %1").arg(error));
+    refreshAssocStatus();
 }
 
 bool SettingsDialog::aiAccessChanged() const

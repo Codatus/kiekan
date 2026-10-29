@@ -32,6 +32,7 @@ modules:
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_LIBDIR=lib
       - -DEXIV2_ENABLE_INIH=OFF
       - -DEXIV2_BUILD_SAMPLES=OFF
       - -DEXIV2_BUILD_EXIV2_COMMAND=OFF
@@ -70,7 +71,6 @@ modules:
     config-opts:
       - --disable-static
       - --disable-graphics
-      - --disable-legacy
       - --without-curl
       - --without-archive
     sources:
@@ -99,8 +99,10 @@ modules:
 
   - name: qpdf
     buildsystem: cmake-ninja
+    builddir: true
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_LIBDIR=lib
       - -DBUILD_STATIC_LIBS=OFF
       - -DREQUIRE_CRYPTO_GNUTLS=ON
       - -DUSE_IMPLICIT_CRYPTO=OFF
@@ -132,6 +134,7 @@ modules:
   - name: libplacebo
     buildsystem: meson
     config-opts:
+      - --libdir=lib
       - -Dvulkan=disabled
       - -Ddemos=false
       - -Dtests=false
@@ -144,6 +147,7 @@ modules:
   - name: mpv
     buildsystem: meson
     config-opts:
+      - --libdir=lib
       - -Dlibmpv=true
       - -Dcplayer=false
       - -Dlua=disabled
@@ -160,6 +164,7 @@ modules:
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_LIBDIR=lib
     sources:
       - type: dir
         path: ../..

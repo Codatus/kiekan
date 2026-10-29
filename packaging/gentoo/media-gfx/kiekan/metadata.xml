@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>228213888+Codatus@users.noreply.github.com</email>
+		<name>Carl Kliefert</name>
+	</maintainer>
+	<use>
+		<flag name="exif">Show and keep EXIF/IPTC/XMP metadata via <pkg>media-gfx/exiv2</pkg></flag>
+		<flag name="ocr">Text recognition via <pkg>app-text/tesseract</pkg></flag>
+		<flag name="pdf">Show PDFs (QtPdf) and split them via <pkg>app-text/qpdf</pkg></flag>
+		<flag name="video">Video playback via <pkg>media-video/mpv</pkg></flag>
+	</use>
+	<upstream>
+		<remote-id type="github">Codatus/kiekan</remote-id>
+	</upstream>
+</pkgmetadata>

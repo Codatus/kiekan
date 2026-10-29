@@ -18,19 +18,69 @@ IrfanView, with editing, OCR with automatic language detection, PDF splitting an
 an MCP interface for AI assistants such as Claude. The user interface is
 available in German and English.
 
+![KiekAn! zeigt ein Foto](docs/screenshots/ansicht.png)
+
+| Gradationskurven mit Live-Vorschau | Texterkennung | EXIF-Daten |
+|---|---|---|
+| ![Gradationskurven](docs/screenshots/kurven.png) | ![Texterkennung](docs/screenshots/texterkennung.png) | ![EXIF-Daten](docs/screenshots/metadaten.png) |
+
 ## Installation
 
-Fertige Pakete liegen unter [Releases](../../releases) – je eines für
-Ubuntu 22.04, Ubuntu 24.04, Debian 12 und Debian 13 (Linux Mint 21/22 nehmen das
-Ubuntu-Paket gleicher Basis). Das passende Paket herunterladen und installieren:
+Fertige Pakete liegen unter [Releases](../../releases). Weil sich die
+Bibliotheksversionen der Distributionen unterscheiden, gibt es je System ein
+eigenes Paket:
+
+| System | Paket | Installieren |
+|---|---|---|
+| Ubuntu 24.04, Linux Mint 22, Pop!_OS 24.04 | `kiekan_<version>_ubuntu24.04_amd64.deb` | `sudo apt install ./kiekan_…deb` |
+| Ubuntu 22.04, Linux Mint 21, Pop!_OS 22.04 | `kiekan_<version>_ubuntu22.04_amd64.deb` | `sudo apt install ./kiekan_…deb` |
+| Debian 13 / Debian 12 | `kiekan_<version>_debian13_amd64.deb` / `…_debian12_…` | `sudo apt install ./kiekan_…deb` |
+| Fedora 44 / 43 | `kiekan-<version>-1.fc44.x86_64.rpm` / `….fc43…` | `sudo dnf install ./kiekan-…rpm` |
+| openSUSE Tumbleweed | `kiekan-<version>-1.opensuse.x86_64.rpm` | `sudo zypper install ./kiekan-…rpm` |
+| Arch Linux, Manjaro | [`packaging/arch/PKGBUILD`](packaging/arch/PKGBUILD) | `makepkg -si` |
+| alle anderen (Flatpak) | [`packaging/flatpak`](packaging/flatpak) | siehe unten |
+
+HEIC-Fotos (iPhone) brauchen einen HEVC-Decoder, den Fedora und openSUSE aus
+Patentgründen nicht mitliefern: unter Fedora `libheif-freeworld` aus
+[RPM Fusion](https://rpmfusion.org), unter openSUSE die Codecs aus Packman.
+Das Flatpak bringt alles selbst mit.
+
+**Flatpak** (bis zur Aufnahme in Flathub selbst bauen):
 
 ```bash
-sudo apt install ./kiekan_<version>_ubuntu24.04_amd64.deb
+flatpak-builder --user --install --install-deps-from=flathub --force-clean build-flatpak packaging/flatpak/io.github.codatus.kiekan.yml
+flatpak run io.github.codatus.kiekan
 ```
 
 Für Windows 10/11 gibt es ein portables ZIP (`KiekAn-<version>-windows-x64.zip`):
 entpacken und `kiekan.exe` starten – ohne Installation. Es enthält alle
 Bibliotheken und die Tesseract-Sprachdaten für Deutsch, Englisch und Fraktur.
+
+## Bilder per Doppelklick mit KiekAn! öffnen
+
+**In KiekAn!:** Einstellungen (Taste `P`) → Reiter „Dateizuordnung“. Dort
+ankreuzen, welche Dateitypen KiekAn! öffnen soll, und „Zuordnung übernehmen“
+klicken. Vorausgewählt sind Bilder und Kamera-RAW; **PDF-Dokumente und Videos
+sind nicht angekreuzt** und bleiben bei ihren bisherigen Programmen, solange
+Sie sie nicht ausdrücklich wählen. Ein entfernter Haken gibt den Dateityp an
+die Vorgabe des Systems zurück. Geändert wird nur Ihre eigene
+`~/.config/mimeapps.list` (bei LXQt, KDE usw. zusätzlich eine vorhandene
+`<desktop>-mimeapps.list`).
+
+**Von Hand:** Im Dateimanager Rechtsklick auf ein Bild → „Öffnen mit“ →
+KiekAn! wählen und „als Standard“ bzw. „immer verwenden“ ankreuzen – das gilt
+für diesen einen Dateityp. Im Terminal für mehrere Typen auf einmal:
+
+```bash
+xdg-mime default kiekan.desktop image/jpeg image/png image/gif image/webp image/tiff image/heic image/avif
+```
+
+Beim Flatpak heißt die Desktop-Datei `io.github.codatus.kiekan.desktop`.
+
+**Windows:** Rechtsklick auf ein Bild → „Öffnen mit“ → „Andere App auswählen“
+→ `kiekan.exe` suchen und „Immer diese App verwenden“ ankreuzen. Windows lässt
+Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung“
+öffnet deshalb nur die Windows-Einstellungen „Standard-Apps“.
 
 ## Funktionen
 
@@ -164,10 +214,27 @@ ctest --test-dir build
 Video, EXIF und PDF sind optional (`-DKIEKAN_WITH_VIDEO=OFF` usw.); fehlt eine
 Bibliothek, wird ohne die Funktion gebaut.
 
-Debian-Paket erzeugen:
+Fedora:
 
 ```bash
-cd build && cpack -G DEB
+sudo dnf install cmake gcc-c++ ninja-build rpm-build qt6-qtbase-devel qt6-qtsvg-devel qt6-qttools-devel qt6-qtimageformats qt6-qtpdf-devel \
+    mpv-devel exiv2-devel tesseract-devel leptonica-devel qpdf-devel libheif-devel LibRaw-devel openjpeg2-devel djvulibre-devel tesseract-langpack-deu
+```
+
+openSUSE Tumbleweed:
+
+```bash
+sudo zypper install cmake gcc-c++ ninja rpm-build qt6-base-devel qt6-svg-devel qt6-tools-linguist qt6-linguist-devel qt6-imageformats qt6-pdf-devel qt6-opengl-devel \
+    mpv-devel libexiv2-devel tesseract-ocr-devel leptonica-devel qpdf-devel libheif-devel libraw-devel openjpeg2-devel libdjvulibre-devel tesseract-ocr-traineddata-deu
+```
+
+Arch Linux: siehe [`packaging/arch/PKGBUILD`](packaging/arch/PKGBUILD).
+
+Paket erzeugen (mit `-DCMAKE_INSTALL_PREFIX=/usr` konfigurieren):
+
+```bash
+cd build && cpack -G DEB    # Debian, Ubuntu, Mint, Pop!_OS
+cd build && cpack -G RPM    # Fedora, openSUSE
 ```
 
 ## KI-Schnittstelle (MCP)
@@ -188,6 +255,10 @@ Claude Desktop (`claude_desktop_config.json`):
 ```json
 { "mcpServers": { "kiekan": { "command": "/usr/bin/kiekan", "args": ["--mcp"] } } }
 ```
+
+Beim Flatpak lautet der Befehl `flatpak run io.github.codatus.kiekan --mcp`
+(in Claude Desktop: `"command": "flatpak", "args": ["run", "io.github.codatus.kiekan", "--mcp"]`).
+Das KI-Protokoll liegt dann unter `~/.var/app/io.github.codatus.kiekan/data/kiekan/kiekan/`.
 
 | Werkzeug | Zweck |
 |---|---|
@@ -331,6 +402,13 @@ Dateien in `translations/`. Nach Codeänderungen aktualisieren:
 ```bash
 /usr/lib/qt6/bin/lupdate src plugins -source-language de -target-language en -ts translations/kiekan_en.ts
 ```
+
+## Bildnachweis
+
+Die Fotos in den Bildschirmfotos stehen unter
+[CC0](https://creativecommons.org/publicdomain/zero/1.0/) (Wikimedia Commons):
+Leuchtturm Mellumplate von Nane Kratzke, Neuer Leuchtturm Borkum von Uwe
+Jelting. Der Brief ist ausgedacht.
 
 ## Lizenz
 

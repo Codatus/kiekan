@@ -90,6 +90,11 @@
     </screenshot>
   </screenshots>
 
+  <branding>
+    <color type="primary" scheme_preference="light">#9fc6e3</color>
+    <color type="primary" scheme_preference="dark">#1f5f8b</color>
+  </branding>
+
   <content_rating type="oars-1.1"/>
 
   <supports>

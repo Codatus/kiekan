@@ -95,6 +95,8 @@ qt_add_executable(kiekan WIN32
     src/ResizeDialog.cpp
     src/ResizeDialog.h
     src/SettingsDialog.cpp
+    src/FileAssoc.cpp
+    src/FileAssoc.h
     src/SettingsDialog.h
     src/Metadata.cpp
     src/Metadata.h
@@ -249,6 +251,13 @@ if(BUILD_TESTING)
     target_compile_definitions(filtertest PRIVATE KIEKAN_PLUGIN_RELDIR="${KIEKAN_PLUGIN_RELDIR}")
     target_link_libraries(filtertest PRIVATE Qt6::Core Qt6::Gui Threads::Threads)
     add_test(NAME filter COMMAND filtertest)
+
+    if(UNIX AND NOT APPLE)
+        qt_add_executable(assoctest tests/assoctest.cpp src/FileAssoc.cpp)
+        target_include_directories(assoctest PRIVATE src)
+        target_link_libraries(assoctest PRIVATE Qt6::Core)
+        add_test(NAME dateizuordnung COMMAND assoctest)
+    endif()
 
     qt_add_executable(formattest tests/formattest.cpp)
     target_link_libraries(formattest PRIVATE Qt6::Core Qt6::Gui)

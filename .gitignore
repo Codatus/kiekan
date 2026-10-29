@@ -8,3 +8,7 @@
 .vscode/
 .idea/
 *~
+
+# Flatpak
+/build-flatpak/
+/.flatpak-builder/

@@ -59,6 +59,14 @@ private:
     QListWidget *m_aiTrusted = nullptr;
     QLabel *m_trustNote = nullptr;
     QSpinBox *m_ocrJobs;
+
+    QWidget *createAssocPage();
+    void applyAssoc();
+    void refreshAssocStatus();
+    QList<QPair<QString, QCheckBox *>> m_assocBoxes;
+    QList<QPair<QString, QLabel *>> m_assocCurrent;
+    QLabel *m_assocResult = nullptr;
+
     bool m_initialAutoRotate;
     bool m_initialAiAccess;
 };
