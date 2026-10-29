@@ -120,6 +120,15 @@ MpvWidget::MpvWidget(QWidget *parent)
     mpv_set_option_string(m_mpv, "vo", "libmpv");
     mpv_set_option_string(m_mpv, "terminal", "no");
     mpv_set_option_string(m_mpv, "msg-level", "all=no");
+    // Kein Netz: Videos sind lokale Dateien. Eine präparierte Datei (z. B. eine
+    // als .mp4 getarnte HLS-Wiedergabeliste) darf nichts nachladen; keine
+    // mpv-Konfiguration und keine Skripte (ytdl_hook würde youtube-dl starten).
+    mpv_set_option_string(m_mpv, "config", "no");
+    mpv_set_option_string(m_mpv, "load-scripts", "no");
+    mpv_set_option_string(m_mpv, "ytdl", "no");
+    mpv_set_option_string(m_mpv, "osc", "no");
+    mpv_set_option_string(m_mpv, "demuxer-lavf-o", "protocol_whitelist=[file,crypto,data]");
+    mpv_set_option_string(m_mpv, "stream-lavf-o", "protocol_whitelist=[file,crypto,data]");
     // Fehlersuche: KIEKAN_MPV_LOG=<datei> schreibt ein ausführliches mpv-Protokoll.
     const QByteArray mpvLog = qgetenv("KIEKAN_MPV_LOG");
     if (!mpvLog.isEmpty()) {

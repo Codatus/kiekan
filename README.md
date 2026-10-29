@@ -428,6 +428,25 @@ Dateien in `translations/`. Nach Codeänderungen aktualisieren:
 /usr/lib/qt6/bin/lupdate src plugins -source-language de -target-language en -ts translations/kiekan_en.ts
 ```
 
+## Datenschutz: keine Verbindung ins Internet
+
+KiekAn! sendet nichts ins Internet – keine Telemetrie, keine Update-Abfrage,
+kein Nachladen. Das gilt auch für die Bibliotheken:
+
+- Videos (libmpv): keine mpv-Konfiguration, keine Skripte (kein youtube-dl),
+  erlaubt sind nur lokale Dateien. Eine präparierte Datei, die Teile aus dem
+  Netz nachladen will, wird nicht ausgeführt.
+- SVG, PDF, Metadaten, Texterkennung und alle Bildformate arbeiten nur mit der
+  geöffneten Datei.
+- Die KI-Schnittstelle spricht nur über die Standardein-/ausgabe mit dem
+  aufrufenden Programm und über einen lokalen Socket mit dem eigenen Fenster.
+- Einzige Ausnahme, nur auf Klick: „In OpenStreetMap zeigen“ im EXIF-Dialog
+  öffnet den Browser mit den GPS-Koordinaten des Fotos.
+
+Das Flatpak hat zusätzlich keine Netzwerkberechtigung. Geprüft wird das mit
+[`packaging/test/netztest.sh`](packaging/test/netztest.sh): Während aller
+Tests und mit Köderdateien wird jeder Verbindungsversuch protokolliert.
+
 ## Bildnachweis
 
 Die Fotos in den Bildschirmfotos stehen unter
