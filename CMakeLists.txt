@@ -314,9 +314,16 @@ set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 # Pakete hängen an den Bibliotheksversionen ihrer Distribution; mit
 # -DKIEKAN_PKG_SUFFIX=ubuntu24.04 bzw. fedora43 steht das im Dateinamen.
 set(KIEKAN_PKG_SUFFIX "" CACHE STRING "Distribution im Paketnamen (z. B. ubuntu24.04, fedora43)")
+# Architektur im Dateinamen (amd64/arm64 bzw. x86_64/aarch64)
+set(KIEKAN_DEB_ARCH amd64)
+find_program(KIEKAN_DPKG dpkg)
+if(KIEKAN_DPKG)
+    execute_process(COMMAND ${KIEKAN_DPKG} --print-architecture
+                    OUTPUT_VARIABLE KIEKAN_DEB_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+endif()
 if(KIEKAN_PKG_SUFFIX)
-    set(CPACK_DEBIAN_FILE_NAME "kiekan_${PROJECT_VERSION}_${KIEKAN_PKG_SUFFIX}_amd64.deb")
-    set(CPACK_RPM_FILE_NAME "kiekan-${PROJECT_VERSION}-1.${KIEKAN_PKG_SUFFIX}.x86_64.rpm")
+    set(CPACK_DEBIAN_FILE_NAME "kiekan_${PROJECT_VERSION}_${KIEKAN_PKG_SUFFIX}_${KIEKAN_DEB_ARCH}.deb")
+    set(CPACK_RPM_FILE_NAME "kiekan-${PROJECT_VERSION}-1.${KIEKAN_PKG_SUFFIX}.${CMAKE_SYSTEM_PROCESSOR}.rpm")
 else()
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
     set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
@@ -358,7 +365,7 @@ set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
     /usr/share/icons/hicolor/22x22 /usr/share/icons/hicolor/22x22/apps
     /usr/share/icons/hicolor/24x24 /usr/share/icons/hicolor/24x24/apps
     /usr/share/icons/hicolor/32x32 /usr/share/icons/hicolor/32x32/apps
-    /usr/include /usr/lib64 /usr/share/doc)
+    /usr/include /usr/lib64 /usr/lib /usr/share/doc)
 if(KIEKAN_RPM_FAMILY STREQUAL "suse")
     set(CPACK_RPM_PACKAGE_REQUIRES "qt6-imageformats, libQt6Svg6, libheif-dav1d")
     set(KIEKAN_RPM_RECOMMENDS libheif-ffmpeg tesseract-ocr-traineddata-deu tesseract-ocr-traineddata-eng tesseract-ocr-traineddata-osd qt6-translations)

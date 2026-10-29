@@ -363,6 +363,17 @@ QWidget *SettingsDialog::createAssocPage()
     auto *layout = new QVBoxLayout(page);
 
     if (!FileAssoc::supported()) {
+#ifdef Q_OS_MACOS
+        // macOS: Zuordnung im Finder, je Dateityp über „Alle ändern …“.
+        auto *text = new QLabel(tr("So öffnen Sie Bilder mit KiekAn!:\n\n"
+                                   "1. Im Finder ein Bild auswählen und „Informationen“ öffnen (⌘I).\n"
+                                   "2. Unter „Öffnen mit“ KiekAn! auswählen.\n"
+                                   "3. „Alle ändern …“ klicken und bestätigen.\n\n"
+                                   "Das gilt jeweils für einen Dateityp (z. B. .jpg). PDFs und Videos "
+                                   "bleiben bei ihren bisherigen Programmen, solange Sie dort nichts ändern."), page);
+        text->setWordWrap(true);
+        layout->addWidget(text);
+#else
         // Windows erlaubt Programmen nicht, sich selbst als Standard einzutragen.
         auto *text = new QLabel(tr("So öffnen Sie Bilder mit KiekAn!:\n\n"
                                    "1. Rechtsklick auf ein Bild → „Öffnen mit“ → „Andere App auswählen“.\n"
@@ -380,6 +391,7 @@ QWidget *SettingsDialog::createAssocPage()
         row->addWidget(open);
         row->addStretch(1);
         layout->addLayout(row);
+#endif
         layout->addStretch(1);
         return page;
     }

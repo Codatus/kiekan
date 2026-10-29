@@ -18,6 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        image: ['ubuntu:22.04', 'ubuntu:24.04', 'debian:12', 'debian:13']
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]   # amd64 und arm64 (Raspberry Pi, ARM-Laptops)
         include:
           - image: ubuntu:22.04
             suffix: ubuntu22.04
@@ -27,7 +29,7 @@ jobs:
             suffix: debian12
           - image: debian:13
             suffix: debian13
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +72,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: kiekan-${{ matrix.suffix }}
+          name: kiekan-${{ matrix.suffix }}-${{ matrix.runner }}
           path: build/*.deb
 
       - name: Release veröffentlichen
@@ -85,6 +87,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        image: ['fedora:43', 'fedora:44', 'opensuse/tumbleweed', 'opensuse/leap:16.0']
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
         include:
           - image: fedora:43
             suffix: fc43
@@ -92,7 +96,9 @@ jobs:
             suffix: fc44
           - image: opensuse/tumbleweed
             suffix: opensuse
-    runs-on: ubuntu-latest
+          - image: opensuse/leap:16.0
+            suffix: leap16
+    runs-on: ${{ matrix.runner }}
     container: ${{ matrix.image }}
     steps:
       - name: Abhängigkeiten installieren
@@ -139,7 +145,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: kiekan-${{ matrix.suffix }}
+          name: kiekan-${{ matrix.suffix }}-${{ matrix.runner }}
           path: build/*.rpm
 
       - name: Release veröffentlichen
@@ -168,6 +174,47 @@ jobs:
           chown -R bauer /home/bauer/pkg
           su bauer -c 'cd /home/bauer/pkg && makepkg --noconfirm'
           pacman -U --noconfirm /home/bauer/pkg/kiekan-$ver-*-x86_64.pkg.tar.zst
+
+  macos:
+    # Apple Silicon; ohne Apple-Entwicklerkonto nur ad hoc signiert
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten installieren
+        run: brew install ninja pkg-config qt mpv exiv2 tesseract qpdf libheif libraw openjpeg djvulibre librsvg
+
+      - name: Bauen
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(brew --prefix qt)"
+          cmake --build build
+
+      - name: Testen
+        run: ctest --test-dir build --output-on-failure
+        env:
+          QT_QPA_PLATFORM: offscreen
+
+      - name: Programmpaket
+        run: |
+          VERSION=$(sed -n 's/^CMAKE_PROJECT_VERSION:STATIC=//p' build/CMakeCache.txt)
+          packaging/macos/deploy.sh build dist "$VERSION"
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+                         '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | QT_QPA_PLATFORM=offscreen dist/KiekAn.app/Contents/MacOS/kiekan --mcp | tee mcp.out
+          grep -q '"extract_text"' mcp.out
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiekan-macos
+          path: dist/*.dmg
+
+      - name: Release veröffentlichen
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.dmg
+          generate_release_notes: false   # Notiz nur einmal (Windows-Job)
 
   windows:
     runs-on: windows-2022

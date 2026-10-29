@@ -14,6 +14,7 @@
 #include <QGuiApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QFileOpenEvent>
 #include <QIcon>
 #include <QImageReader>
 #include <QLibraryInfo>
@@ -61,6 +62,30 @@ void addPluginPaths()
 #endif
     QCoreApplication::addLibraryPath(QDir::cleanPath(dir + QStringLiteral("/../lib/kiekan/qtplugins")));
 }
+
+// macOS übergibt Dateien aus dem Finder („Öffnen mit“, Doppelklick) als
+// Ereignis statt als Startargument.
+class FileOpenFilter : public QObject
+{
+public:
+    explicit FileOpenFilter(MainWindow *window) : QObject(window), m_window(window) {}
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        if (event->type() == QEvent::FileOpen) {
+            const QString file = static_cast<QFileOpenEvent *>(event)->file();
+            if (!file.isEmpty()) {
+                m_window->openPath(file);
+                return true;
+            }
+        }
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    MainWindow *m_window;
+};
 
 void setIdentity()
 {
@@ -177,6 +202,7 @@ int main(int argc, char *argv[])
 
     MainWindow window;
     window.show();
+    app.installEventFilter(new FileOpenFilter(&window));
 
     const QStringList args = QApplication::arguments();
     if (args.size() > 1)
