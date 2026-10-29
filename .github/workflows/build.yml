@@ -78,7 +78,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/*.deb
-          generate_release_notes: true
+          generate_release_notes: false   # Notiz nur einmal (Windows-Job)
 
   rpm:
     # Fedora und openSUSE: je ein eigenes .rpm
@@ -147,7 +147,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/*.rpm
-          generate_release_notes: true
+          generate_release_notes: false   # Notiz nur einmal (Windows-Job)
 
   arch:
     # Prüft das PKGBUILD (Vorlage für das AUR) mit dem aktuellen Quelltext
