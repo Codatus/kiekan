@@ -4,6 +4,8 @@
 
 #include "McpServer.h"
 
+#include "BatchConvert.h"
+
 #include "AiGuard.h"
 #include "EditOps.h"
 #include "FilterRegistry.h"
@@ -398,45 +400,16 @@ void drawGrid(QImage &preview, const QRect &source)
 
 QByteArray writerFormat(const QString &path)
 {
-    const QString s = QFileInfo(path).suffix().toLower();
-    if (s == QLatin1String("jpg") || s == QLatin1String("jpeg"))
-        return "jpeg";
-    if (s == QLatin1String("tif") || s == QLatin1String("tiff"))
-        return "tiff";
-    if (s == QLatin1String("png") || s == QLatin1String("webp") || s == QLatin1String("bmp"))
-        return s.toLatin1();
-    return {};
+    return BatchConvert::writerFormat(path);
 }
 
 void writeImage(const QImage &input, const QString &output, int quality, const QString &metadataSource)
 {
-    const QByteArray format = writerFormat(output);
-    if (format.isEmpty() || !QImageWriter::supportedImageFormats().contains(format))
+    if (writerFormat(output).isEmpty())
         fail(QStringLiteral("unsupported output format: %1 (use jpg, png, webp, tif or bmp)").arg(QFileInfo(output).suffix()));
-
-    QImage img = input;
-    if (img.hasAlphaChannel() && (format == "jpeg" || format == "bmp")) {
-        QImage flat(img.size(), QImage::Format_RGB32);
-        flat.fill(Qt::white);
-        QPainter p(&flat);
-        p.drawImage(0, 0, img);
-        p.end();
-        img = flat;
-    }
-
-    Metadata::Snapshot meta;
-    if (!metadataSource.isEmpty() && !Media::isPdf(metadataSource) && format != "bmp")
-        meta = Metadata::Snapshot::capture(metadataSource);
-
-    QSaveFile file(output);
-    if (!file.open(QIODevice::WriteOnly))
-        fail(QStringLiteral("cannot write %1: %2").arg(output, file.errorString()));
-    QImageWriter writer(&file, format);
-    if (format == "jpeg" || format == "webp")
-        writer.setQuality(std::clamp(quality, 1, 100));
-    if (!writer.write(img) || !file.commit())
-        fail(QStringLiteral("cannot write %1: %2").arg(output, writer.errorString()));
-    meta.applyTo(output, img.size(), true);
+    const QString error = BatchConvert::writeImage(input, output, quality, metadataSource);
+    if (!error.isEmpty())
+        fail(error);
 }
 
 QJsonArray viewerCall(const QJsonObject &req, QJsonObject *answer)
@@ -998,53 +971,40 @@ QJsonArray McpServer::convertBatch(const QJsonObject &args)
     const bool overwrite = boolean(args, "overwrite", false);
     const QJsonArray ops = args.value(QLatin1String("operations")).toArray();
 
+    BatchConvert::Options options;
+    options.format = format;
+    options.outputDir = outDir;
+    options.quality = quality;
+    options.maxSize = maxSize;
+    options.overwrite = overwrite;
+    options.operations = ops;
+    // Operationen vorab prüfen, damit ein Tippfehler nicht jede Datei scheitern lässt
+    try {
+        EditOps::apply(QImage(1, 1, QImage::Format_RGB32), ops, nullptr);
+    } catch (const EditOps::Error &e) {
+        fail(e.message);
+    }
+
     int done = 0, skipped = 0, failed = 0;
     QStringList report;
-    QSet<QString> produced;   // gleichnamige Quellen (bild.png, bild.heic) nicht gegenseitig überschreiben
-    for (const QString &in : inputs) {
-        if (Media::isVideo(in))
-            continue;
-        // Mehrseitige Dokumente (PDF, DjVu, TIFF) seitenweise umwandeln
-        int pages = 1;
-        if (Media::isPdf(in)) {
-            pages = std::max(1, Media::pdfPageCount(in));
-        } else {
-            QImageReader probe(in);
-            if (!probe.supportsAnimation() && probe.imageCount() > 1)
-                pages = probe.imageCount();
-        }
-        for (int page = 0; page < pages; ++page) {
-            QString base = QFileInfo(in).completeBaseName();
-            if (pages > 1)
-                base += QStringLiteral("_page-%1").arg(page + 1);
-            QString out = QDir(outDir).filePath(base + QLatin1Char('.') + format);
-            if (produced.contains(out))
-                out = QDir(outDir).filePath(base + QLatin1Char('_') + QFileInfo(in).suffix().toLower() + QLatin1Char('.') + format);
-            produced.insert(out);
-            if (QFileInfo::exists(out) && !overwrite) {
-                ++skipped;
-                report << QStringLiteral("skipped (exists): %1").arg(out);
-                continue;
-            }
-            if (QFileInfo(out).canonicalFilePath() == QFileInfo(in).canonicalFilePath()) {
-                ++skipped;
-                report << QStringLiteral("skipped (would replace its own source): %1").arg(out);
-                continue;
-            }
-            try {
-                QImage img = EditOps::apply(loadImage(in, page, nullptr, true), ops, nullptr);
-                if (maxSize > 0)
-                    img = EditOps::scaledToMax(img, maxSize);
-                writeImage(img, out, quality, in);
-                AiGuard::recordProvenance(out, {in});
-                if (g_audit)
-                    g_audit->written << out;
-                ++done;
-                report << QStringLiteral("ok: %1 (%2x%3)").arg(out).arg(img.width()).arg(img.height());
-            } catch (const ToolError &e) {
-                ++failed;
-                report << QStringLiteral("failed: %1: %2").arg(in, e.message);
-            }
+    for (const BatchConvert::Item &item : BatchConvert::plan(inputs, options)) {
+        const BatchConvert::Outcome o = BatchConvert::convert(item, options);
+        switch (o.status) {
+        case BatchConvert::Outcome::Converted:
+            AiGuard::recordProvenance(item.output, {item.input});
+            if (g_audit)
+                g_audit->written << item.output;
+            ++done;
+            report << QStringLiteral("ok: %1 (%2x%3)").arg(item.output).arg(o.size.width()).arg(o.size.height());
+            break;
+        case BatchConvert::Outcome::Skipped:
+            ++skipped;
+            report << QStringLiteral("skipped (%1): %2").arg(o.message, item.output);
+            break;
+        case BatchConvert::Outcome::Failed:
+            ++failed;
+            report << QStringLiteral("failed: %1: %2").arg(item.input, o.message);
+            break;
         }
     }
     QString text = QStringLiteral("converted %1, skipped %2, failed %3\n").arg(done).arg(skipped).arg(failed);

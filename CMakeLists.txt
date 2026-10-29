@@ -118,6 +118,12 @@ qt_add_executable(kiekan WIN32
     src/FileAssoc.h
     src/LosslessJpeg.cpp
     src/LosslessJpeg.h
+    src/BatchConvert.cpp
+    src/BatchConvert.h
+    src/BatchRename.cpp
+    src/BatchRename.h
+    src/BatchDialog.cpp
+    src/BatchDialog.h
     src/SettingsDialog.h
     src/Metadata.cpp
     src/Metadata.h
@@ -290,6 +296,11 @@ if(BUILD_TESTING)
             target_compile_definitions(losslesstest PRIVATE KIEKAN_HAVE_TURBOJPEG)
         endif()
         add_test(NAME verlustfrei COMMAND losslesstest)
+        qt_add_executable(renametest tests/renametest.cpp src/BatchRename.cpp src/Metadata.cpp)
+        target_include_directories(renametest PRIVATE src)
+        target_link_libraries(renametest PRIVATE Qt6::Core Qt6::Gui PkgConfig::EXIV2)
+        target_compile_definitions(renametest PRIVATE KIEKAN_HAVE_EXIV2)
+        add_test(NAME umbenennen COMMAND renametest)
         set_tests_properties(verlustfrei PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
     endif()
     if(UNIX AND NOT APPLE)

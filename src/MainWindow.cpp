@@ -4,6 +4,7 @@
 
 #include "MainWindow.h"
 
+#include "BatchDialog.h"
 #include "LosslessJpeg.h"
 
 #include "AiLogDialog.h"
@@ -172,6 +173,7 @@ void MainWindow::createActions()
     QAction *saveAct = make(tr("&Speichern"), "document-save", {K::Save}, [this] { save(); });
     QAction *saveAsAct = make(tr("Speichern &unter …"), "document-save-as", {K(Qt::Key_S)}, [this] { saveAs(); });
     QAction *rename = make(tr("&Umbenennen …"), "edit-rename", {K(Qt::Key_F2)}, [this] { renameFile(); });
+    QAction *batch = make(tr("&Stapelverarbeitung …"), "", {K(Qt::Key_B)}, [this] { batchDialog(); });
     QAction *del = make(tr("In den &Papierkorb"), "edit-delete", {K(Qt::Key_Delete)}, [this] { deleteFile(); });
     QAction *info = make(tr("Bild&informationen"), "document-properties", {K(Qt::Key_I)}, [this] { showInfo(); });
     QAction *quit = make(tr("&Beenden"), "application-exit", {K(Qt::CTRL | Qt::Key_Q)}, [this] { close(); });
@@ -261,6 +263,8 @@ void MainWindow::createActions()
     file->addActions({open, saveAct, saveAsAct});
     file->addSeparator();
     file->addActions({rename, del, info, exifAct, ocrAct, splitAct});
+    file->addSeparator();
+    file->addAction(batch);
     file->addSeparator();
     file->addAction(quit);
 
@@ -998,6 +1002,29 @@ void MainWindow::deleteFile()
         showIndex(std::min(removed, int(m_files.size()) - 1));
     }
     message(tr("Gelöscht: %1").arg(name));
+}
+
+void MainWindow::batchDialog()
+{
+    if (!confirmDiscard())
+        return;
+    BatchDialog dlg(m_files, m_path, this);
+    connect(&dlg, &BatchDialog::filesRenamed, this, [this](const QList<QPair<QString, QString>> &renamed) {
+        // Angezeigte Datei und Ordnerliste den neuen Namen nachführen
+        for (const auto &[from, to] : renamed) {
+            m_loader->remove(from);
+            const qsizetype i = m_files.indexOf(from);
+            if (i >= 0)
+                m_files[i] = to;
+            if (m_path == from)
+                m_path = to;
+        }
+        if (!m_path.isEmpty())
+            scanDirectory(QFileInfo(m_path).absolutePath(), m_path);
+        updateTitle();
+        updateStatus();
+    });
+    dlg.exec();
 }
 
 void MainWindow::renameFile()

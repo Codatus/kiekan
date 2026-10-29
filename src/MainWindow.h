@@ -78,6 +78,7 @@ private:
     bool writeImage(const QString &path, const QByteArray &format, int quality, const QImage &image);
     void deleteFile();
     void renameFile();
+    void batchDialog();
     void showInfo();
     bool confirmDiscard();
 
