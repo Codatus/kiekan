@@ -5,6 +5,8 @@
 #pragma once
 
 #include <QJsonObject>
+#include <QHash>
+#include <QKeySequence>
 #include <QMainWindow>
 #include <QPointer>
 #include <QThreadPool>
@@ -25,6 +27,7 @@ class ImageView;
 class QLabel;
 class QMenu;
 class QMessageBox;
+class QTimer;
 class QToolBar;
 
 class MainWindow : public QMainWindow
@@ -116,6 +119,11 @@ private:
     // Ansicht
     void toggleFullScreen();
     void escape();
+    void print();
+    void customizeShortcuts();
+    void startSlideshow();
+    void stopSlideshow();
+    void slideshowTick();
     void showContextMenu(const QPoint &globalPos);
     void showHelp();
     void showAbout();
@@ -158,6 +166,12 @@ private:
     bool m_editOpsValid = true;
     quint64 m_scanGeneration = 0;
     bool m_wasMaximized = false;
+    QList<QAction *> m_actions;                                  // alle Aktionen mit Kennung
+    QHash<QString, QList<QKeySequence>> m_defaultShortcuts;
+    QTimer *m_slideTimer = nullptr;   // Diashow; läuft nur, solange nicht pausiert
+    bool m_slideshow = false;
+    bool m_slideLoop = true;
+    bool m_slideFullScreen = false;   // Vollbild wurde von der Diashow eingeschaltet
 
     QThreadPool m_scanPool;       // zuletzt deklariert: wartet beim Beenden zuerst
 };

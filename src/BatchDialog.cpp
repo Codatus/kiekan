@@ -6,10 +6,10 @@
 
 #include "BatchConvert.h"
 #include "Media.h"
+#include "NaturalSort.h"
 
 #include <QCheckBox>
 #include <QColor>
-#include <QCollator>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -97,9 +97,7 @@ BatchDialog::BatchDialog(const QStringList &files, const QString &current, QWidg
         QDirIterator it(dir, Media::imageNameFilters(), QDir::Files | QDir::Readable);
         while (it.hasNext())
             found << it.next();
-        QCollator collator;
-        collator.setNumericMode(true);
-        std::sort(found.begin(), found.end(), [&](const QString &a, const QString &b) { return collator.compare(a, b) < 0; });
+        std::sort(found.begin(), found.end(), [](const QString &a, const QString &b) { return naturalCompare(a, b) < 0; });
         addFiles(found);
     });
     connect(removeButton, &QPushButton::clicked, this, [this] {
@@ -151,6 +149,8 @@ BatchDialog::BatchDialog(const QStringList &files, const QString &current, QWidg
     });
     connect(m_tabs, &QTabWidget::currentChanged, this, [this](int index) {
         QSettings().setValue(QStringLiteral("batch/tab"), index);
+        if (!m_worker)
+            m_progress->setVisible(false);
         updateConvertState();
         updatePreview();
     });

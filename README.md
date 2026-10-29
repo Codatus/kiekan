@@ -32,13 +32,24 @@ eigenes Paket:
 
 | System | Paket | Installieren |
 |---|---|---|
-| Ubuntu 24.04, Linux Mint 22, Pop!_OS 24.04 | `kiekan_<version>_ubuntu24.04_amd64.deb` | `sudo apt install ./kiekan_…deb` |
-| Ubuntu 22.04, Linux Mint 21, Pop!_OS 22.04 | `kiekan_<version>_ubuntu22.04_amd64.deb` | `sudo apt install ./kiekan_…deb` |
-| Debian 13 / Debian 12 | `kiekan_<version>_debian13_amd64.deb` / `…_debian12_…` | `sudo apt install ./kiekan_…deb` |
-| Fedora 44 / 43 | `kiekan-<version>-1.fc44.x86_64.rpm` / `….fc43…` | `sudo dnf install ./kiekan-…rpm` |
-| openSUSE Tumbleweed | `kiekan-<version>-1.opensuse.x86_64.rpm` | `sudo zypper install ./kiekan-…rpm` |
+| Ubuntu 24.04, Linux Mint 22, Pop!_OS 24.04 | `kiekan_<version>_ubuntu24.04_<arch>.deb` | `sudo apt install ./kiekan_…deb` |
+| Ubuntu 22.04, Linux Mint 21, Pop!_OS 22.04 | `kiekan_<version>_ubuntu22.04_<arch>.deb` | `sudo apt install ./kiekan_…deb` |
+| Debian 13 / 12, Raspberry Pi OS (64 Bit) | `kiekan_<version>_debian13_<arch>.deb` / `…_debian12_…` | `sudo apt install ./kiekan_…deb` |
+| Fedora 44 / 43 | `kiekan-<version>-1.fc44.<arch>.rpm` / `….fc43…` | `sudo dnf install ./kiekan-…rpm` |
+| openSUSE Tumbleweed / Leap 16 | `kiekan-<version>-1.opensuse.<arch>.rpm` / `….leap16…` | `sudo zypper install ./kiekan-…rpm` |
 | Arch Linux, Manjaro | [`packaging/arch/PKGBUILD`](packaging/arch/PKGBUILD) | `makepkg -si` |
+| Gentoo | [`packaging/gentoo`](packaging/gentoo) (Ebuild) | in ein lokales Overlay kopieren |
+| NixOS, Nix | [`packaging/nix`](packaging/nix) | `nix-build packaging/nix` |
+| macOS 13+ (Apple Silicon) | `KiekAn-<version>-macos-arm64.dmg` | siehe unten |
 | alle anderen (Flatpak) | [`packaging/flatpak`](packaging/flatpak) | siehe unten |
+
+`<arch>` ist `amd64`/`x86_64` für übliche PCs und `arm64`/`aarch64` für ARM-Rechner
+wie den Raspberry Pi 4/5 oder ARM-Laptops.
+
+**macOS:** Das Programm ist nicht bei Apple beglaubigt (dafür wäre ein
+kostenpflichtiges Entwicklerkonto nötig). Beim ersten Start meldet macOS deshalb
+einen „nicht verifizierten Entwickler“: KiekAn! in den Programme-Ordner ziehen,
+dann Rechtsklick → „Öffnen“ → „Öffnen“ bestätigen. Danach startet es normal.
 
 HEIC-Fotos (iPhone) brauchen einen HEVC-Decoder, den Fedora und openSUSE aus
 Patentgründen nicht mitliefern: unter Fedora `libheif-freeworld` aus
@@ -88,6 +99,15 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - Vorladen der Nachbarbilder im Hintergrund, damit das Blättern ohne Wartezeit läuft
 - Zoom, Originalgröße, An-Fenster-Anpassen, Vollbild
 - Drehen, Spiegeln, Zuschneiden, Größe ändern, Rückgängig
+- JPEGs werden **verlustfrei** gedreht und gespiegelt: Beim Speichern ordnet
+  KiekAn! die komprimierten Bildblöcke um (libjpeg-turbo), statt neu zu kodieren;
+  passen die Maße nicht dazu, ändert es nur die EXIF-Ausrichtung
+- **Stapelverarbeitung** (Taste B): viele Bilder umwandeln (Format, Qualität,
+  Verkleinern, Farbkorrektur, Graustufen, Metadaten) und **umbenennen** nach
+  Muster mit Vorschau, Konfliktprüfung und Rücknahme
+- **Diashow** (Taste W) mit einstellbarer Anzeigedauer, Pause mit der Leertaste
+- **Drucken** (Strg+P) mit Druckvorschau, an die Seite angepasst
+- **Tastenkürzel frei belegen** (Extras → Tastenkürzel anpassen)
 - Bilder aus der Zwischenablage einfügen und als Datei speichern
 - Speichern als PNG, JPEG, WebP, BMP, TIFF
 - Umbenennen, in den Papierkorb verschieben, Bildinformationen
@@ -126,7 +146,6 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - Titel, Beschreibung, Stichwörter und Bewertung anzeigen (Bildinformationen)
 - Schnittstelle für KI-Assistenten (MCP), siehe unten
 
-Geplant: Stapelkonvertierung und Batch-Umbenennen in der Oberfläche.
 
 ## Tastenkürzel
 
@@ -162,6 +181,9 @@ Geplant: Stapelkonvertierung und Batch-Umbenennen in der Oberfläche.
 | P | Einstellungen |
 | O | Öffnen |
 | Strg+S / S | Speichern / Speichern unter |
+| B | Stapelverarbeitung (Umwandeln, Umbenennen) |
+| W | Diashow (Leertaste: Pause, Esc: Ende) |
+| Strg+P | Drucken |
 | F2 | Umbenennen |
 | Entf | In den Papierkorb |
 | I | Bildinformationen |
@@ -174,6 +196,9 @@ Geplant: Stapelkonvertierung und Batch-Umbenennen in der Oberfläche.
 | M (Video) | Ton aus / an |
 | Strg+C (Video) | Aktuelles Videobild kopieren |
 | F1 | Tastenkürzel anzeigen |
+
+Alle Tasten lassen sich unter Extras → Tastenkürzel anpassen ändern; F1 zeigt
+immer die aktuelle Belegung.
 
 ## Andere Systeme (Windows, weitere Distributionen)
 

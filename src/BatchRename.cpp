@@ -5,8 +5,8 @@
 #include "BatchRename.h"
 
 #include "Metadata.h"
+#include "NaturalSort.h"
 
-#include <QCollator>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -95,9 +95,6 @@ QList<Entry> preview(const QStringList &files, const Options &options)
     for (const QString &f : files)
         list.append({QFileInfo(f).absoluteFilePath(), needDate ? dateTaken(f) : QDateTime()});
 
-    QCollator collator;
-    collator.setNumericMode(true);
-    collator.setCaseSensitivity(Qt::CaseInsensitive);
     std::stable_sort(list.begin(), list.end(), [&](const File &a, const File &b) {
         switch (options.sort) {
         case Sort::DateTaken:
@@ -113,7 +110,7 @@ QList<Entry> preview(const QStringList &files, const Options &options)
         case Sort::Name:
             break;
         }
-        return collator.compare(QFileInfo(a.path).fileName(), QFileInfo(b.path).fileName()) < 0;
+        return naturalCompare(QFileInfo(a.path).fileName(), QFileInfo(b.path).fileName()) < 0;
     });
 
     QList<Entry> entries;

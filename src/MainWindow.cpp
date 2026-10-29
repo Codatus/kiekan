@@ -6,6 +6,8 @@
 
 #include "BatchDialog.h"
 #include "LosslessJpeg.h"
+#include "NaturalSort.h"
+#include "ShortcutDialog.h"
 
 #include "AiLogDialog.h"
 #include "CurvesDialog.h"
@@ -34,7 +36,19 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
-#include <QCollator>
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QDoubleSpinBox>
+#include <QTextBrowser>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QFormLayout>
+#include <QTimer>
+#ifdef KIEKAN_HAVE_PRINT
+#include <QPageLayout>
+#include <QPrintPreviewDialog>
+#include <QPrinter>
+#endif
 #include <QDateTime>
 #include <QDir>
 #include <QBuffer>
@@ -71,14 +85,6 @@ namespace {
 constexpr int kPanStep = 64;
 constexpr qsizetype kUndoBudget = 512LL * 1024 * 1024;   // Bytes
 const QColor kViewBackground(0x2b, 0x2b, 0x2b);
-
-QCollator naturalCollator()
-{
-    QCollator c;
-    c.setNumericMode(true);
-    c.setCaseSensitivity(Qt::CaseInsensitive);
-    return c;
-}
 
 QByteArray formatForSuffix(const QString &suffix)
 {
@@ -159,69 +165,88 @@ void MainWindow::createActions()
 {
     // Jede Aktion wird auch direkt am Fenster registriert, damit ihre
     // Tastenkürzel im Vollbild (ohne Menüleiste) weiter funktionieren.
-    auto make = [this](const QString &text, const char *icon,
+    // `id`: feste Kennung für eigene Tastenbelegungen (shortcuts/<id>)
+    auto make = [this](const QString &id, const QString &text, const char *icon,
                        const QList<QKeySequence> &keys, auto slot) {
         auto *a = new QAction(Icons::get(QString::fromLatin1(icon)), text, this);
+        a->setObjectName(id);
         a->setShortcuts(keys);
+        m_actions.append(a);
+        m_defaultShortcuts.insert(id, keys);
         connect(a, &QAction::triggered, this, slot);
         addAction(a);
         return a;
     };
     using K = QKeySequence;
 
-    QAction *open = make(tr("&Öffnen …"), "document-open", {K(Qt::Key_O), K::Open}, [this] { openDialog(); });
-    QAction *saveAct = make(tr("&Speichern"), "document-save", {K::Save}, [this] { save(); });
-    QAction *saveAsAct = make(tr("Speichern &unter …"), "document-save-as", {K(Qt::Key_S)}, [this] { saveAs(); });
-    QAction *rename = make(tr("&Umbenennen …"), "edit-rename", {K(Qt::Key_F2)}, [this] { renameFile(); });
-    QAction *batch = make(tr("&Stapelverarbeitung …"), "", {K(Qt::Key_B)}, [this] { batchDialog(); });
-    QAction *del = make(tr("In den &Papierkorb"), "edit-delete", {K(Qt::Key_Delete)}, [this] { deleteFile(); });
-    QAction *info = make(tr("Bild&informationen"), "document-properties", {K(Qt::Key_I)}, [this] { showInfo(); });
-    QAction *quit = make(tr("&Beenden"), "application-exit", {K(Qt::CTRL | Qt::Key_Q)}, [this] { close(); });
+    QAction *open = make(QStringLiteral("open"), tr("&Öffnen …"), "document-open", {K(Qt::Key_O), K::Open}, [this] { openDialog(); });
+    QAction *saveAct = make(QStringLiteral("saveAct"), tr("&Speichern"), "document-save", {K::Save}, [this] { save(); });
+    QAction *saveAsAct = make(QStringLiteral("saveAsAct"), tr("Speichern &unter …"), "document-save-as", {K(Qt::Key_S)}, [this] { saveAs(); });
+    QAction *rename = make(QStringLiteral("rename"), tr("&Umbenennen …"), "edit-rename", {K(Qt::Key_F2)}, [this] { renameFile(); });
+    QAction *batch = make(QStringLiteral("batch"), tr("&Stapelverarbeitung …"), "", {K(Qt::Key_B)}, [this] { batchDialog(); });
+    QAction *del = make(QStringLiteral("del"), tr("In den &Papierkorb"), "edit-delete", {K(Qt::Key_Delete)}, [this] { deleteFile(); });
+    QAction *info = make(QStringLiteral("info"), tr("Bild&informationen"), "document-properties", {K(Qt::Key_I)}, [this] { showInfo(); });
+    QAction *printAct = make(QStringLiteral("printAct"), tr("&Drucken …"), "document-print", {K::Print}, [this] { print(); });
+    QAction *slideshowAct = make(QStringLiteral("slideshowAct"), tr("&Diashow …"), "media-playback-start", {K(Qt::Key_W)}, [this] { startSlideshow(); });
+    QAction *quit = make(QStringLiteral("quit"), tr("&Beenden"), "application-exit", {K(Qt::CTRL | Qt::Key_Q)}, [this] { close(); });
 
-    QAction *undoAct = make(tr("&Rückgängig"), "edit-undo", {K::Undo}, [this] { undo(); });
-    QAction *copyAct = make(tr("&Kopieren"), "edit-copy", {K::Copy}, [this] { copy(); });
-    QAction *pasteAct = make(tr("&Einfügen"), "edit-paste", {K::Paste}, [this] { paste(); });
-    QAction *selAll = make(tr("&Alles auswählen"), "edit-select-all", {K::SelectAll}, [this] { m_view->selectAll(); });
-    QAction *cropAct = make(tr("Auswahl &zuschneiden"), "transform-crop", {K(Qt::CTRL | Qt::Key_Y)}, [this] { crop(); });
+    QAction *undoAct = make(QStringLiteral("undoAct"), tr("&Rückgängig"), "edit-undo", {K::Undo}, [this] { undo(); });
+    QAction *copyAct = make(QStringLiteral("copyAct"), tr("&Kopieren"), "edit-copy", {K::Copy}, [this] { copy(); });
+    QAction *pasteAct = make(QStringLiteral("pasteAct"), tr("&Einfügen"), "edit-paste", {K::Paste}, [this] { paste(); });
+    QAction *selAll = make(QStringLiteral("selAll"), tr("&Alles auswählen"), "edit-select-all", {K::SelectAll}, [this] { m_view->selectAll(); });
+    QAction *cropAct = make(QStringLiteral("cropAct"), tr("Auswahl &zuschneiden"), "transform-crop", {K(Qt::CTRL | Qt::Key_Y)}, [this] { crop(); });
 
-    QAction *rotR = make(tr("Nach &rechts drehen"), "object-rotate-right", {K(Qt::Key_R)}, [this] { rotate(90); });
-    QAction *rotL = make(tr("Nach &links drehen"), "object-rotate-left", {K(Qt::Key_L)}, [this] { rotate(-90); });
-    QAction *flipH = make(tr("&Horizontal spiegeln"), "object-flip-horizontal", {K(Qt::Key_H)}, [this] { flip(true); });
-    QAction *flipV = make(tr("&Vertikal spiegeln"), "object-flip-vertical", {K(Qt::Key_V)}, [this] { flip(false); });
-    QAction *resizeAct = make(tr("&Größe ändern …"), "transform-scale", {K(Qt::CTRL | Qt::Key_R)}, [this] { resizeImage(); });
+    QAction *rotR = make(QStringLiteral("rotR"), tr("Nach &rechts drehen"), "object-rotate-right", {K(Qt::Key_R)}, [this] { rotate(90); });
+    QAction *rotL = make(QStringLiteral("rotL"), tr("Nach &links drehen"), "object-rotate-left", {K(Qt::Key_L)}, [this] { rotate(-90); });
+    QAction *flipH = make(QStringLiteral("flipH"), tr("&Horizontal spiegeln"), "object-flip-horizontal", {K(Qt::Key_H)}, [this] { flip(true); });
+    QAction *flipV = make(QStringLiteral("flipV"), tr("&Vertikal spiegeln"), "object-flip-vertical", {K(Qt::Key_V)}, [this] { flip(false); });
+    QAction *resizeAct = make(QStringLiteral("resizeAct"), tr("&Größe ändern …"), "transform-scale", {K(Qt::CTRL | Qt::Key_R)}, [this] { resizeImage(); });
 
-    QAction *gray = make(tr("In &Graustufen umwandeln"), "color-mode-black-white", {K(Qt::CTRL | Qt::Key_G)},
+    QAction *gray = make(QStringLiteral("gray"), tr("In &Graustufen umwandeln"), "color-mode-black-white", {K(Qt::CTRL | Qt::Key_G)},
                          [this] { applyToImage(ImageOps::grayscale); });
-    QAction *bw = make(tr("In &Schwarzweiß umwandeln …"), "", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_B)},
+    QAction *bw = make(QStringLiteral("bw"), tr("In &Schwarzweiß umwandeln …"), "", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_B)},
                        [this] { openFilterDialog({FilterRegistry::instance().find(QStringLiteral("schwarzweiss"))}, nullptr); });
-    QAction *negative = make(tr("&Negativ"), "edit-select-invert", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_N)},
+    QAction *negative = make(QStringLiteral("negative"), tr("&Negativ"), "edit-select-invert", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_N)},
                              [this] { applyToImage(ImageOps::invert); });
-    QAction *autoCol = make(tr("&Automatische Farbkorrektur"), "", {K(Qt::SHIFT | Qt::Key_U)}, [this] { autoColors(); });
-    QAction *equalize = make(tr("Histogramm &ausgleichen"), "", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_E)},
+    QAction *autoCol = make(QStringLiteral("autoCol"), tr("&Automatische Farbkorrektur"), "", {K(Qt::SHIFT | Qt::Key_U)}, [this] { autoColors(); });
+    QAction *equalize = make(QStringLiteral("equalize"), tr("Histogramm &ausgleichen"), "", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_E)},
                              [this] { equalizeHistogram(); });
-    QAction *colors = make(tr("&Farben anpassen …"), "color-management", {K(Qt::SHIFT | Qt::Key_G)},
+    QAction *colors = make(QStringLiteral("colors"), tr("&Farben anpassen …"), "color-management", {K(Qt::SHIFT | Qt::Key_G)},
                            [this] { openFilterDialog({FilterRegistry::instance().find(QStringLiteral("farben"))}, nullptr); });
-    QAction *curves = make(tr("Gradations&kurven …"), "", {K(Qt::CTRL | Qt::Key_M)}, [this] { openCurves(); });
-    QAction *sharpenQuick = make(tr("Sc&härfen"), "", {K(Qt::SHIFT | Qt::Key_S)},
+    QAction *curves = make(QStringLiteral("curves"), tr("Gradations&kurven …"), "", {K(Qt::CTRL | Qt::Key_M)}, [this] { openCurves(); });
+    QAction *sharpenQuick = make(QStringLiteral("sharpenQuick"), tr("Sc&härfen"), "", {K(Qt::SHIFT | Qt::Key_S)},
                                  [this] { runFilter(QStringLiteral("schaerfen")); });
-    QAction *sharpen = make(tr("Schärfen (Einstellungen) …"), "", {},
+    QAction *sharpen = make(QStringLiteral("sharpen"), tr("Schärfen (Einstellungen) …"), "", {},
                             [this] { openFilterDialog({FilterRegistry::instance().find(QStringLiteral("schaerfen"))}, nullptr); });
-    QAction *blur = make(tr("&Weichzeichnen …"), "", {},
+    QAction *blur = make(QStringLiteral("blur"), tr("&Weichzeichnen …"), "", {},
                          [this] { openFilterDialog({FilterRegistry::instance().find(QStringLiteral("weichzeichnen"))}, nullptr); });
-    QAction *effects = make(tr("&Effekte-Browser …"), "", {K(Qt::CTRL | Qt::Key_E)},
+    QAction *effects = make(QStringLiteral("effects"), tr("&Effekte-Browser …"), "", {K(Qt::CTRL | Qt::Key_E)},
                             [this] { openFilterDialog(FilterRegistry::instance().effects(), nullptr); });
-    QAction *histogram = make(tr("&Histogramm"), "", {K(Qt::SHIFT | Qt::Key_H)}, [this] { toggleHistogram(); });
-    QAction *settingsAct = make(tr("&Einstellungen …"), "preferences-system", {K(Qt::Key_P)}, [this] { showSettings(); });
-    QAction *plugins = make(tr("&Plugins …"), "", {}, [this] { showPlugins(); });
-    QAction *aiLog = make(tr("&KI-Protokoll …"), "", {}, [this] { showAiLog(); });
+    QAction *histogram = make(QStringLiteral("histogram"), tr("&Histogramm"), "", {K(Qt::SHIFT | Qt::Key_H)}, [this] { toggleHistogram(); });
+    QAction *settingsAct = make(QStringLiteral("settingsAct"), tr("&Einstellungen …"), "preferences-system", {K(Qt::Key_P)}, [this] { showSettings(); });
+    QAction *shortcutsAct = make(QStringLiteral("shortcutsAct"), tr("&Tastenkürzel anpassen …"), "configure-shortcuts", {},
+                                 [this] { customizeShortcuts(); });
+    QAction *plugins = make(QStringLiteral("plugins"), tr("&Plugins …"), "", {}, [this] { showPlugins(); });
+    QAction *aiLog = make(QStringLiteral("aiLog"), tr("&KI-Protokoll …"), "", {}, [this] { showAiLog(); });
 
-    QAction *exifAct = make(tr("&EXIF-Daten …"), "", {K(Qt::Key_E)}, [this] { showExif(); });
-    QAction *developAct = make(tr("RAW voll &entwickeln"), "", {K(Qt::CTRL | Qt::Key_D)}, [this] { developRaw(); });
-    QAction *splitAct = make(tr("PDF &teilen …"), "", {}, [this] { splitPdf(); });
-    QAction *ocrAct = make(tr("&Text erkennen (OCR) …"), "", {K(Qt::CTRL | Qt::Key_T)}, [this] { recognizeText(); });
+    QAction *exifAct = make(QStringLiteral("exifAct"), tr("&EXIF-Daten …"), "", {K(Qt::Key_E)}, [this] { showExif(); });
+    QAction *developAct = make(QStringLiteral("developAct"), tr("RAW voll &entwickeln"), "", {K(Qt::CTRL | Qt::Key_D)}, [this] { developRaw(); });
+    QAction *splitAct = make(QStringLiteral("splitAct"), tr("PDF &teilen …"), "", {}, [this] { splitPdf(); });
+    QAction *ocrAct = make(QStringLiteral("ocrAct"), tr("&Text erkennen (OCR) …"), "", {K(Qt::CTRL | Qt::Key_T)}, [this] { recognizeText(); });
 
     // Leertaste: bei Videos Pause, sonst nächstes Bild.
-    make(tr("Leertaste"), "", {K(Qt::Key_Space)}, [this] {
+    make(QStringLiteral("space"), tr("Leertaste"), "", {K(Qt::Key_Space)}, [this] {
+        if (m_slideshow) {
+            // Diashow anhalten / weiter
+            if (m_slideTimer->isActive()) {
+                m_slideTimer->stop();
+                message(tr("Diashow angehalten – Leertaste setzt fort, Esc beendet."));
+            } else {
+                m_slideTimer->start();
+                message(tr("Diashow läuft weiter."));
+            }
+            return;
+        }
 #ifdef KIEKAN_HAVE_MPV
         if (m_kind == Kind::Video) {
             m_video->togglePause();
@@ -230,34 +255,34 @@ void MainWindow::createActions()
 #endif
         step(1);
     });
-    QAction *next = make(tr("&Nächstes Bild"), "go-next", {K(Qt::Key_PageDown)}, [this] { step(1); });
-    QAction *nextPage = make(tr("Nächste &Seite"), "", {K(Qt::CTRL | Qt::Key_PageDown)}, [this] { pageStep(1); });
-    QAction *prevPage = make(tr("Vorherige S&eite"), "", {K(Qt::CTRL | Qt::Key_PageUp)}, [this] { pageStep(-1); });
-    QAction *mute = make(tr("Ton &aus/an"), "", {K(Qt::Key_M)}, [this] {
+    QAction *next = make(QStringLiteral("next"), tr("&Nächstes Bild"), "go-next", {K(Qt::Key_PageDown)}, [this] { step(1); });
+    QAction *nextPage = make(QStringLiteral("nextPage"), tr("Nächste &Seite"), "", {K(Qt::CTRL | Qt::Key_PageDown)}, [this] { pageStep(1); });
+    QAction *prevPage = make(QStringLiteral("prevPage"), tr("Vorherige S&eite"), "", {K(Qt::CTRL | Qt::Key_PageUp)}, [this] { pageStep(-1); });
+    QAction *mute = make(QStringLiteral("mute"), tr("Ton &aus/an"), "", {K(Qt::Key_M)}, [this] {
 #ifdef KIEKAN_HAVE_MPV
         if (m_kind == Kind::Video)
             m_video->toggleMute();
 #endif
     });
-    QAction *prev = make(tr("&Vorheriges Bild"), "go-previous", {K(Qt::Key_Backspace), K(Qt::Key_PageUp)}, [this] { step(-1); });
-    QAction *firstAct = make(tr("&Erstes Bild"), "go-first", {K(Qt::Key_Home)}, [this] { first(); });
-    QAction *lastAct = make(tr("&Letztes Bild"), "go-last", {K(Qt::Key_End)}, [this] { last(); });
+    QAction *prev = make(QStringLiteral("prev"), tr("&Vorheriges Bild"), "go-previous", {K(Qt::Key_Backspace), K(Qt::Key_PageUp)}, [this] { step(-1); });
+    QAction *firstAct = make(QStringLiteral("firstAct"), tr("&Erstes Bild"), "go-first", {K(Qt::Key_Home)}, [this] { first(); });
+    QAction *lastAct = make(QStringLiteral("lastAct"), tr("&Letztes Bild"), "go-last", {K(Qt::Key_End)}, [this] { last(); });
 
-    QAction *zoomIn = make(tr("Ver&größern"), "zoom-in",
+    QAction *zoomIn = make(QStringLiteral("zoomIn"), tr("Ver&größern"), "zoom-in",
                            {K(Qt::Key_Plus), K(Qt::Key_Equal), K(Qt::KeypadModifier | Qt::Key_Plus)},
                            [this] { m_view->zoomIn(); });
-    QAction *zoomOut = make(tr("Ver&kleinern"), "zoom-out",
+    QAction *zoomOut = make(QStringLiteral("zoomOut"), tr("Ver&kleinern"), "zoom-out",
                             {K(Qt::Key_Minus), K(Qt::KeypadModifier | Qt::Key_Minus)},
                             [this] { m_view->zoomOut(); });
-    QAction *zoom100 = make(tr("&Originalgröße (100 %)"), "zoom-original", {K(Qt::CTRL | Qt::Key_H)}, [this] { m_view->setZoom(1.0); });
-    QAction *zoomFit = make(tr("An &Fenster anpassen"), "zoom-fit-best", {K(Qt::Key_F)}, [this] { m_view->setFitMode(); });
-    QAction *full = make(tr("&Vollbild"), "view-fullscreen",
+    QAction *zoom100 = make(QStringLiteral("zoom100"), tr("&Originalgröße (100 %)"), "zoom-original", {K(Qt::CTRL | Qt::Key_H)}, [this] { m_view->setZoom(1.0); });
+    QAction *zoomFit = make(QStringLiteral("zoomFit"), tr("An &Fenster anpassen"), "zoom-fit-best", {K(Qt::Key_F)}, [this] { m_view->setFitMode(); });
+    QAction *full = make(QStringLiteral("full"), tr("&Vollbild"), "view-fullscreen",
                          {K(Qt::Key_Return), K(Qt::Key_Enter), K(Qt::Key_F11)},
                          [this] { toggleFullScreen(); });
-    make(tr("Abbrechen / Beenden"), "", {K(Qt::Key_Escape)}, [this] { escape(); });
+    make(QStringLiteral("escape"), tr("Abbrechen / Beenden"), "", {K(Qt::Key_Escape)}, [this] { escape(); });
 
-    QAction *help = make(tr("&Tastenkürzel"), "help-contents", {K(Qt::Key_F1)}, [this] { showHelp(); });
-    QAction *about = make(tr("Über &KiekAn!"), "help-about", {}, [this] { showAbout(); });
+    QAction *help = make(QStringLiteral("help"), tr("&Tastenkürzel"), "help-contents", {K(Qt::Key_F1)}, [this] { showHelp(); });
+    QAction *about = make(QStringLiteral("about"), tr("Über &KiekAn!"), "help-about", {}, [this] { showAbout(); });
 
     QMenu *file = menuBar()->addMenu(tr("&Datei"));
     file->addActions({open, saveAct, saveAsAct});
@@ -265,6 +290,7 @@ void MainWindow::createActions()
     file->addActions({rename, del, info, exifAct, ocrAct, splitAct});
     file->addSeparator();
     file->addAction(batch);
+    file->addAction(printAct);
     file->addSeparator();
     file->addAction(quit);
 
@@ -300,10 +326,10 @@ void MainWindow::createActions()
     view->addSeparator();
     view->addActions({zoomIn, zoomOut, zoom100, zoomFit});
     view->addSeparator();
-    view->addActions({full, histogram, mute});
+    view->addActions({full, slideshowAct, histogram, mute});
 
     QMenu *extras = menuBar()->addMenu(tr("E&xtras"));
-    extras->addActions({settingsAct, plugins});
+    extras->addActions({settingsAct, shortcutsAct, plugins});
     extras->addSeparator();
     extras->addAction(aiLog);
 
@@ -331,6 +357,14 @@ void MainWindow::createActions()
     m_contextMenu->addActions({zoom100, zoomFit, full});
     m_contextMenu->addSeparator();
     m_contextMenu->addActions({rename, del, info, exifAct, ocrAct});
+
+    ShortcutDialog::apply(m_actions, m_defaultShortcuts);
+}
+
+void MainWindow::customizeShortcuts()
+{
+    ShortcutDialog dlg(m_actions, m_defaultShortcuts, this);
+    dlg.exec();
 }
 
 // --- Öffnen und Blättern ---------------------------------------------------
@@ -371,9 +405,8 @@ void MainWindow::scanDirectory(const QString &dir, const QString &select)
     m_scanPool.start(QRunnable::create([this, generation, dir, select, filters] {
         QDir d(dir);
         QStringList names = d.entryList(filters, QDir::Files | QDir::Readable);
-        const QCollator collator = naturalCollator();
         std::sort(names.begin(), names.end(), [&](const QString &a, const QString &b) {
-            return collator.compare(a, b) < 0;
+            return naturalCompare(a, b) < 0;
         });
         QStringList files;
         files.reserve(names.size());
@@ -397,10 +430,9 @@ void MainWindow::onScanned(quint64 generation, const QStringList &files, const Q
 
     if (!current.isEmpty() && !list.contains(current)) {
         // Datei mit unbekannter Endung ausdrücklich geöffnet: einsortieren.
-        const QCollator collator = naturalCollator();
         const QString name = QFileInfo(current).fileName();
         auto pos = std::lower_bound(list.begin(), list.end(), current, [&](const QString &a, const QString &) {
-            return collator.compare(QFileInfo(a).fileName(), name) < 0;
+            return naturalCompare(QFileInfo(a).fileName(), name) < 0;
         });
         list.insert(pos, current);
     }
@@ -517,6 +549,8 @@ void MainWindow::step(int delta)
         return;
     }
     showIndex(target);
+    if (m_slideshow && m_slideTimer->isActive())
+        m_slideTimer->start();   // nach Blättern von Hand die volle Zeit zeigen
 }
 
 void MainWindow::first()
@@ -1647,12 +1681,138 @@ void MainWindow::toggleFullScreen()
 
 void MainWindow::escape()
 {
+    if (m_slideshow) {
+        stopSlideshow();
+        return;
+    }
     if (isFullScreen())
         toggleFullScreen();
     else if (m_view->hasSelection())
         m_view->clearSelection();
     else if (Settings::escapeQuits())
         close();     // wie in IrfanView
+}
+
+// --- Diashow und Drucken ------------------------------------------------------
+
+void MainWindow::startSlideshow()
+{
+    if (m_files.size() < 2) {
+        message(tr("Für eine Diashow braucht der Ordner mindestens zwei Bilder."));
+        return;
+    }
+    QSettings settings;
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Diashow"));
+    auto *delay = new QDoubleSpinBox(&dlg);
+    delay->setRange(0.5, 3600);
+    delay->setDecimals(1);
+    delay->setSingleStep(0.5);
+    delay->setSuffix(tr(" Sekunden"));
+    delay->setValue(settings.value(QStringLiteral("slideshow/delay"), 5.0).toDouble());
+    auto *loop = new QCheckBox(tr("Am Ende von vorn beginnen"), &dlg);
+    loop->setChecked(settings.value(QStringLiteral("slideshow/loop"), true).toBool());
+    auto *fromStart = new QCheckBox(tr("Mit dem ersten Bild beginnen"), &dlg);
+    fromStart->setChecked(settings.value(QStringLiteral("slideshow/fromStart"), false).toBool());
+    auto *fullScreen = new QCheckBox(tr("Im Vollbild"), &dlg);
+    fullScreen->setChecked(settings.value(QStringLiteral("slideshow/fullScreen"), true).toBool());
+    auto *hint = new QLabel(tr("Während der Diashow: Leertaste hält an und setzt fort, Pfeiltasten blättern, Esc beendet."), &dlg);
+    hint->setWordWrap(true);
+    hint->setStyleSheet(QStringLiteral("color: gray"));
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    buttons->button(QDialogButtonBox::Ok)->setText(tr("Starten"));
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    auto *form = new QFormLayout(&dlg);
+    form->addRow(tr("Anzeigedauer je Bild:"), delay);
+    form->addRow(loop);
+    form->addRow(fromStart);
+    form->addRow(fullScreen);
+    form->addRow(hint);
+    form->addRow(buttons);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    settings.setValue(QStringLiteral("slideshow/delay"), delay->value());
+    settings.setValue(QStringLiteral("slideshow/loop"), loop->isChecked());
+    settings.setValue(QStringLiteral("slideshow/fromStart"), fromStart->isChecked());
+    settings.setValue(QStringLiteral("slideshow/fullScreen"), fullScreen->isChecked());
+
+    if (!m_slideTimer) {
+        m_slideTimer = new QTimer(this);
+        connect(m_slideTimer, &QTimer::timeout, this, &MainWindow::slideshowTick);
+    }
+    m_slideLoop = loop->isChecked();
+    m_slideTimer->setInterval(int(delay->value() * 1000));
+    m_slideshow = true;
+    if (fromStart->isChecked())
+        first();
+    m_slideFullScreen = fullScreen->isChecked() && !isFullScreen();
+    if (m_slideFullScreen)
+        toggleFullScreen();
+    m_slideTimer->start();
+    message(tr("Diashow: Leertaste hält an, Esc beendet."));
+}
+
+void MainWindow::slideshowTick()
+{
+    if (m_index + 1 < m_files.size()) {
+        step(1);
+    } else if (m_slideLoop) {
+        first();
+    } else {
+        stopSlideshow();
+        message(tr("Diashow beendet – letztes Bild erreicht."));
+    }
+}
+
+void MainWindow::stopSlideshow()
+{
+    if (!m_slideshow)
+        return;
+    m_slideshow = false;
+    m_slideTimer->stop();
+    if (m_slideFullScreen && isFullScreen())
+        toggleFullScreen();
+    m_slideFullScreen = false;
+    message(tr("Diashow beendet."));
+}
+
+void MainWindow::print()
+{
+#ifdef KIEKAN_HAVE_PRINT
+    QImage image = m_view->image();
+#ifdef KIEKAN_HAVE_MPV
+    if (m_kind == Kind::Video)
+        image = m_video->currentFrame();
+#endif
+    if (image.isNull()) {
+        message(tr("Nichts zu drucken."));
+        return;
+    }
+    // Mit Auswahl nur den markierten Bereich drucken (wie IrfanView)
+    if (m_kind != Kind::Video && m_view->hasSelection())
+        image = image.copy(m_view->selection());
+
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setDocName(m_path.isEmpty() ? tr("KiekAn!") : QFileInfo(m_path).fileName());
+    printer.setPageOrientation(image.width() > image.height() ? QPageLayout::Landscape : QPageLayout::Portrait);
+    QPrintPreviewDialog preview(&printer, this);
+    preview.setWindowTitle(tr("Druckvorschau"));
+    connect(&preview, &QPrintPreviewDialog::paintRequested, this, [&image](QPrinter *p) {
+        QPainter painter(p);
+        const QRect page = p->pageLayout().paintRectPixels(p->resolution());
+        // An die Seite anpassen (Seitenverhältnis bleibt), mittig
+        QSize size = image.size();
+        size.scale(page.size(), Qt::KeepAspectRatio);
+        const QRect target(QPoint((page.width() - size.width()) / 2, (page.height() - size.height()) / 2), size);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
+        painter.drawImage(target, image);
+    });
+    preview.resize(900, 700);
+    preview.exec();
+#else
+    message(tr("Diese Fassung von KiekAn! wurde ohne Druckunterstützung gebaut."));
+#endif
 }
 
 void MainWindow::showContextMenu(const QPoint &globalPos)
@@ -1693,61 +1853,51 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::showHelp()
 {
-    struct Entry { const char *keys; const char *what; };
-    static const Entry entries[] = {
-        {QT_TR_NOOP("Leertaste, Bild ab, →"), QT_TR_NOOP("Nächstes Bild")},
-        {QT_TR_NOOP("Rücktaste, Bild auf, ←"), QT_TR_NOOP("Vorheriges Bild")},
-        {QT_TR_NOOP("Pos1 / Ende"), QT_TR_NOOP("Erstes / letztes Bild")},
+    // Aktuelle Belegung aus den Aktionen (auch eigene Tasten), dazu Maus und
+    // Sonderfälle, die keine eigene Aktion sind.
+    struct Entry { QString keys; QString what; };
+    QList<Entry> entries;
+    for (const QAction *a : std::as_const(m_actions)) {
+        if (a->shortcuts().isEmpty() || a->objectName() == QLatin1String("space")
+            || a->objectName() == QLatin1String("escape"))
+            continue;
+        QStringList keys;
+        for (const QKeySequence &k : a->shortcuts())
+            keys << k.toString(QKeySequence::NativeText);
+        QString what = a->text();
+        what.remove(QLatin1Char('&'));
+        entries.append({keys.join(QStringLiteral(", ")), what});
+    }
+    static const char *const extra[][2] = {
+        {QT_TR_NOOP("Leertaste"), QT_TR_NOOP("Nächstes Bild; bei Videos Abspielen / Pause; in der Diashow Anhalten")},
+        {QT_TR_NOOP("Esc"), QT_TR_NOOP("Diashow / Vollbild beenden, Auswahl aufheben oder Beenden")},
         {QT_TR_NOOP("Mausrad"), QT_TR_NOOP("Blättern")},
-        {QT_TR_NOOP("Strg + Mausrad, + / −"), QT_TR_NOOP("Zoomen")},
-        {QT_TR_NOOP("Strg+H"), QT_TR_NOOP("Originalgröße (100 %)")},
-        {QT_TR_NOOP("F"), QT_TR_NOOP("An Fenster anpassen")},
+        {QT_TR_NOOP("Strg + Mausrad"), QT_TR_NOOP("Zoomen")},
         {QT_TR_NOOP("Pfeiltasten, rechte Maustaste ziehen"), QT_TR_NOOP("Verschieben (wenn gezoomt)")},
-        {QT_TR_NOOP("Eingabe, F11, Doppelklick"), QT_TR_NOOP("Vollbild")},
-        {QT_TR_NOOP("Esc"), QT_TR_NOOP("Vollbild beenden / Auswahl aufheben / Beenden")},
         {QT_TR_NOOP("Linke Maustaste ziehen"), QT_TR_NOOP("Bereich auswählen")},
-        {QT_TR_NOOP("Strg+A"), QT_TR_NOOP("Alles auswählen")},
-        {QT_TR_NOOP("Strg+Y"), QT_TR_NOOP("Auf Auswahl zuschneiden")},
-        {QT_TR_NOOP("Strg+C / Strg+V"), QT_TR_NOOP("Kopieren / Einfügen")},
-        {QT_TR_NOOP("R / L"), QT_TR_NOOP("Rechts / links drehen")},
-        {QT_TR_NOOP("H / V"), QT_TR_NOOP("Horizontal / vertikal spiegeln")},
-        {QT_TR_NOOP("Strg+R"), QT_TR_NOOP("Größe ändern")},
-        {QT_TR_NOOP("Strg+G"), QT_TR_NOOP("Graustufen")},
-        {QT_TR_NOOP("Strg+Umschalt+B"), QT_TR_NOOP("Schwarzweiß")},
-        {QT_TR_NOOP("Strg+Umschalt+N"), QT_TR_NOOP("Negativ")},
-        {QT_TR_NOOP("Umschalt+G"), QT_TR_NOOP("Farben anpassen")},
-        {QT_TR_NOOP("Strg+M"), QT_TR_NOOP("Gradationskurven")},
-        {QT_TR_NOOP("Umschalt+U"), QT_TR_NOOP("Automatische Farbkorrektur")},
-        {QT_TR_NOOP("Strg+Umschalt+E"), QT_TR_NOOP("Histogramm ausgleichen")},
-        {QT_TR_NOOP("Umschalt+S"), QT_TR_NOOP("Schärfen")},
-        {QT_TR_NOOP("Strg+E"), QT_TR_NOOP("Effekte-Browser")},
-        {QT_TR_NOOP("Umschalt+H"), QT_TR_NOOP("Histogramm anzeigen")},
-        {QT_TR_NOOP("P"), QT_TR_NOOP("Einstellungen")},
-        {QT_TR_NOOP("E"), QT_TR_NOOP("EXIF-Daten")},
-        {QT_TR_NOOP("Strg+D"), QT_TR_NOOP("RAW voll entwickeln (sonst eingebettete Vorschau)")},
-        {QT_TR_NOOP("Strg+T"), QT_TR_NOOP("Text erkennen (OCR), mit Auswahl nur im markierten Bereich")},
-        {QT_TR_NOOP("Strg+Bild ab / Strg+Bild auf"), QT_TR_NOOP("Nächste / vorherige Seite (PDF, TIFF)")},
-        {QT_TR_NOOP("Leertaste (Video)"), QT_TR_NOOP("Abspielen / Pause")},
+        {QT_TR_NOOP("Doppelklick"), QT_TR_NOOP("Vollbild")},
         {QT_TR_NOOP("Umschalt+→ / ← (Video)"), QT_TR_NOOP("5 s vor / zurück (mit Strg: 60 s)")},
-        {QT_TR_NOOP("M (Video)"), QT_TR_NOOP("Ton aus / an")},
-        {QT_TR_NOOP("Strg+C (Video)"), QT_TR_NOOP("Aktuelles Videobild kopieren")},
-        {QT_TR_NOOP("Strg+Z"), QT_TR_NOOP("Rückgängig")},
-        {QT_TR_NOOP("O"), QT_TR_NOOP("Öffnen")},
-        {QT_TR_NOOP("Strg+S / S"), QT_TR_NOOP("Speichern / Speichern unter")},
-        {QT_TR_NOOP("F2"), QT_TR_NOOP("Umbenennen")},
-        {QT_TR_NOOP("Entf"), QT_TR_NOOP("In den Papierkorb")},
-        {QT_TR_NOOP("I"), QT_TR_NOOP("Bildinformationen")},
     };
+    for (const auto &e : extra)
+        entries.append({tr(e[0]), tr(e[1])});
+
     QString rows;
     for (const Entry &e : entries)
         rows += QStringLiteral("<tr><td style='padding-right:16px'><b>%1</b></td><td>%2</td></tr>")
-                    .arg(tr(e.keys).toHtmlEscaped(), tr(e.what).toHtmlEscaped());
+                    .arg(e.keys.toHtmlEscaped(), e.what.toHtmlEscaped());
 
-    QMessageBox box(this);
-    box.setWindowTitle(tr("Tastenkürzel"));
-    box.setTextFormat(Qt::RichText);
-    box.setText(QStringLiteral("<table>%1</table>").arg(rows));
-    box.exec();
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Tastenkürzel"));
+    auto *text = new QTextBrowser(&dlg);
+    text->setHtml(QStringLiteral("<table>%1</table><p>%2</p>")
+                      .arg(rows, tr("Ändern unter Extras → Tastenkürzel anpassen.").toHtmlEscaped()));
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->addWidget(text);
+    layout->addWidget(buttons);
+    dlg.resize(560, 640);
+    dlg.exec();
 }
 
 void MainWindow::showAbout()

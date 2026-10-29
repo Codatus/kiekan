@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(kiekan
-    VERSION 0.10.0
+    VERSION 0.11.0
     DESCRIPTION "Schneller, schlanker Bildbetrachter"
     LANGUAGES CXX)
 
@@ -23,7 +23,7 @@ option(KIEKAN_WITH_PDF "PDF-Anzeige über QtPdf" ON)
 option(KIEKAN_WITH_OCR "Texterkennung über Tesseract" ON)
 option(KIEKAN_WITH_QPDF "PDFs teilen über qpdf" ON)
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS Core Gui Widgets Network OPTIONAL_COMPONENTS LinguistTools)
+find_package(Qt6 6.2 REQUIRED COMPONENTS Core Gui Widgets Network OPTIONAL_COMPONENTS LinguistTools PrintSupport)
 find_package(Threads REQUIRED)
 find_package(PkgConfig)
 
@@ -124,6 +124,8 @@ qt_add_executable(kiekan WIN32
     src/BatchRename.h
     src/BatchDialog.cpp
     src/BatchDialog.h
+    src/ShortcutDialog.cpp
+    src/ShortcutDialog.h
     src/SettingsDialog.h
     src/Metadata.cpp
     src/Metadata.h
@@ -216,6 +218,11 @@ endif()
 
 target_link_libraries(kiekan PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Threads::Threads)
 
+if(TARGET Qt6::PrintSupport)
+    target_link_libraries(kiekan PRIVATE Qt6::PrintSupport)
+    target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_PRINT)
+    message(STATUS "KiekAn!: Drucken aktiv")
+endif()
 if(TARGET Qt6::Pdf)
     target_link_libraries(kiekan PRIVATE Qt6::Pdf)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_PDF)

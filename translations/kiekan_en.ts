@@ -123,6 +123,365 @@
     </message>
 </context>
 <context>
+    <name>BatchDialog</name>
+    <message>
+        <location filename="../src/BatchDialog.cpp" line="+47"/>
+        <source>leerer Name</source>
+        <translation>empty name</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>unzulässige Zeichen</source>
+        <translation>invalid characters</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Name gehört schon einer anderen Datei</source>
+        <translation>name already belongs to another file</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Name kommt mehrfach vor</source>
+        <translation>name occurs more than once</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Stapelverarbeitung</source>
+        <translation>Batch processing</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Dateien</source>
+        <translation>Files</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Dateien hinzufügen …</source>
+        <translation>Add files …</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ordner hinzufügen …</source>
+        <translation>Add folder …</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Auswahl entfernen</source>
+        <translation>Remove selected</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Liste leeren</source>
+        <translation>Clear list</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Bilder hinzufügen</source>
+        <translation>Add images</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bilder (%1)</source>
+        <translation>Images (%1)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Ordner hinzufügen</source>
+        <translation>Add folder</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <location line="+250"/>
+        <source>Umwandeln</source>
+        <translation>Convert</translation>
+    </message>
+    <message>
+        <location line="-249"/>
+        <location line="+249"/>
+        <source>Umbenennen</source>
+        <translation>Rename</translation>
+    </message>
+    <message>
+        <location line="-238"/>
+        <source>Schließen</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>konvertiert</source>
+        <translation>converted</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>JPEG (.jpg)</source>
+        <translation>JPEG (.jpg)</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>PNG (.png, verlustfrei)</source>
+        <translation>PNG (.png, lossless)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>WebP (.webp)</source>
+        <translation>WebP (.webp)</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>TIFF (.tif, verlustfrei)</source>
+        <translation>TIFF (.tif, lossless)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>BMP (.bmp)</source>
+        <translation>BMP (.bmp)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Zielformat:</source>
+        <translation>Format:</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Qualität (JPEG, WebP):</source>
+        <translation>Quality (JPEG, WebP):</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Verkleinern auf höchstens</source>
+        <translation>Shrink to at most</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source> Pixel (längste Seite)</source>
+        <translation> pixels (longest side)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Größe:</source>
+        <translation>Size:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Automatische Farbkorrektur</source>
+        <translation>Automatic color correction</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Graustufen</source>
+        <translation>Grayscale</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Bearbeiten:</source>
+        <translation>Edit:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Metadaten (EXIF, IPTC, XMP) übernehmen</source>
+        <translation>Keep metadata (EXIF, IPTC, XMP)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Vorhandene Dateien ersetzen</source>
+        <translation>Replace existing files</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dateinamen nach dem Muster im Reiter „Umbenennen“</source>
+        <translation>File names from the pattern on the “Rename” tab</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Optionen:</source>
+        <translation>Options:</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>…</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Zielordner</source>
+        <translation>Output folder</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Zielordner:</source>
+        <translation>Output folder:</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Die Originale bleiben unverändert; die neuen Dateien landen im Zielordner.</source>
+        <translation>The originals stay unchanged; the new files go to the output folder.</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Muster:</source>
+        <translation>Pattern:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>### laufende Nummer (Stellen = Rauten) · $N bisheriger Name · $D Aufnahmedatum · $T Uhrzeit · $F Ordnername. Die Endung bleibt.</source>
+        <translation>### counter (digits = number of #) · $N current name · $D date taken · $T time · $F folder name. The extension is kept.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Beginnen bei</source>
+        <translation>Start at</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Schrittweite</source>
+        <translation>Step</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Nummer:</source>
+        <translation>Number:</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>nach Name</source>
+        <translation>by name</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>nach Aufnahmedatum</source>
+        <translation>by date taken</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>nach Änderungsdatum</source>
+        <translation>by date modified</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Reihenfolge:</source>
+        <translation>Order:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Endung kleinschreiben (.JPG → .jpg)</source>
+        <translation>Lowercase extension (.JPG → .jpg)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Bisher</source>
+        <translation>Current</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Neu</source>
+        <translation>New</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Letzte Umbenennung rückgängig</source>
+        <translation>Undo last rename</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+54"/>
+        <source>%n Datei(en)</source>
+        <translation><numerusform>%n file</numerusform><numerusform>%n files</numerusform></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>⚠ %1</source>
+        <translation>⚠ %1</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+13"/>
+        <source>%n Datei(en) werden umbenannt.</source>
+        <translation><numerusform>%n file will be renamed.</numerusform><numerusform>%n files will be renamed.</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+2"/>
+        <source>%n Datei(en) mit Problem werden übersprungen.</source>
+        <translation><numerusform>%n file with a problem will be skipped.</numerusform><numerusform>%n files with problems will be skipped.</numerusform></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Bitte einen Zielordner angeben.</source>
+        <translation>Please choose an output folder.</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Abbrechen</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>✓ %1 → %2 (%3 × %4)</source>
+        <translation>✓ %1 → %2 (%3 × %4)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>– %1: übersprungen (%2)</source>
+        <translation>– %1: skipped (%2)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>gibt es schon</source>
+        <translation>already exists</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>wäre das Original</source>
+        <translation>would be the original</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>✗ %1: %2</source>
+        <translation>✗ %1: %2</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Fertig: %1 umgewandelt, %2 übersprungen, %3 fehlgeschlagen%4.</source>
+        <translation>Done: %1 converted, %2 skipped, %3 failed%4.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source> (abgebrochen)</source>
+        <translation> (cancelled)</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Nichts umzubenennen.</source>
+        <translation>Nothing to rename.</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+3"/>
+        <source>%n Datei(en) umbenennen?</source>
+        <translation><numerusform>Rename %n file?</numerusform><numerusform>Rename %n files?</numerusform></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Nicht umbenannt:
+%1</source>
+        <translation>Not renamed:
+%1</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+2"/>
+        <source>%n Datei(en) umbenannt.</source>
+        <translation><numerusform>%n file renamed.</numerusform><numerusform>%n files renamed.</numerusform></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Nicht zurückbenannt:
+%1</source>
+        <translation>Not renamed back:
+%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Umbenennung zurückgenommen.</source>
+        <translation>Rename undone.</translation>
+    </message>
+</context>
+<context>
     <name>CurvesDialog</name>
     <message>
         <location filename="../src/CurvesDialog.cpp" line="+252"/>
@@ -546,7 +905,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+169"/>
+        <location filename="../src/MainWindow.cpp" line="+182"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -567,6 +926,11 @@ right-click or double-click removes it.</translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>&amp;Stapelverarbeitung …</source>
+        <translation>&amp;Batch processing …</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>In den &amp;Papierkorb</source>
         <translation>Move to &amp;trash</translation>
     </message>
@@ -574,6 +938,16 @@ right-click or double-click removes it.</translation>
         <location line="+1"/>
         <source>Bild&amp;informationen</source>
         <translation>Image &amp;information</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Drucken …</source>
+        <translation>&amp;Print …</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Diashow …</source>
+        <translation>&amp;Slideshow …</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -697,11 +1071,26 @@ right-click or double-click removes it.</translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>&amp;Tastenkürzel anpassen …</source>
+        <translation>&amp;Customize shortcuts …</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>&amp;Plugins …</source>
         <translation>&amp;Plugins …</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+14"/>
+        <source>Diashow angehalten – Leertaste setzt fort, Esc beendet.</source>
+        <translation>Slideshow paused – Space resumes, Esc ends.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Diashow läuft weiter.</source>
+        <translation>Slideshow continues.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>&amp;Nächstes Bild</source>
         <translation>&amp;Next image</translation>
     </message>
@@ -766,7 +1155,7 @@ right-click or double-click removes it.</translation>
         <translation>&amp;File</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>&amp;Bearbeiten</source>
         <translation>&amp;Edit</translation>
     </message>
@@ -801,7 +1190,7 @@ right-click or double-click removes it.</translation>
         <translation>Toolbar</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+37"/>
         <source>Nicht gefunden: %1</source>
         <translation>Not found: %1</translation>
     </message>
@@ -826,14 +1215,14 @@ right-click or double-click removes it.</translation>
         <translation>“%1” has been modified. Save changes?</translation>
     </message>
     <message>
-        <location line="+31"/>
-        <location line="+94"/>
-        <location line="+18"/>
+        <location line="+43"/>
+        <location line="+98"/>
+        <location line="+19"/>
         <source>Gespeichert: %1</source>
         <translation>Saved: %1</translation>
     </message>
     <message>
-        <location line="-91"/>
+        <location line="-96"/>
         <source>PNG (*.png)</source>
         <translation>PNG (*.png)</translation>
     </message>
@@ -863,7 +1252,7 @@ right-click or double-click removes it.</translation>
         <translation>Save as</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+25"/>
         <source>Qualität</source>
         <translation>Quality</translation>
     </message>
@@ -873,7 +1262,33 @@ right-click or double-click removes it.</translation>
         <translation>Quality (1–100):</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+55"/>
+        <source>Verlustfrei gespeichert: %1</source>
+        <translation>Saved losslessly: %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Verlustfrei gespeichert (nur EXIF-Ausrichtung geändert): %1</source>
+        <translation>Saved losslessly (only the EXIF orientation changed): %1</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Verlustfrei nicht möglich</source>
+        <translation>Lossless not possible</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Das JPEG lässt sich nicht verlustfrei drehen:
+%1
+
+Stattdessen neu kodieren (mit leichtem Qualitätsverlust)?</source>
+        <translation>This JPEG cannot be rotated losslessly:
+%1
+
+Re-encode instead (with a slight loss of quality)?</translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <location line="+10"/>
         <source>Speichern fehlgeschlagen</source>
         <translation>Saving failed</translation>
@@ -943,16 +1358,15 @@ Delete permanently?</translation>
         <translation>Deleted: %1</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+32"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+4"/>
-        <location line="+670"/>
         <source>Umbenennen</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-684"/>
+        <location line="-14"/>
         <source>Neuer Dateiname:</source>
         <translation>New file name:</translation>
     </message>
@@ -978,12 +1392,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+681"/>
+        <location line="+814"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-677"/>
+        <location line="-810"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1048,13 +1462,103 @@ Delete permanently?</translation>
         <translation>Position</translation>
     </message>
     <message>
-        <location line="-2"/>
+        <location line="+578"/>
+        <source>Für eine Diashow braucht der Ordner mindestens zwei Bilder.</source>
+        <translation>A slideshow needs at least two images in the folder.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Diashow</source>
+        <translation>Slideshow</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source> Sekunden</source>
+        <translation> seconds</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Am Ende von vorn beginnen</source>
+        <translation>Start over at the end</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mit dem ersten Bild beginnen</source>
+        <translation>Start with the first image</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Im Vollbild</source>
+        <translation>Full screen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Während der Diashow: Leertaste hält an und setzt fort, Pfeiltasten blättern, Esc beendet.</source>
+        <translation>During the slideshow: Space pauses and resumes, arrow keys browse, Esc ends.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Starten</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Anzeigedauer je Bild:</source>
+        <translation>Time per image:</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Diashow: Leertaste hält an, Esc beendet.</source>
+        <translation>Slideshow: Space pauses, Esc ends.</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Diashow beendet – letztes Bild erreicht.</source>
+        <translation>Slideshow ended – last image reached.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Diashow beendet.</source>
+        <translation>Slideshow ended.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Nichts zu drucken.</source>
+        <translation>Nothing to print.</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>KiekAn!</source>
+        <translation>KiekAn!</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Druckvorschau</source>
+        <translation>Print preview</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Diese Fassung von KiekAn! wurde ohne Druckunterstützung gebaut.</source>
+        <translation>This build of KiekAn! has no printing support.</translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>Nächstes Bild; bei Videos Abspielen / Pause; in der Diashow Anhalten</source>
+        <translation>Next image; play / pause for videos; pause the slideshow</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Doppelklick</source>
+        <translation>Double-click</translation>
+    </message>
+    <message>
+        <location line="-757"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-798"/>
+        <location line="-893"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -1080,11 +1584,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+3"/>
+        <location line="+1634"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-1613"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1099,7 +1604,7 @@ Delete permanently?</translation>
         <translation>&amp;Mute/unmute</translation>
     </message>
     <message>
-        <location line="+175"/>
+        <location line="+184"/>
         <source>Keine Bilder oder Videos in diesem Ordner.</source>
         <translation>No images or videos in this folder.</translation>
     </message>
@@ -1124,7 +1629,7 @@ Delete permanently?</translation>
         <translation>First file in folder.</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+66"/>
         <source>Videowiedergabe nicht verfügbar (libmpv)</source>
         <translation>Video playback not available (libmpv)</translation>
     </message>
@@ -1159,7 +1664,7 @@ Delete permanently?</translation>
         <translation>Images and videos (%1);;All files (*)</translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+100"/>
         <source>%1_Bild_%2s.png</source>
         <translation>%1_frame_%2s.png</translation>
     </message>
@@ -1169,12 +1674,12 @@ Delete permanently?</translation>
         <translation>%1_page_%2.png</translation>
     </message>
     <message>
-        <location line="+109"/>
+        <location line="+147"/>
         <source>Gespeichert, aber EXIF-Daten konnten nicht übernommen werden: %1</source>
         <translation>Saved, but EXIF data could not be copied: %1</translation>
     </message>
     <message>
-        <location line="+102"/>
+        <location line="+125"/>
         <source>Seite</source>
         <translation>Page</translation>
     </message>
@@ -1220,22 +1725,21 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+607"/>
         <source>Bildinformationen</source>
         <translation>Image information</translation>
     </message>
     <message>
-        <location line="-602"/>
+        <location line="+5"/>
         <source>Alle EXIF-Daten …</source>
         <translation>All EXIF data …</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+39"/>
         <source>Nichts rückgängig zu machen.</source>
         <translation>Nothing to undo.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+22"/>
         <source>Kein Videobild verfügbar.</source>
         <translation>No video frame available.</translation>
     </message>
@@ -1270,7 +1774,7 @@ Delete permanently?</translation>
         <translation>First select an area with the left mouse button.</translation>
     </message>
     <message>
-        <location line="+152"/>
+        <location line="+155"/>
         <source>Sprache</source>
         <translation>Language</translation>
     </message>
@@ -1347,37 +1851,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+89"/>
-        <source>Nächstes Bild</source>
-        <translation>Next image</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Leertaste, Bild ab, →</source>
-        <translation>Space, Page Down, →</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Vorheriges Bild</source>
-        <translation>Previous image</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Rücktaste, Bild auf, ←</source>
-        <translation>Backspace, Page Up, ←</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Erstes / letztes Bild</source>
-        <translation>First / last image</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Pos1 / Ende</source>
-        <translation>Home / End</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+231"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -1392,31 +1866,6 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Zoom</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Strg + Mausrad, + / −</source>
-        <translation>Ctrl + mouse wheel, + / −</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Originalgröße (100 %)</source>
-        <translation>Original size (100 %)</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+H</source>
-        <translation>Ctrl+H</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>An Fenster anpassen</source>
-        <translation>Fit to window</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>F</source>
-        <translation>F</translation>
-    </message>
-    <message>
         <location line="+1"/>
         <source>Verschieben (wenn gezoomt)</source>
         <translation>Pan (when zoomed)</translation>
@@ -1427,27 +1876,27 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Arrow keys, drag with right mouse button</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Vollbild</source>
         <translation>Full screen</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Eingabe, F11, Doppelklick</source>
-        <translation>Enter, F11, double-click</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Vollbild beenden / Auswahl aufheben / Beenden</source>
-        <translation>Leave full screen / clear selection / quit</translation>
-    </message>
-    <message>
-        <location line="+0"/>
+        <location line="-5"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
+        <source>Diashow / Vollbild beenden, Auswahl aufheben oder Beenden</source>
+        <translation>End slideshow / full screen, clear selection or quit</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Strg + Mausrad</source>
+        <translation>Ctrl + mouse wheel</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Bereich auswählen</source>
         <translation>Select area</translation>
     </message>
@@ -1457,227 +1906,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Drag with left mouse button</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Alles auswählen</source>
-        <translation>Select all</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+A</source>
-        <translation>Ctrl+A</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Auf Auswahl zuschneiden</source>
-        <translation>Crop to selection</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+Y</source>
-        <translation>Ctrl+Y</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Kopieren / Einfügen</source>
-        <translation>Copy / paste</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+C / Strg+V</source>
-        <translation>Ctrl+C / Ctrl+V</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Rechts / links drehen</source>
-        <translation>Rotate right / left</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>R / L</source>
-        <translation>R / L</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Horizontal / vertikal spiegeln</source>
-        <translation>Flip horizontally / vertically</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>H / V</source>
-        <translation>H / V</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Größe ändern</source>
-        <translation>Resize</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+R</source>
-        <translation>Ctrl+R</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Graustufen</source>
-        <translation>Grayscale</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+G</source>
-        <translation>Ctrl+G</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Schwarzweiß</source>
-        <translation>Black and white</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+Umschalt+B</source>
-        <translation>Ctrl+Shift+B</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Negativ</source>
-        <translation>Negative</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+Umschalt+N</source>
-        <translation>Ctrl+Shift+N</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Farben anpassen</source>
-        <translation>Adjust colors</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Umschalt+G</source>
-        <translation>Shift+G</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Gradationskurven</source>
-        <translation>Curves</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+M</source>
-        <translation>Ctrl+M</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Automatische Farbkorrektur</source>
-        <translation>Auto color correction</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Umschalt+U</source>
-        <translation>Shift+U</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Histogramm ausgleichen</source>
-        <translation>Equalize histogram</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+Umschalt+E</source>
-        <translation>Ctrl+Shift+E</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Schärfen</source>
-        <translation>Sharpen</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Umschalt+S</source>
-        <translation>Shift+S</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Effekte-Browser</source>
-        <translation>Effects browser</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+E</source>
-        <translation>Ctrl+E</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Histogramm anzeigen</source>
-        <translation>Show histogram</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Umschalt+H</source>
-        <translation>Shift+H</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Einstellungen</source>
-        <translation>Settings</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>P</source>
-        <translation>P</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>E</source>
-        <translation>E</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>EXIF-Daten</source>
-        <translation>EXIF data</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Strg+D</source>
-        <translation>Ctrl+D</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>RAW voll entwickeln (sonst eingebettete Vorschau)</source>
-        <translation>Develop RAW fully (otherwise embedded preview)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Strg+T</source>
-        <translation>Ctrl+T</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Text erkennen (OCR), mit Auswahl nur im markierten Bereich</source>
-        <translation>Recognize text (OCR); with a selection only in the marked area</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Strg+Bild ab / Strg+Bild auf</source>
-        <translation>Ctrl+Page Down / Ctrl+Page Up</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Nächste / vorherige Seite (PDF, TIFF)</source>
-        <translation>Next / previous page (PDF, TIFF)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Leertaste (Video)</source>
-        <translation>Space (video)</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Abspielen / Pause</source>
-        <translation>Play / pause</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Umschalt+→ / ← (Video)</source>
         <translation>Shift+→ / ← (video)</translation>
     </message>
@@ -1687,82 +1916,17 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>5 s forward / back (with Ctrl: 60 s)</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>M (Video)</source>
-        <translation>M (video)</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Ton aus / an</source>
-        <translation>Mute / unmute</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Strg+C (Video)</source>
-        <translation>Ctrl+C (video)</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Aktuelles Videobild kopieren</source>
-        <translation>Copy current video frame</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Rückgängig</source>
-        <translation>Undo</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+Z</source>
-        <translation>Ctrl+Z</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Öffnen</source>
-        <translation>Open</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>O</source>
-        <translation>O</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Speichern / Speichern unter</source>
-        <translation>Save / save as</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Strg+S / S</source>
-        <translation>Ctrl+S / S</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>F2</source>
-        <translation>F2</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In den Papierkorb</source>
-        <translation>Move to trash</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Entf</source>
-        <translation>Del</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>I</source>
-        <translation>I</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+11"/>
         <source>Tastenkürzel</source>
         <translation>Keyboard shortcuts</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
+        <source>Ändern unter Extras → Tastenkürzel anpassen.</source>
+        <translation>Change them under Tools → Customize shortcuts.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>Über KiekAn!</source>
         <translation>About KiekAn!</translation>
     </message>
@@ -2093,7 +2257,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+95"/>
+        <location filename="../src/SettingsDialog.cpp" line="+97"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2103,7 +2267,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>System language</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
         <source>Bilder automatisch drehen (EXIF-Ausrichtung)</source>
         <translation>Rotate images automatically (EXIF orientation)</translation>
     </message>
@@ -2119,12 +2283,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+124"/>
+        <location line="+135"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-133"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2139,7 +2303,17 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Images</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
+        <source>JPEGs verlustfrei drehen und spiegeln (ohne Neukodierung)</source>
+        <translation>Rotate and flip JPEGs losslessly (without re-encoding)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Wurde ein JPEG nur gedreht oder gespiegelt, ordnet KiekAn! beim Speichern die komprimierten Bildblöcke um, statt neu zu kodieren. Passen die Bildmaße nicht zu den Blöcken, wird nur die EXIF-Ausrichtung geändert – auch das ist verlustfrei.</source>
+        <translation>If a JPEG was only rotated or flipped, KiekAn! rearranges the compressed image blocks when saving instead of re-encoding. If the image size does not fit the blocks, only the EXIF orientation is changed – which is lossless as well.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>JPEG-/WebP-Qualität beim Speichern:</source>
         <translation>JPEG/WebP quality when saving:</translation>
     </message>
@@ -2174,7 +2348,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Trusted: tick the read folders that contain only your own files. KiekAn! does not warn about suspicious text there; marking, log and permissions stay. Files the AI puts into write folders only count as trusted if they come from a ticked folder, are unchanged since and the AI has not written its own metadata into them. Not for downloads, mail attachments or incoming post:</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+64"/>
         <source>Dateizuordnung</source>
         <translation>File associations</translation>
     </message>
@@ -2204,7 +2378,24 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+32"/>
+        <source>So öffnen Sie Bilder mit KiekAn!:
+
+1. Im Finder ein Bild auswählen und „Informationen“ öffnen (⌘I).
+2. Unter „Öffnen mit“ KiekAn! auswählen.
+3. „Alle ändern …“ klicken und bestätigen.
+
+Das gilt jeweils für einen Dateityp (z. B. .jpg). PDFs und Videos bleiben bei ihren bisherigen Programmen, solange Sie dort nichts ändern.</source>
+        <translation>How to open images with KiekAn!:
+
+1. Select an image in the Finder and choose “Get Info” (⌘I).
+2. Under “Open with”, choose KiekAn!.
+3. Click “Change All …” and confirm.
+
+This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their current programs unless you change them there.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>So öffnen Sie Bilder mit KiekAn!:
 
 1. Rechtsklick auf ein Bild → „Öffnen mit“ → „Andere App auswählen“.
@@ -2226,7 +2417,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Open Default apps …</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Diese Dateitypen per Doppelklick mit KiekAn! öffnen:</source>
         <translation>Open these file types with KiekAn! on double-click:</translation>
     </message>
@@ -2238,7 +2429,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
     <message>
         <location line="+11"/>
         <source>Nicht angekreuzte Typen öffnen wieder mit dem Programm, das das System vorsieht. Geändert wird nur Ihre eigene Zuordnung (%1), nicht die anderer Benutzer.</source>
-        <translation>Unchecked types open with the system's default program again. Only your own associations are changed (%1), not those of other users.</translation>
+        <translation>Unchecked types open with the system&apos;s default program again. Only your own associations are changed (%1), not those of other users.</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -2261,7 +2452,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-280"/>
+        <location line="-297"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
@@ -2286,7 +2477,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Show AI log …</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+35"/>
         <source>KI-Schnittstelle</source>
         <translation>AI interface</translation>
     </message>
@@ -2303,7 +2494,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>. Existing files stay unchanged as long as replacing is not allowed.</translation>
     </message>
     <message>
-        <location line="-179"/>
+        <location line="-183"/>
         <source>KI-Assistenten dürfen das offene Fenster abfragen und steuern</source>
         <translation>AI assistants may query and control the open window</translation>
     </message>
@@ -2331,6 +2522,59 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <location line="+1"/>
         <source>Kopiert den Befehl, mit dem Claude Code KiekAn! als MCP-Server einbindet.</source>
         <translation>Copies the command that adds KiekAn! to Claude Code as an MCP server.</translation>
+    </message>
+</context>
+<context>
+    <name>ShortcutDialog</name>
+    <message>
+        <location filename="../src/ShortcutDialog.cpp" line="+70"/>
+        <source>Tastenkürzel anpassen</source>
+        <translation>Customize shortcuts</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Suchen …</source>
+        <translation>Search …</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Aktion</source>
+        <translation>Action</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Taste</source>
+        <translation>Key</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Standard</source>
+        <translation>Default</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Feld anklicken und die neue Taste drücken; Entf oder Rücktaste im leeren Feld entfernt die Belegung. Die Taste ersetzt alle bisherigen Tasten der Aktion.</source>
+        <translation>Click a field and press the new key; Delete or Backspace in an empty field removes the shortcut. The key replaces all previous keys of the action.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Alle auf Standard</source>
+        <translation>Reset all</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>Standard wiederherstellen</source>
+        <translation>Restore default</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>%1 ist mehrfach belegt: %2</source>
+        <translation>%1 is used more than once: %2</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Bitte zuerst die doppelt belegten Tasten auflösen.</source>
+        <translation>Please resolve the duplicate keys first.</translation>
     </message>
 </context>
 <context>

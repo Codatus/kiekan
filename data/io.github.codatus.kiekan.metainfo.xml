@@ -35,6 +35,10 @@
       <li xml:lang="de">Texterkennung (OCR) mit automatischer Sprachwahl</li>
       <li>Shows and keeps EXIF, IPTC and XMP metadata</li>
       <li xml:lang="de">Zeigt EXIF, IPTC und XMP und erhält sie beim Speichern</li>
+      <li>Batch conversion and batch rename with preview</li>
+      <li xml:lang="de">Stapelkonvertierung und Stapel-Umbenennen mit Vorschau</li>
+      <li>Lossless JPEG rotation, slideshow and printing</li>
+      <li xml:lang="de">Verlustfreies Drehen von JPEGs, Diashow und Drucken</li>
       <li>Splits large PDFs into documented parts</li>
       <li xml:lang="de">Teilt große PDFs in dokumentierte Teile</li>
       <li>Built-in MCP interface for AI assistants such as Claude, limited to folders you release</li>
@@ -106,6 +110,11 @@
   </requires>
 
   <releases>
+    <release version="0.11.0" date="2026-10-29">
+      <description>
+        <p>Batch conversion and batch rename with preview, lossless JPEG rotation, slideshow, printing and customizable shortcuts. Packages for ARM64, openSUSE Leap 16 and macOS.</p>
+      </description>
+    </release>
     <release version="0.10.0" date="2026-10-29">
       <description>
         <p>First public release: packages for Ubuntu, Debian, Linux Mint, Pop!_OS, Fedora, openSUSE and Arch, Flatpak and Windows.</p>
