@@ -4,7 +4,7 @@
 <context>
     <name>AiGuard</name>
     <message numerus="yes">
-        <location filename="../src/AiGuard.cpp" line="+370"/>
+        <location filename="../src/AiGuard.cpp" line="+394"/>
         <source>%1 (%n Datei(en))</source>
         <translation>
             <numerusform>%1 (%n file)</numerusform>
@@ -384,7 +384,10 @@
     <message numerus="yes">
         <location line="+54"/>
         <source>%n Datei(en)</source>
-        <translation><numerusform>%n file</numerusform><numerusform>%n files</numerusform></translation>
+        <translation>
+            <numerusform>%n file</numerusform>
+            <numerusform>%n files</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+33"/>
@@ -394,12 +397,18 @@
     <message numerus="yes">
         <location line="+13"/>
         <source>%n Datei(en) werden umbenannt.</source>
-        <translation><numerusform>%n file will be renamed.</numerusform><numerusform>%n files will be renamed.</numerusform></translation>
+        <translation>
+            <numerusform>%n file will be renamed.</numerusform>
+            <numerusform>%n files will be renamed.</numerusform>
+        </translation>
     </message>
     <message numerus="yes">
         <location line="+2"/>
         <source>%n Datei(en) mit Problem werden übersprungen.</source>
-        <translation><numerusform>%n file with a problem will be skipped.</numerusform><numerusform>%n files with problems will be skipped.</numerusform></translation>
+        <translation>
+            <numerusform>%n file with a problem will be skipped.</numerusform>
+            <numerusform>%n files with problems will be skipped.</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+18"/>
@@ -454,7 +463,10 @@
     <message numerus="yes">
         <location line="+3"/>
         <source>%n Datei(en) umbenennen?</source>
-        <translation><numerusform>Rename %n file?</numerusform><numerusform>Rename %n files?</numerusform></translation>
+        <translation>
+            <numerusform>Rename %n file?</numerusform>
+            <numerusform>Rename %n files?</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+22"/>
@@ -466,7 +478,10 @@
     <message numerus="yes">
         <location line="+2"/>
         <source>%n Datei(en) umbenannt.</source>
-        <translation><numerusform>%n file renamed.</numerusform><numerusform>%n files renamed.</numerusform></translation>
+        <translation>
+            <numerusform>%n file renamed.</numerusform>
+            <numerusform>%n files renamed.</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+23"/>
@@ -652,7 +667,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>FileAssoc</name>
     <message>
-        <location filename="../src/FileAssoc.cpp" line="+217"/>
+        <location filename="../src/FileAssoc.cpp" line="+226"/>
         <source>Bilder (JPEG, PNG, GIF, WebP, TIFF, HEIC, AVIF, SVG, PSD, JPEG 2000, DjVu …)</source>
         <translation>Images (JPEG, PNG, GIF, WebP, TIFF, HEIC, AVIF, SVG, PSD, JPEG 2000, DjVu …)</translation>
     </message>
@@ -676,6 +691,11 @@ right-click or double-click removes it.</translation>
         <source>Auf diesem System legt man Standardprogramme in den Systemeinstellungen fest.</source>
         <translation>On this system, default apps are chosen in the system settings.</translation>
     </message>
+    <message>
+        <location line="+6"/>
+        <source>%1 lässt sich nicht lesen (oder ist kein gültiges UTF-8) – nichts geändert.</source>
+        <translation>%1 cannot be read (or is not valid UTF-8) – nothing changed.</translation>
+    </message>
 </context>
 <context>
     <name>FilterDialog</name>
@@ -698,7 +718,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>Filters</name>
     <message>
-        <location filename="../src/FilterRegistry.cpp" line="+270"/>
+        <location filename="../src/FilterRegistry.cpp" line="+271"/>
         <source>Farben anpassen</source>
         <translation>Adjust colors</translation>
     </message>
@@ -905,7 +925,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+182"/>
+        <location filename="../src/MainWindow.cpp" line="+217"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1195,7 +1215,7 @@ right-click or double-click removes it.</translation>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+371"/>
+        <location line="+391"/>
         <source>Bild öffnen</source>
         <translation>Open image</translation>
     </message>
@@ -1215,7 +1235,31 @@ right-click or double-click removes it.</translation>
         <translation>“%1” has been modified. Save changes?</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+19"/>
+        <source>Keine Änderungen zu speichern.</source>
+        <translation>No changes to save.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Animationen werden nicht überschrieben – bitte unter neuem Namen speichern.</source>
+        <translation>Animations are not overwritten – please save under a new name.</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Farbtiefe geht verloren</source>
+        <translation>Colour depth will be lost</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Das Original hat mehr als 8 Bit je Farbkanal. KiekAn! speichert nur 8 Bit, feine Abstufungen gehen beim Überschreiben verloren.
+
+Trotzdem überschreiben?</source>
+        <translation>The original has more than 8 bits per colour channel. KiekAn! saves only 8 bits; fine gradations are lost when overwriting.
+
+Overwrite anyway?</translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <location line="+98"/>
         <location line="+19"/>
         <source>Gespeichert: %1</source>
@@ -1392,12 +1436,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+814"/>
+        <location line="+823"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-810"/>
+        <location line="-819"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1462,7 +1506,12 @@ Delete permanently?</translation>
         <translation>Position</translation>
     </message>
     <message>
-        <location line="+578"/>
+        <location line="+346"/>
+        <source>KI-Verbindung zum Fenster nicht möglich: %1</source>
+        <translation>AI connection to the window not possible: %1</translation>
+    </message>
+    <message>
+        <location line="+239"/>
         <source>Für eine Diashow braucht der Ordner mindestens zwei Bilder.</source>
         <translation>A slideshow needs at least two images in the folder.</translation>
     </message>
@@ -1522,7 +1571,7 @@ Delete permanently?</translation>
         <translation>Slideshow ended.</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+14"/>
         <source>Nichts zu drucken.</source>
         <translation>Nothing to print.</translation>
     </message>
@@ -1552,13 +1601,13 @@ Delete permanently?</translation>
         <translation>Double-click</translation>
     </message>
     <message>
-        <location line="-757"/>
+        <location line="-766"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-893"/>
+        <location line="-932"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -1584,12 +1633,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1634"/>
+        <location line="+1682"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1613"/>
+        <location line="-1661"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1609,7 +1658,7 @@ Delete permanently?</translation>
         <translation>No images or videos in this folder.</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+96"/>
         <source>Letzte Seite.</source>
         <translation>Last page.</translation>
     </message>
@@ -1619,7 +1668,7 @@ Delete permanently?</translation>
         <translation>First page.</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+22"/>
         <source>Letzte Datei im Ordner.</source>
         <translation>Last file in folder.</translation>
     </message>
@@ -1629,7 +1678,7 @@ Delete permanently?</translation>
         <translation>First file in folder.</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+71"/>
         <source>Videowiedergabe nicht verfügbar (libmpv)</source>
         <translation>Video playback not available (libmpv)</translation>
     </message>
@@ -1664,7 +1713,7 @@ Delete permanently?</translation>
         <translation>Images and videos (%1);;All files (*)</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+119"/>
         <source>%1_Bild_%2s.png</source>
         <translation>%1_frame_%2s.png</translation>
     </message>
@@ -1769,7 +1818,7 @@ Delete permanently?</translation>
         <translation>The clipboard does not contain an image.</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+24"/>
         <source>Zuerst mit der linken Maustaste einen Bereich markieren.</source>
         <translation>First select an area with the left mouse button.</translation>
     </message>
@@ -1809,7 +1858,7 @@ Delete permanently?</translation>
         <translation>Plugins</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+124"/>
         <source>Vorschlag der KI%1 – Strg+S speichert, Strg+Z verwirft</source>
         <translation>AI proposal%1 – Ctrl+S saves, Ctrl+Z discards</translation>
     </message>
@@ -1851,7 +1900,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+231"/>
+        <location line="+233"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -1989,7 +2038,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
 <context>
     <name>MpvWidget</name>
     <message>
-        <location filename="../src/VideoView.cpp" line="+201"/>
+        <location filename="../src/VideoView.cpp" line="+210"/>
         <source>Videoausgabe konnte nicht eingerichtet werden (OpenGL).</source>
         <translation>Video output could not be set up (OpenGL).</translation>
     </message>
@@ -2032,13 +2081,13 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Text recognition not available: Tesseract or a language pack is missing (e.g. %1).</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+25"/>
         <source>Texterkennung läuft …</source>
         <translation>Recognizing text …</translation>
     </message>
     <message>
         <location line="+7"/>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Fehler: %1</source>
         <translation>Error: %1</translation>
     </message>
@@ -2195,14 +2244,43 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/ImageLoader.cpp" line="+44"/>
+        <location filename="../src/ImageLoader.cpp" line="+56"/>
         <source>PDF kann nicht geöffnet werden</source>
         <translation>Cannot open PDF</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+14"/>
         <source>PDF-Seite kann nicht gerendert werden</source>
         <translation>Cannot render PDF page</translation>
+    </message>
+    <message>
+        <location line="+101"/>
+        <location line="+5"/>
+        <source>Bild zu groß (%1 × %2 Pixel)</source>
+        <translation>Image too large (%1 × %2 pixels)</translation>
+    </message>
+</context>
+<context>
+    <name>RahmenPlugin</name>
+    <message>
+        <location filename="../plugins/rahmen/RahmenPlugin.cpp" line="+25"/>
+        <source>Rahmen (Plugin)</source>
+        <translation>Frame (plugin)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Breite</source>
+        <translation>Width</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Sofortbild (unten breiter)</source>
+        <translation>Instant photo (wider at the bottom)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Schwarzer Rahmen</source>
+        <translation>Black frame</translation>
     </message>
 </context>
 <context>

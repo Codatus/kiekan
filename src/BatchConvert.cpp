@@ -46,10 +46,24 @@ QStringList writableFormats()
     return out;
 }
 
+namespace {
+QString pathKey(const QString &path)
+{
+    const QFileInfo fi(path);
+    const QString canonical = fi.canonicalFilePath();
+    return canonical.isEmpty() ? QDir::cleanPath(fi.absoluteFilePath()) : canonical;
+}
+} // namespace
+
 QList<Item> plan(const QStringList &inputs, const Options &options, const QStringList &outputNames)
 {
     QList<Item> items;
-    QSet<QString> produced;
+    // Kein Ziel darf eine der Eingaben treffen (foto.png → foto.jpg, wenn
+    // foto.jpg selbst umgewandelt wird) und keine zwei Ziele dürfen gleich sein.
+    QSet<QString> taken;
+    for (const QString &in : inputs)
+        taken.insert(pathKey(in));
+    const QDir outDir(options.outputDir);
     for (int i = 0; i < inputs.size(); ++i) {
         const QString &in = inputs.at(i);
         if (Media::isVideo(in))
@@ -63,15 +77,21 @@ QList<Item> plan(const QStringList &inputs, const Options &options, const QStrin
                 pages = probe.imageCount();
         }
         const QString name = outputNames.value(i).isEmpty() ? QFileInfo(in).completeBaseName() : outputNames.at(i);
+        const QString suffix = QFileInfo(in).suffix().toLower();
         for (int page = 0; page < pages; ++page) {
             QString base = name;
             if (pages > 1)
                 base += QStringLiteral("_page-%1").arg(page + 1);
-            QString out = QDir(options.outputDir).filePath(base + QLatin1Char('.') + options.format);
-            if (produced.contains(out))
-                out = QDir(options.outputDir).filePath(base + QLatin1Char('_') + QFileInfo(in).suffix().toLower()
-                                                       + QLatin1Char('.') + options.format);
-            produced.insert(out);
+            QString out = outDir.filePath(base + QLatin1Char('.') + options.format);
+            for (int n = 1; taken.contains(pathKey(out)); ++n) {
+                QString alt = base;
+                if (!suffix.isEmpty())
+                    alt += QLatin1Char('_') + suffix;
+                if (n > 1)
+                    alt += QLatin1Char('_') + QString::number(n);
+                out = outDir.filePath(alt + QLatin1Char('.') + options.format);
+            }
+            taken.insert(pathKey(out));
             items.append({in, page, out});
         }
     }
@@ -109,12 +129,16 @@ QString writeImage(const QImage &input, const QString &output, int quality, cons
         writer.setCompression(1);
     if (!writer.write(img) || !file.commit())
         return QStringLiteral("cannot write %1: %2").arg(output, writer.errorString());
-    meta.applyTo(output, img.size(), true);
+    // Ausrichtung nur zurücksetzen, wenn die Pixel beim Laden gedreht wurden.
+    meta.applyTo(output, img.size(), ImageLoader::autoRotate());
     return {};
 }
 
 Outcome convert(const Item &item, const Options &options)
 {
+    // Ein Symlink als Ziel würde seine (womöglich fremde) Zieldatei ersetzen.
+    if (QFileInfo(item.output).isSymLink())
+        return {Outcome::Skipped, QStringLiteral("target is a symbolic link"), {}};
     if (QFileInfo::exists(item.output) && !options.overwrite)
         return {Outcome::Skipped, QStringLiteral("exists"), {}};
     if (QFileInfo(item.output).canonicalFilePath() == QFileInfo(item.input).canonicalFilePath())

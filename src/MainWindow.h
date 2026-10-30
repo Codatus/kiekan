@@ -55,11 +55,12 @@ private:
     void showIndex(int index);
     void showPage();
     void applyLoadResult(const LoadResult &result);
+    bool hasCurrentImage() const;
     void pageStep(int delta);
     void step(int delta);
     void first();
     void last();
-    void prefetch();
+    void prefetch(int nextPage = -1);   // nextPage: zusätzlich vorzuladende Seite
     void onLoaded(const QString &path, int page, const LoadResult &result);
 
     // Video und Animation
@@ -160,6 +161,10 @@ private:
     QString m_path;               // leer = Bild aus der Zwischenablage
     QString m_loadError;
     bool m_modified = false;
+    QString m_shownPath;          // Datei/Seite, zu der das angezeigte Bild gehört
+    int m_shownPage = -1;
+    bool m_animated = false;
+    bool m_deepColor = false;
     QVector<QImage> m_undo;
     // Seit dem Laden/Speichern: nur Drehungen/Spiegelungen? (für verlustfreies JPEG)
     QVector<int> m_editOps;

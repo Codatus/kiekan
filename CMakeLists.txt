@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(kiekan
-    VERSION 0.11.0
+    VERSION 0.12.0
     DESCRIPTION "Schneller, schlanker Bildbetrachter"
     LANGUAGES CXX)
 
@@ -218,6 +218,15 @@ endif()
 
 target_link_libraries(kiekan PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Threads::Threads)
 
+# Linux: Papierkorb im Flatpak über das Desktop-Portal (sonst landete er in
+# ~/.var/app/…). Qt DBus gehört zu qtbase, kein zusätzliches Paket.
+if(UNIX AND NOT APPLE)
+    find_package(Qt6 COMPONENTS DBus QUIET)
+    if(TARGET Qt6::DBus)
+        target_link_libraries(kiekan PRIVATE Qt6::DBus)
+        target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_DBUS)
+    endif()
+endif()
 if(TARGET Qt6::PrintSupport)
     target_link_libraries(kiekan PRIVATE Qt6::PrintSupport)
     target_compile_definitions(kiekan PRIVATE KIEKAN_HAVE_PRINT)

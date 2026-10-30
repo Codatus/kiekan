@@ -11,6 +11,7 @@
 #include <QImage>
 #include <QImageIOHandler>
 #include <QImageIOPlugin>
+#include <QImageReader>
 #include <QIODevice>
 
 #include <libheif/heif.h>
@@ -68,6 +69,12 @@ public:
         if (heif_context_get_primary_image_handle(ctx.get(), &rawHandle).code != heif_error_Ok)
             return false;
         std::unique_ptr<heif_image_handle, HandleDeleter> handle(rawHandle);
+
+        // Speicherbedarf vor dem Dekodieren prüfen (Ergebnis plus 32-Bit-Kopie)
+        const qint64 hw = heif_image_handle_get_width(handle.get()), hh = heif_image_handle_get_height(handle.get());
+        const int limitMb = QImageReader::allocationLimit();
+        if (hw <= 0 || hh <= 0 || (limitMb > 0 && hw * hh * 8 > qint64(limitMb) * 1024 * 1024))
+            return false;
 
         const bool alpha = heif_image_handle_has_alpha_channel(handle.get());
         heif_image *rawImg = nullptr;

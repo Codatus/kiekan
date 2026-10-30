@@ -39,10 +39,12 @@ public:
     bool start();
     void stop();
     bool isListening() const;
+    QString errorString() const;   // leer, wenn nur schon ein Fenster lauscht
 
 private:
     void onNewConnection();
 
     QLocalServer *m_server;
     Handler m_handler;
+    QString m_error;
 };

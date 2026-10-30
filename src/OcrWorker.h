@@ -10,6 +10,7 @@
 #include <QRect>
 #include <QString>
 
+#include <atomic>
 #include <functional>
 
 // Texterkennung in Hilfsprozessen (kiekan --ocr-worker), wie bei ocrmypdf:
@@ -26,7 +27,8 @@ struct Job
     int page = 0;
     double pdfDpi = 300;
     QString imageFile;     // … oder ein fertiges Bild (z. B. Auswahl, ungespeicherte Änderung)
-    QRect region;          // optional, in Pixeln des geladenen Bildes
+    QRect region;          // optional, in Pixeln des geladenen Bildes …
+    double coordDpi = 0;   // … bzw. bei PDFs dieser Auflösung (0 = pdfDpi); gilt auch für Wortrahmen
     Ocr::Options options;
 };
 
@@ -35,7 +37,8 @@ struct Job
 int workerMain();
 
 // Ein Auftrag, blockierend.
-Ocr::Result run(const Job &job);
+// `cancel` (optional): auf true gesetzt, wird der Hilfsprozess beendet.
+Ocr::Result run(const Job &job, const std::atomic<bool> *cancel = nullptr);
 
 // Mehrere Aufträge mit höchstens `parallel` gleichzeitigen Prozessen.
 // Ergebnisse in Auftragsreihenfolge.

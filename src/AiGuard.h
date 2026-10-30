@@ -75,6 +75,10 @@ QList<Finding> scan(const QString &text);
 // Unicode-Tag-Zeichen („ASCII smuggling“) zu lesbarem Text.
 QString revealHidden(const QString &text);
 
+// Pfad oder Dateiname für Kopfzeilen und Hinweise außerhalb der Markierungen:
+// eine Zeile, versteckte Zeichen sichtbar, keine Marker-Zeichen, gekürzt.
+QString safeLabel(const QString &text);
+
 // Text aus einer Datei für die KI verpacken: zwischen Markierungen mit
 // zufälliger Kennung (nicht fälschbar), versteckte Zeichen sichtbar gemacht.
 // Gefundene Auffälligkeiten werden an *findings angehängt.

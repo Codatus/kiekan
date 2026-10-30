@@ -50,6 +50,17 @@ QImage fromProcessed(const libraw_processed_image_t *p)
 
 // Echte Dateien direkt öffnen: LibRaw liest dann nur, was es braucht
 // (wichtig für die Größenabfrage beim Auflisten großer Ordner).
+// Gewöhnliche Bildformate mit RAW-Endung (z. B. umbenanntes JPEG) dem
+// zuständigen Leser überlassen.
+bool looksLikePlainImage(QIODevice *device)
+{
+    if (!device)
+        return false;
+    const QByteArray head = device->peek(8);
+    return head.startsWith("\xFF\xD8\xFF") || head.startsWith("\x89PNG") || head.startsWith("GIF8")
+        || head.startsWith("RIFF") || head.startsWith("BM");
+}
+
 bool openRaw(LibRaw &raw, QIODevice *device, QByteArray &buffer)
 {
     if (auto *file = qobject_cast<QFile *>(device); file && !file->fileName().isEmpty())
@@ -65,7 +76,7 @@ bool openRaw(LibRaw &raw, QIODevice *device, QByteArray &buffer)
 class RawHandler : public QImageIOHandler
 {
 public:
-    bool canRead() const override { return device() != nullptr; }
+    bool canRead() const override { return device() != nullptr && !looksLikePlainImage(device()); }
 
     bool read(QImage *image) override
     {
@@ -165,9 +176,11 @@ class raw : public QImageIOPlugin
     Q_PLUGIN_METADATA(IID QImageIOHandlerFactoryInterface_iid FILE "raw.json")
 
 public:
-    Capabilities capabilities(QIODevice *, const QByteArray &format) const override
+    Capabilities capabilities(QIODevice *device, const QByteArray &format) const override
     {
-        return rawKeys().contains(format.toLower()) ? CanRead : Capabilities();
+        if (!rawKeys().contains(format.toLower()) || looksLikePlainImage(device))
+            return {};
+        return CanRead;
     }
 
     QImageIOHandler *create(QIODevice *device, const QByteArray &format) const override

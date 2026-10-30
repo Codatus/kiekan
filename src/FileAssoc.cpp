@@ -11,6 +11,7 @@
 #include <QLocale>
 #include <QProcess>
 #include <QSaveFile>
+#include <QStringDecoder>
 #include <QStandardPaths>
 #include <QTextStream>
 
@@ -82,10 +83,18 @@ struct ListFile {
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
             return false;
+        // Nur gültiges UTF-8 übernehmen – sonst würden fremde Bytes beim
+        // Zurückschreiben zu U+FFFD.
+        QStringDecoder decode(QStringDecoder::Utf8);
+        const QString all = decode(f.readAll());
+        if (decode.hasError())
+            return false;
         QString section;
-        QTextStream in(&f);
-        while (!in.atEnd()) {
-            const QString raw = in.readLine();
+        const QStringList rawLines = all.split(QLatin1Char('\n'));
+        for (qsizetype i = 0; i < rawLines.size(); ++i) {
+            if (i == rawLines.size() - 1 && rawLines.at(i).isEmpty())
+                break;   // abschließender Zeilenumbruch
+            const QString raw = rawLines.at(i);
             const QString t = raw.trimmed();
             Line l{section, QString(), raw};
             if (t.startsWith(QLatin1Char('[')) && t.endsWith(QLatin1Char(']'))) {
@@ -297,7 +306,10 @@ QString apply(const QStringList &on, const QStringList &off)
     const QString self = desktopId();
     for (const QString &file : userListFiles()) {
         ListFile lf;
-        lf.load(file);   // fehlt die Datei, wird sie angelegt
+        // Fehlt die Datei, wird sie angelegt; eine unlesbare bleibt unangetastet.
+        if (!lf.load(file) && QFileInfo::exists(file))
+            return QCoreApplication::translate("FileAssoc", "%1 lässt sich nicht lesen (oder ist kein gültiges UTF-8) – "
+                                                            "nichts geändert.").arg(file);
         for (const Group &g : groups()) {
             const bool set = on.contains(g.key);
             if (!set && !off.contains(g.key))

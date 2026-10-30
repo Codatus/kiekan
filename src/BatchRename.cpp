@@ -173,9 +173,12 @@ Result run(const QList<Entry> &entries)
     for (const Step &s : steps) {
         if (!QFileInfo::exists(s.target) && QFile::rename(s.temp, s.target)) {
             result.renamed.append({s.source, s.target});
-        } else {
-            QFile::rename(s.temp, s.source);
+        } else if (QFile::rename(s.temp, s.source)) {
             result.errors << QStringLiteral("%1 → %2").arg(QFileInfo(s.source).fileName(), QFileInfo(s.target).fileName());
+        } else {
+            // Weder Ziel noch Original: Datei liegt unter dem Zwischennamen.
+            result.errors << QStringLiteral("%1 → %2: still named %3").arg(QFileInfo(s.source).fileName(),
+                                                                           QFileInfo(s.target).fileName(), s.temp);
         }
     }
     return result;

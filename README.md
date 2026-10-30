@@ -318,7 +318,13 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
   (die sie auch lesen darf). Ohne Freigabe hat sie keinen Dateizugriff bzw.
   darf nichts speichern. Üblich ist ein eigener, leerer Unterordner eines
   Leseordners zum Schreiben. Liegen Leseordner selbst im Schreibbereich, weist
-  der Dialog darauf hin.
+  der Dialog darauf hin. Symlinks, die aus den Freigaben hinausführen, werden
+  nicht verfolgt – weder beim Lesen noch beim Schreiben.
+- **Ausnahme: das offene Fenster.** Solange „KI-Assistenten dürfen das offene
+  Fenster abfragen und steuern“ eingeschaltet ist, sieht die KI über `viewer_state` und
+  `viewer_get_image` das Bild, das gerade im Fenster angezeigt wird – auch
+  außerhalb der Leseordner. Das KI-Protokoll verzeichnet jeden solchen Zugriff.
+  Wer das nicht möchte, schaltet den Fensterzugriff in den Einstellungen ab.
 - **Nichts Vorhandenes ändern**, solange „KI darf vorhandene Dateien ersetzen
   und Metadaten ändern“ aus ist: kein `overwrite=true`, kein `write_metadata`.
 - **Werkzeug-Kennzeichnung**: Jedes Werkzeug meldet per MCP, ob es nur liest
@@ -399,9 +405,13 @@ Kandidaten und Hinweise.
 Sicherheit: nur absolute Pfade; geschrieben wird nur in ausdrücklich genannte
 Zieldateien, nie überschrieben ohne `overwrite`; es gibt kein Löschwerkzeug.
 Unter *Extras → Einstellungen → KI-Schnittstelle* lässt sich der Zugriff auf
-bestimmte Ordner beschränken (alternativ Umgebungsvariable `KIEKAN_MCP_ROOTS`)
-und der Zugriff auf das offene Fenster abschalten. Die Fensterverbindung ist ein
-lokaler Socket, den nur der eigene Benutzer erreicht. Mit der Umgebungsvariable
+bestimmte Ordner beschränken und der Zugriff auf das offene Fenster abschalten.
+Die Umgebungsvariablen `KIEKAN_MCP_ROOTS`, `KIEKAN_MCP_WRITE_ROOTS` und
+`KIEKAN_MCP_TRUSTED_ROOTS` (Pfade, getrennt wie `PATH`) **ergänzen** die Ordner
+aus den Einstellungen, sie ersetzen sie nicht. Die Fensterverbindung ist ein
+lokaler Socket im privaten Laufzeitordner des Benutzers (`$XDG_RUNTIME_DIR`);
+beide Seiten prüfen, dass die Gegenseite demselben Benutzer gehört. Unter
+Windows ist es eine Named Pipe mit den Standardrechten des Benutzers. Mit der Umgebungsvariable
 `KIEKAN_VIEWER_SOCKET=<name>` (für Fenster und `kiekan --mcp` gleich gesetzt)
 bekommt eine Instanz eine eigene Verbindung – praktisch für Tests neben einem
 normal laufenden KiekAn!
@@ -415,7 +425,9 @@ Reglern und Live-Vorschau. Gesucht wird in
 
 - `<Programmordner>/plugins`
 - `~/.local/share/kiekan/plugins`
-- `<Programmordner>/../lib/kiekan/plugins` (z. B. `/usr/lib/kiekan/plugins`)
+- `<Bibliotheksordner>/kiekan/plugins` der Installation (z. B.
+  `/usr/lib/x86_64-linux-gnu/kiekan/plugins` unter Debian/Ubuntu,
+  `/usr/lib64/kiekan/plugins` unter Fedora/openSUSE)
 
 Ein vollständiges Beispiel liegt in [`plugins/rahmen`](plugins/rahmen).
 

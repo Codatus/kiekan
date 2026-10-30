@@ -11,11 +11,13 @@
 #include <QImage>
 #include <QImageIOHandler>
 #include <QImageIOPlugin>
+#include <QImageReader>
 #include <QIODevice>
 
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <new>
 #include <vector>
 
 namespace {
@@ -72,8 +74,21 @@ bool readHeader(Reader &r, Header &h)
     h.width = quint32(r.be(4));
     h.depth = int(r.be(2));
     h.mode = int(r.be(2));
-    return r.ok() && (h.version == 1 || h.version == 2) && h.channels > 0 && h.width > 0 && h.height > 0
-        && (h.depth == 1 || h.depth == 8 || h.depth == 16 || h.depth == 32);
+    if (!r.ok() || (h.version != 1 && h.version != 2) || h.channels < 1 || h.channels > 56)
+        return false;
+    // Höchstmaße laut Spezifikation: PSD 30000, PSB 300000 Pixel je Seite
+    const quint32 maxSide = h.version == 1 ? 30000 : 300000;
+    if (h.width == 0 || h.height == 0 || h.width > maxSide || h.height > maxSide)
+        return false;
+    if (h.depth != 1 && h.depth != 8 && h.depth != 16 && h.depth != 32)
+        return false;
+    // Bitmap gibt es nur mit 1 Bit, indizierte Farben und Duplex nur mit 8 Bit;
+    // 1 Bit nur als Bitmap.
+    if ((h.mode == 0) != (h.depth == 1))
+        return false;
+    if ((h.mode == 2 || h.mode == 8) && h.depth != 8)
+        return false;
+    return true;
 }
 
 // PackBits
@@ -136,6 +151,8 @@ QImage decode(const QByteArray &data)
     // (negative Ebenenzahl).
     bool mergedAlpha = false;
     const quint64 layerLen = r.be(psb ? 8 : 4);
+    if (layerLen > quint64(std::max<qint64>(r.left(), 0)))
+        return {};
     const qint64 layerEnd = r.pos() + qint64(layerLen);
     if (layerLen > 0) {
         const quint64 infoLen = r.be(psb ? 8 : 4);
@@ -168,6 +185,21 @@ QImage decode(const QByteArray &data)
     if (h.channels < needed)
         return {};
 
+    // Speicherbedarf vor dem Anlegen prüfen: gegen die Allokationsgrenze und
+    // gegen die Datenmenge, die die Datei überhaupt liefern kann (PackBits
+    // vervielfacht höchstens um 64).
+    const quint64 planeBytes = quint64(rowBytes) * quint64(ht);
+    const quint64 total = planeBytes * quint64(use) + quint64(w) * quint64(ht) * 4;
+    const int limitMb = QImageReader::allocationLimit();
+    const quint64 limit = limitMb > 0 ? quint64(limitMb) * 1024 * 1024 : quint64(1) << 30;
+    if (total > limit)
+        return {};
+    const quint64 avail = quint64(std::max<qint64>(r.left(), 0));
+    if (compression == 0 && planeBytes * quint64(use) > avail)
+        return {};
+    if (compression == 1 && planeBytes * quint64(use) > avail * 64)
+        return {};
+
     std::vector<std::vector<uchar>> planes(size_t(use), std::vector<uchar>(size_t(rowBytes * ht)));
     if (compression == 0) {
         for (int c = 0; c < use; ++c) {
@@ -178,6 +210,8 @@ QImage decode(const QByteArray &data)
         }
     } else if (compression == 1) {
         const int countBytes = psb ? 4 : 2;
+        if (quint64(h.channels) * quint64(ht) * quint64(countBytes) > avail)
+            return {};
         std::vector<quint32> counts(size_t(h.channels * ht));
         for (auto &n : counts)
             n = quint32(r.be(countBytes));
@@ -224,7 +258,7 @@ QImage decode(const QByteArray &data)
                 break;
             }
             case 2: {
-                const uchar i = planes[0][size_t(y * rowBytes + x)];
+                const uchar i = planes[0][size_t(y * rowBytes + x)];   // nur 8 Bit (readHeader)
                 if (palette) {
                     r8 = palette[i]; g8 = palette[256 + i]; b8 = palette[512 + i];
                 } else {
@@ -273,7 +307,12 @@ public:
 
     bool read(QImage *image) override
     {
-        const QImage img = decode(device()->readAll());
+        QImage img;
+        try {
+            img = decode(device()->readAll());
+        } catch (const std::bad_alloc &) {
+            return false;
+        }
         if (img.isNull())
             return false;
         *image = img;

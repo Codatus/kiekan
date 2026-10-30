@@ -5,9 +5,11 @@
 #include "OcrWorker.h"
 
 #include "ImageLoader.h"
+#include "Media.h"
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -15,6 +17,7 @@
 #include <QSettings>
 #include <QThread>
 
+#include <cmath>
 #include <cstdio>
 #include <memory>
 #include <vector>
@@ -31,6 +34,7 @@ QJsonObject jobToJson(const Job &j)
         {QStringLiteral("path"), j.path},
         {QStringLiteral("page"), j.page},
         {QStringLiteral("pdf_dpi"), j.pdfDpi},
+        {QStringLiteral("coord_dpi"), j.coordDpi},
         {QStringLiteral("image_file"), j.imageFile},
         {QStringLiteral("region"), QJsonArray{j.region.x(), j.region.y(), j.region.width(), j.region.height()}},
         {QStringLiteral("languages"), j.options.languages},
@@ -45,6 +49,7 @@ Job jobFromJson(const QJsonObject &o)
     j.path = o.value(QLatin1String("path")).toString();
     j.page = o.value(QLatin1String("page")).toInt();
     j.pdfDpi = o.value(QLatin1String("pdf_dpi")).toDouble(300);
+    j.coordDpi = o.value(QLatin1String("coord_dpi")).toDouble(0);
     j.imageFile = o.value(QLatin1String("image_file")).toString();
     const QJsonArray r = o.value(QLatin1String("region")).toArray();
     if (r.size() == 4)
@@ -123,12 +128,17 @@ QProcess *startWorker(const Job &job)
     return p;
 }
 
-Ocr::Result collect(QProcess *p)
+Ocr::Result collect(QProcess *p, const std::atomic<bool> *cancel = nullptr)
 {
-    if (p->state() != QProcess::NotRunning && !p->waitForFinished(kTimeoutMs)) {
-        p->kill();
-        p->waitForFinished(2000);
-        return failure(QStringLiteral("OCR worker timed out"));
+    QElapsedTimer timer;
+    timer.start();
+    while (p->state() != QProcess::NotRunning && !p->waitForFinished(100)) {
+        const bool cancelled = cancel && *cancel;
+        if (cancelled || timer.elapsed() > kTimeoutMs) {
+            p->kill();
+            p->waitForFinished(2000);
+            return failure(cancelled ? QStringLiteral("cancelled") : QStringLiteral("OCR worker timed out"));
+        }
     }
     if (p->exitStatus() != QProcess::NormalExit)
         return failure(QStringLiteral("OCR worker crashed"));
@@ -156,12 +166,33 @@ int workerMain()
         if (image.isNull()) {
             r = failure(QStringLiteral("cannot read image"));
         } else {
-            if (job.region.isValid() && !job.region.isEmpty())
-                image = image.copy(job.region.intersected(image.rect()));
+            // PDF in höherer Auflösung erkannt als die Koordinaten der übrigen
+            // Werkzeuge: Bereich hin-, Wortrahmen zurückrechnen.
+            double fx = 1, fy = 1;
+            if (job.imageFile.isEmpty() && job.coordDpi > 0 && job.coordDpi != job.pdfDpi && Media::isPdf(job.path)) {
+                const QSize ref = ImageLoader::pdfPageSize(job.path, job.page, job.coordDpi);
+                if (ref.isValid()) {
+                    fx = double(image.width()) / ref.width();
+                    fy = double(image.height()) / ref.height();
+                }
+            }
+            auto toImage = [&](const QRect &q) {
+                return QRect(QPoint(int(std::floor(q.left() * fx)), int(std::floor(q.top() * fy))),
+                             QPoint(int(std::ceil((q.right() + 1) * fx)) - 1, int(std::ceil((q.bottom() + 1) * fy)) - 1));
+            };
+            QPoint offset;
+            if (job.region.isValid() && !job.region.isEmpty()) {
+                const QRect clipped = toImage(job.region).intersected(image.rect());
+                image = image.copy(clipped);
+                offset = clipped.topLeft();   // tatsächlicher Ausschnitt, auch am Rand
+            }
             r = Ocr::recognize(image, job.options);
-            // Wortrahmen auf das ganze Bild beziehen
-            for (Ocr::Word &w : r.words)
-                w.box.translate(job.region.isValid() ? job.region.topLeft() : QPoint());
+            // Wortrahmen auf das ganze Bild und die Koordinaten des Aufrufers beziehen
+            for (Ocr::Word &w : r.words) {
+                const QRect b = w.box.translated(offset);
+                w.box = QRect(QPoint(int(std::lround(b.left() / fx)), int(std::lround(b.top() / fy))),
+                              QSize(std::max(1, int(std::lround(b.width() / fx))), std::max(1, int(std::lround(b.height() / fy)))));
+            }
         }
     }
     const QByteArray out = QJsonDocument(resultToJson(r)).toJson(QJsonDocument::Compact);
@@ -170,21 +201,29 @@ int workerMain()
     return 0;
 }
 
-Ocr::Result run(const Job &job)
+Ocr::Result run(const Job &job, const std::atomic<bool> *cancel)
 {
     std::unique_ptr<QProcess> p(startWorker(job));
-    return collect(p.get());
+    return collect(p.get(), cancel);
 }
 
 QList<Ocr::Result> runMany(const QList<Job> &jobs, int parallel, const std::function<void(int, int)> &progress)
 {
     QList<Ocr::Result> results(jobs.size());
-    std::vector<std::pair<int, std::unique_ptr<QProcess>>> running;
+    struct Running
+    {
+        int index;
+        std::unique_ptr<QProcess> process;
+        QElapsedTimer started;
+    };
+    std::vector<Running> running;
     int next = 0, done = 0;
     parallel = std::max(1, parallel);
     while (done < jobs.size()) {
         while (next < jobs.size() && int(running.size()) < parallel) {
-            running.emplace_back(next, std::unique_ptr<QProcess>(startWorker(jobs.at(next))));
+            Running r{next, std::unique_ptr<QProcess>(startWorker(jobs.at(next))), {}};
+            r.started.start();
+            running.push_back(std::move(r));
             ++next;
         }
         // Auf den ersten fertigen Prozess warten (kurze Abfragen, damit auch
@@ -192,8 +231,16 @@ QList<Ocr::Result> runMany(const QList<Job> &jobs, int parallel, const std::func
         bool finishedOne = false;
         while (!finishedOne) {
             for (auto it = running.begin(); it != running.end(); ++it) {
-                if (it->second->state() == QProcess::NotRunning || it->second->waitForFinished(25)) {
-                    results[it->first] = collect(it->second.get());
+                QProcess *p = it->process.get();
+                const bool overdue = it->started.elapsed() > kTimeoutMs;
+                if (p->state() == QProcess::NotRunning || p->waitForFinished(25) || overdue) {
+                    if (overdue && p->state() != QProcess::NotRunning) {
+                        p->kill();
+                        p->waitForFinished(2000);
+                        results[it->index] = failure(QStringLiteral("OCR worker timed out"));
+                    } else {
+                        results[it->index] = collect(p);
+                    }
                     running.erase(it);
                     ++done;
                     if (progress)

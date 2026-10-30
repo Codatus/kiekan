@@ -24,7 +24,9 @@ namespace {
 int integer(const QJsonObject &args, const char *key, int def)
 {
     const QJsonValue v = args.value(QLatin1String(key));
-    return v.isDouble() ? int(std::lround(v.toDouble())) : def;
+    if (!v.isDouble() || !std::isfinite(v.toDouble()))
+        return def;
+    return int(std::lround(std::clamp(v.toDouble(), -1e9, 1e9)));
 }
 
 } // namespace
@@ -63,7 +65,7 @@ QImage applyOperation(const QImage &image, const QJsonObject &op)
     if (name == QLatin1String("resize")) {
         QSize target = image.size();
         const int w = integer(op, "width", 0), h = integer(op, "height", 0);
-        const double pct = op.value(QLatin1String("percent")).toDouble(0);
+        const double pct = std::clamp(op.value(QLatin1String("percent")).toDouble(0), 0.0, 10000.0);
         const int maxSize = integer(op, "max_size", 0);
         if (w > 0 && h > 0)
             target = QSize(w, h);

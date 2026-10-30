@@ -4,9 +4,20 @@
 
 #include "ViewerBridge.h"
 
+#include <QDeadlineTimer>
+#include <QDir>
 #include <QJsonDocument>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QStandardPaths>
+
+#include <algorithm>
+
+#if defined(Q_OS_UNIX)
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 namespace ViewerBridge {
 
@@ -17,11 +28,51 @@ QString socketName()
     const QString custom = qEnvironmentVariable("KIEKAN_VIEWER_SOCKET");
     if (!custom.isEmpty())
         return custom;
+#if defined(Q_OS_UNIX)
+    // Nicht im gemeinsamen /tmp, sondern im privaten Laufzeitordner des
+    // Benutzers (XDG_RUNTIME_DIR, Rechte 0700) – dort kann kein anderer
+    // Benutzer den Namen vorher belegen. Im Flatpak den Ordner, den alle
+    // Instanzen derselben App sehen.
+    const QString flatpak = qEnvironmentVariable("FLATPAK_ID");
+    const QString runtime = qEnvironmentVariable("XDG_RUNTIME_DIR");
+    if (!flatpak.isEmpty() && !runtime.isEmpty())
+        return QDir(runtime).filePath(QStringLiteral("app/%1/kiekan-viewer").arg(flatpak));
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    if (!dir.isEmpty())
+        return QDir(dir).filePath(QStringLiteral("kiekan-viewer"));
+#endif
     QString user = qEnvironmentVariable("USER");
     if (user.isEmpty())
         user = qEnvironmentVariable("USERNAME");
     return QStringLiteral("kiekan-viewer-") + user;
 }
+
+namespace {
+
+// Gehört die Gegenseite dem eigenen Benutzer?
+bool peerIsSelf(const QLocalSocket &socket)
+{
+#if defined(Q_OS_LINUX)
+    struct ucred cred{};
+    socklen_t len = sizeof(cred);
+    if (getsockopt(int(socket.socketDescriptor()), SOL_SOCKET, SO_PEERCRED, &cred, &len) != 0)
+        return false;
+    return cred.uid == getuid();
+#elif defined(Q_OS_UNIX)
+    uid_t uid = 0;
+    gid_t gid = 0;
+    if (getpeereid(int(socket.socketDescriptor()), &uid, &gid) != 0)
+        return false;
+    return uid == getuid();
+#else
+    Q_UNUSED(socket);
+    return true;   // Windows: Named Pipe mit Standard-ACL des Benutzers
+#endif
+}
+
+constexpr qint64 kMaxAnswer = 64 * 1024 * 1024;
+
+} // namespace
 
 QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
 {
@@ -32,17 +83,28 @@ QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
             *error = QStringLiteral("no KiekAn! window is running");
         return {};
     }
+    if (!peerIsSelf(socket)) {
+        if (error)
+            *error = QStringLiteral("the viewer socket %1 belongs to another user - not used").arg(socketName());
+        return {};
+    }
     socket.write(QJsonDocument(req).toJson(QJsonDocument::Compact) + '\n');
     socket.flush();
 
     QByteArray buffer;
+    const QDeadlineTimer deadline(timeoutMs);
     while (!buffer.contains('\n')) {
-        if (!socket.waitForReadyRead(timeoutMs)) {
+        if (deadline.hasExpired() || !socket.waitForReadyRead(int(std::max<qint64>(1, deadline.remainingTime())))) {
             if (error)
                 *error = QStringLiteral("KiekAn! window did not answer in time");
             return {};
         }
         buffer += socket.readAll();
+        if (buffer.size() > kMaxAnswer) {
+            if (error)
+                *error = QStringLiteral("answer from KiekAn! window is too large");
+            return {};
+        }
     }
     QJsonParseError parseError;
     const QJsonDocument doc = QJsonDocument::fromJson(buffer.left(buffer.indexOf('\n')), &parseError);
@@ -76,12 +138,24 @@ bool ViewerServer::start()
     // Lauscht schon ein anderes Fenster? Dann dessen Socket nicht anfassen.
     QLocalSocket probe;
     probe.connectToServer(name);
+    m_error.clear();
     if (probe.waitForConnected(200)) {
+        const bool own = ViewerBridge::peerIsSelf(probe);
         probe.abort();
+        if (!own)
+            m_error = QStringLiteral("%1 belongs to another user").arg(name);
         return false;
     }
     QLocalServer::removeServer(name);   // verwaister Socket nach Absturz
-    return m_server->listen(name);
+    if (m_server->listen(name))
+        return true;
+    m_error = m_server->errorString();
+    return false;
+}
+
+QString ViewerServer::errorString() const
+{
+    return m_error;
 }
 
 void ViewerServer::stop()
@@ -98,9 +172,17 @@ void ViewerServer::onNewConnection()
 {
     while (QLocalSocket *socket = m_server->nextPendingConnection()) {
         connect(socket, &QLocalSocket::disconnected, socket, &QObject::deleteLater);
+        if (!ViewerBridge::peerIsSelf(*socket)) {
+            socket->abort();
+            socket->deleteLater();
+            continue;
+        }
         connect(socket, &QLocalSocket::readyRead, this, [this, socket] {
-            if (!socket->canReadLine())
+            if (!socket->canReadLine()) {
+                if (socket->bytesAvailable() > ViewerBridge::kMaxAnswer)
+                    socket->abort();
                 return;
+            }
             const QByteArray line = socket->readLine();
             const QJsonDocument doc = QJsonDocument::fromJson(line);
             QJsonObject answer;

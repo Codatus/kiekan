@@ -15,11 +15,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QRegularExpression>
+#include <QSaveFile>
 
 #ifdef KIEKAN_HAVE_QPDF
 #include <qpdf/Buffer.hh>
 #include <qpdf/QPDF.hh>
-#include <qpdf/QPDFOutlineDocumentHelper.hh>
+#include <qpdf/QPDFNameTreeObjectHelper.hh>
 #include <qpdf/QPDFPageDocumentHelper.hh>
 #include <qpdf/QPDFWriter.hh>
 #endif
@@ -27,6 +28,7 @@
 #include <cmath>
 #include <map>
 #include <memory>
+#include <set>
 
 namespace PdfSplit {
 
@@ -104,19 +106,54 @@ qint64 sizeInMemory(QPDF &part)
     return qint64(buffer->getSize());
 }
 
-void collectOutlines(const std::vector<QPDFOutlineObjectHelper> &items, const std::map<QPDFObjGen, int> &pageIndex,
-                     int level, QList<Bookmark> &out)
+// Ziel eines Lesezeichens → Seitenobjekt (benannte Ziele über /Names /Dests
+// oder das ältere /Dests-Wörterbuch).
+QPDFObjectHandle destinationPage(QPDF &pdf, QPDFObjectHandle dest)
 {
-    for (const QPDFOutlineObjectHelper &o : items) {
-        QPDFOutlineObjectHelper item = o;
-        QPDFObjectHandle dest = item.getDestPage();
-        if (dest.isDictionary()) {
-            const auto it = pageIndex.find(dest.getObjGen());
+    if (dest.isString()) {
+        QPDFObjectHandle names = pdf.getRoot().getKey("/Names");
+        QPDFObjectHandle found;
+        if (names.isDictionary() && names.getKey("/Dests").isDictionary()) {
+            QPDFNameTreeObjectHelper tree(names.getKey("/Dests"), pdf);
+            tree.findObject(dest.getUTF8Value(), found);
+        }
+        dest = found;
+    } else if (dest.isName()) {
+        QPDFObjectHandle dests = pdf.getRoot().getKey("/Dests");
+        dest = dests.isDictionary() ? dests.getKey(dest.getName()) : QPDFObjectHandle::newNull();
+    }
+    if (dest.isDictionary())
+        dest = dest.getKey("/D");
+    if (dest.isArray() && dest.getArrayNItems() > 0)
+        return dest.getArrayItem(0);
+    return QPDFObjectHandle::newNull();
+}
+
+// Lesezeichen selbst durchlaufen statt über QPDFOutlineDocumentHelper: Der
+// folgt /First und /Next ohne Schutz gegen Zyklen, und eine präparierte PDF
+// mit einem Eintrag, der auf sich selbst zeigt, ließe den Speicher volllaufen.
+void collectOutlines(QPDF &pdf, QPDFObjectHandle item, const std::map<QPDFObjGen, int> &pageIndex,
+                     int level, QList<Bookmark> &out, std::set<QPDFObjGen> &seen)
+{
+    for (; item.isDictionary() && out.size() < 100000; item = item.getKey("/Next")) {
+        if (item.isIndirect() && !seen.insert(item.getObjGen()).second)
+            break;
+        QPDFObjectHandle dest = item.getKey("/Dest");
+        if (dest.isNull()) {
+            QPDFObjectHandle action = item.getKey("/A");
+            if (action.isDictionary() && action.getKey("/S").isName() && action.getKey("/S").getName() == "/GoTo")
+                dest = action.getKey("/D");
+        }
+        QPDFObjectHandle page = destinationPage(pdf, dest);
+        if (page.isDictionary()) {
+            const auto it = pageIndex.find(page.getObjGen());
+            QPDFObjectHandle title = item.getKey("/Title");
             if (it != pageIndex.end())
-                out.append({QString::fromStdString(item.getTitle()), it->second + 1, level});
+                out.append({title.isString() ? QString::fromStdString(title.getUTF8Value()) : QString(),
+                            it->second + 1, level});
         }
         if (level < 2)
-            collectOutlines(item.getKids(), pageIndex, level + 1, out);
+            collectOutlines(pdf, item.getKey("/First"), pageIndex, level + 1, out, seen);
     }
 }
 
@@ -189,9 +226,10 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
             std::map<QPDFObjGen, int> pageIndex;
             for (int i = 0; i < n; ++i)
                 pageIndex[pages[size_t(i)].getObjectHandle().getObjGen()] = i;
-            QPDFOutlineDocumentHelper outlines(pdf);
-            if (outlines.hasOutlines())
-                collectOutlines(outlines.getTopLevelOutlines(), pageIndex, 0, bookmarks);
+            QPDFObjectHandle outlines = pdf.getRoot().getKey("/Outlines");
+            std::set<QPDFObjGen> seen;
+            if (outlines.isDictionary())
+                collectOutlines(pdf, outlines.getKey("/First"), pageIndex, 0, bookmarks, seen);
         }
 
         // Teilgrenzen bestimmen (0-basiert, einschließlich)
@@ -300,6 +338,32 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
             r.error = QStringLiteral("this PDF was already split into %1 (pass overwrite to replace)").arg(outDir);
             return r;
         }
+        auto partFile = [&](int i) {
+            const int a = bounds.at(i).first, b = bounds.at(i).second;
+            return QStringLiteral("%1_Teil-%2-von-%3_S%4-%5.pdf").arg(base)
+                .arg(i + 1, partDigits, 10, QLatin1Char('0')).arg(count, partDigits, 10, QLatin1Char('0'))
+                .arg(a + 1, pageDigits, 10, QLatin1Char('0')).arg(b + 1, pageDigits, 10, QLatin1Char('0'));
+        };
+        // Alle Ziele prüfen, bevor etwas geschrieben wird: nichts ungefragt
+        // ersetzen und keinem Symlink folgen (er könnte nach außen zeigen).
+        {
+            QStringList targets{r.manifestJson, r.manifestMarkdown};
+            for (int i = 0; i < count; ++i) {
+                const QString t = QDir(outDir).filePath(partFile(i));
+                targets << t << t + QStringLiteral(".part");
+            }
+            for (const QString &t : targets) {
+                const QFileInfo fi(t);
+                if (fi.isSymLink()) {
+                    r.error = QStringLiteral("refusing to write through a symbolic link: %1").arg(t);
+                    return r;
+                }
+                if (fi.exists() && (!opt.overwrite || !fi.isFile())) {
+                    r.error = QStringLiteral("file exists: %1 (pass overwrite to replace)").arg(t);
+                    return r;
+                }
+            }
+        }
 
         report(QStringLiteral("berechne Prüfsumme der Quelle …"));
         const QString sourceHash = sha256(r.source);
@@ -316,18 +380,12 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
             part.firstPage = a + 1;
             part.lastPage = b + 1;
             part.oversize = oversize.at(i);
-            part.file = QStringLiteral("%1_Teil-%2-von-%3_S%4-%5.pdf").arg(base)
-                            .arg(i + 1, partDigits, 10, QLatin1Char('0')).arg(count, partDigits, 10, QLatin1Char('0'))
-                            .arg(a + 1, pageDigits, 10, QLatin1Char('0')).arg(b + 1, pageDigits, 10, QLatin1Char('0'));
+            part.file = partFile(i);
             for (const Bookmark &bm : bookmarks)
                 if (bm.page >= part.firstPage && bm.page <= part.lastPage)
                     part.bookmarks.append(bm);
 
             const QString target = QDir(outDir).filePath(part.file);
-            if (QFileInfo::exists(target) && !opt.overwrite) {
-                r.error = QStringLiteral("file exists: %1").arg(target);
-                return r;
-            }
             report(QStringLiteral("schreibe Teil %1 von %2 (Seiten %3–%4) …").arg(i + 1).arg(count).arg(a + 1).arg(b + 1));
             const QJsonObject info{
                 {QStringLiteral("Title"), QStringLiteral("%1 – Teil %2 von %3 (S. %4–%5)").arg(titleBase).arg(i + 1).arg(count).arg(a + 1).arg(b + 1)},
@@ -339,6 +397,7 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
             };
             std::unique_ptr<QPDF> out = buildPart(pdf, pages, a, b, info);
             const QString tmp = target + QStringLiteral(".part");
+            QFile::remove(tmp);   // Rest eines abgebrochenen Laufs (oben geprüft)
             {
                 QPDFWriter w(*out, fileName(tmp).constData());
                 configure(w);
@@ -402,13 +461,12 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
                                                     "PDF page labels show the original numbers. Original page P is in the part "
                                                     "with first_page <= P <= last_page, at page P - first_page + 1 of that file.")},
         };
-        QFile jf(r.manifestJson);
-        if (!jf.open(QIODevice::WriteOnly)) {
+        QSaveFile jf(r.manifestJson);
+        if (!jf.open(QIODevice::WriteOnly) || jf.write(QJsonDocument(manifest).toJson(QJsonDocument::Indented)) < 0
+            || !jf.commit()) {
             r.error = QStringLiteral("cannot write %1").arg(r.manifestJson);
             return r;
         }
-        jf.write(QJsonDocument(manifest).toJson(QJsonDocument::Indented));
-        jf.close();
 
         // Protokoll (Markdown, für Menschen)
         QString md;
@@ -451,9 +509,9 @@ Result split(const QString &path, const Options &opt, const std::function<void(c
             for (const QString &w : r.warnings)
                 md += QStringLiteral("- %1\n").arg(w);
         }
-        QFile mf(r.manifestMarkdown);
-        if (mf.open(QIODevice::WriteOnly | QIODevice::Text))
-            mf.write(md.toUtf8());
+        QSaveFile mf(r.manifestMarkdown);
+        if (!mf.open(QIODevice::WriteOnly | QIODevice::Text) || mf.write(md.toUtf8()) < 0 || !mf.commit())
+            r.warnings << QStringLiteral("cannot write %1").arg(r.manifestMarkdown);
 
         r.ok = true;
         return r;
@@ -567,23 +625,47 @@ QJsonObject loadManifest(const QString &manifestPath, QString *error)
     return doc.object();
 }
 
-QStringList verify(const QJsonObject &manifest, const QString &manifestPath)
+namespace {
+// Prüfsumme nur für gewöhnliche Dateien (nicht /dev/zero, FIFOs …) und nur,
+// wenn die Größe zur erwarteten passt.
+QString checkedHash(const QString &path, qint64 expectedBytes)
+{
+    const QFileInfo fi(path);
+    if (!fi.isFile() || fi.isSymLink() || (expectedBytes >= 0 && fi.size() != expectedBytes))
+        return {};
+    return sha256(path);
+}
+} // namespace
+
+QStringList verify(const QJsonObject &manifest, const QString &manifestPath,
+                   const std::function<bool(const QString &)> &mayRead)
 {
     QStringList problems;
     const QDir dir = QFileInfo(manifestPath).dir();
     for (const QJsonValue &v : manifest.value(QLatin1String("parts")).toArray()) {
         const QJsonObject p = v.toObject();
-        const QString file = dir.filePath(p.value(QLatin1String("file")).toString());
-        if (!QFileInfo::exists(file))
-            problems << QStringLiteral("part %1 is missing: %2").arg(p.value(QLatin1String("part")).toInt()).arg(file);
-        else if (sha256(file) != p.value(QLatin1String("sha256")).toString())
-            problems << QStringLiteral("part %1 was changed since the split: %2").arg(p.value(QLatin1String("part")).toInt()).arg(file);
+        const int number = p.value(QLatin1String("part")).toInt();
+        const QString name = p.value(QLatin1String("file")).toString();
+        if (name.isEmpty() || name.contains(QLatin1Char('/')) || name.contains(QLatin1Char('\\'))
+            || name == QLatin1String(".") || name == QLatin1String("..")) {
+            problems << QStringLiteral("part %1 has an invalid file name in the manifest").arg(number);
+            continue;
+        }
+        const QString file = dir.filePath(name);
+        const qint64 bytes = qint64(p.value(QLatin1String("bytes")).toDouble(-1));
+        if (!QFileInfo(file).isFile())
+            problems << QStringLiteral("part %1 is missing: %2").arg(number).arg(file);
+        else if (checkedHash(file, bytes) != p.value(QLatin1String("sha256")).toString())
+            problems << QStringLiteral("part %1 was changed since the split: %2").arg(number).arg(file);
     }
     const QJsonObject src = manifest.value(QLatin1String("source")).toObject();
     const QString srcPath = src.value(QLatin1String("path")).toString();
-    if (!QFileInfo::exists(srcPath))
+    if (mayRead && !mayRead(srcPath))
+        problems << QStringLiteral("source %1 was not checked (outside the folders released for AI access)").arg(srcPath);
+    else if (!QFileInfo(srcPath).isFile())
         problems << QStringLiteral("source not found at %1 (moved or deleted)").arg(srcPath);
-    else if (sha256(srcPath) != src.value(QLatin1String("sha256")).toString())
+    else if (checkedHash(srcPath, qint64(src.value(QLatin1String("bytes")).toDouble(-1)))
+             != src.value(QLatin1String("sha256")).toString())
         problems << QStringLiteral("source was changed since the split: %1").arg(srcPath);
     return problems;
 }

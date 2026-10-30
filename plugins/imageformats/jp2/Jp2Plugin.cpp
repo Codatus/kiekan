@@ -8,6 +8,7 @@
 #include <QImage>
 #include <QImageIOHandler>
 #include <QImageIOPlugin>
+#include <QImageReader>
 #include <QIODevice>
 #include <QThread>
 
@@ -104,7 +105,20 @@ struct Decoder
         if (!opj_read_header(stream.get(), codec.get(), &header))
             return false;
         image.reset(header);
-        return true;
+        // Speicherbedarf vor dem Dekodieren prüfen: Eine winzige Datei kann
+        // riesige Maße angeben (Dekompressionsbombe).
+        if (header->x1 <= header->x0 || header->y1 <= header->y0 || header->numcomps < 1 || header->numcomps > 16)
+            return false;
+        const quint64 w = header->x1 - header->x0, h = header->y1 - header->y0;
+        quint64 bytes = w * h * 4;   // Ergebnisbild
+        for (OPJ_UINT32 i = 0; i < header->numcomps; ++i) {
+            const opj_image_comp_t &c = header->comps[i];
+            const quint64 dx = std::max<OPJ_UINT32>(1, c.dx), dy = std::max<OPJ_UINT32>(1, c.dy);
+            bytes += ((w + dx - 1) / dx) * ((h + dy - 1) / dy) * 4;   // OPJ_INT32 je Abtastwert
+        }
+        const int limitMb = QImageReader::allocationLimit();
+        const quint64 limit = limitMb > 0 ? quint64(limitMb) * 1024 * 1024 : quint64(1) << 30;
+        return w <= 65535 && h <= 65535 && bytes <= limit;
     }
 
     bool decode()

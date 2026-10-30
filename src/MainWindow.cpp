@@ -32,6 +32,15 @@
 #include "VideoView.h"
 #endif
 
+#ifdef KIEKAN_HAVE_DBUS
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusUnixFileDescriptor>
+
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -104,6 +113,32 @@ bool formatHasAlpha(const QByteArray &format)
 QString humanSize(qint64 bytes)
 {
     return QLocale().formattedDataSize(bytes, 1, QLocale::DataSizeTraditionalFormat);
+}
+
+} // namespace
+
+namespace {
+
+// Papierkorb. Im Flatpak über das Portal: QFile::moveToTrash nähme dort den
+// Papierkorb in ~/.var/app/…, den der Dateimanager nicht zeigt.
+bool moveToTrash(const QString &path)
+{
+#ifdef KIEKAN_HAVE_DBUS
+    if (!qEnvironmentVariableIsEmpty("FLATPAK_ID")) {
+        const int fd = ::open(QFile::encodeName(path).constData(), O_PATH | O_CLOEXEC);
+        if (fd < 0)
+            return false;
+        QDBusMessage call = QDBusMessage::createMethodCall(
+            QStringLiteral("org.freedesktop.portal.Desktop"), QStringLiteral("/org/freedesktop/portal/desktop"),
+            QStringLiteral("org.freedesktop.portal.Trash"), QStringLiteral("TrashFile"));
+        call << QVariant::fromValue(QDBusUnixFileDescriptor(fd));   // dupliziert fd
+        ::close(fd);
+        const QDBusMessage reply = QDBusConnection::sessionBus().call(call, QDBus::Block, 10000);
+        return reply.type() == QDBusMessage::ReplyMessage && !reply.arguments().isEmpty()
+               && reply.arguments().constFirst().toUInt() == 1;
+    }
+#endif
+    return QFile::moveToTrash(path);
 }
 
 } // namespace
@@ -502,6 +537,8 @@ void MainWindow::applyLoadResult(const LoadResult &r)
 {
     stopAnimation();
     m_pageCount = r.pageCount;
+    if (m_page >= m_pageCount)
+        m_page = std::max(0, m_pageCount - 1);   // z. B. viewer_show mit zu großer Seite: geladen wurde die letzte
     m_rawPreview = r.rawPreview;
     m_rawFullSize = r.rawFullSize;
     if (r.image.isNull()) {
@@ -513,7 +550,21 @@ void MainWindow::applyLoadResult(const LoadResult &r)
         if (r.animated)
             startAnimation();
     }
+    m_shownPath = m_path;
+    m_shownPage = m_page;
+    m_animated = r.animated;
+    m_deepColor = r.deepColor;
     updateStatus();
+}
+
+bool MainWindow::hasCurrentImage() const
+{
+    // Beim Blättern bleibt das alte Bild stehen, bis das neue geladen ist.
+    // In dieser Zeit darf nichts das alte Bild unter dem neuen Namen speichern
+    // oder bearbeiten.
+    if (!m_view->hasImage())
+        return false;
+    return m_kind != Kind::Image || m_path.isEmpty() || (m_shownPath == m_path && m_shownPage == m_page);
 }
 
 void MainWindow::pageStep(int delta)
@@ -531,9 +582,8 @@ void MainWindow::pageStep(int delta)
     m_modified = false;
     resetEdits();
     showPage();
-    // Nachbarseiten vorladen
-    if (target + delta >= 0 && target + delta < m_pageCount)
-        m_loader->request(m_path, target + delta);
+    // Nachbarseite vorladen; ältere Seiten aus dem Speicher werfen
+    prefetch(target + delta >= 0 && target + delta < m_pageCount ? target + delta : -1);
     updateTitle();
     updateStatus();
 }
@@ -565,14 +615,19 @@ void MainWindow::last()
     showIndex(int(m_files.size()) - 1);
 }
 
-void MainWindow::prefetch()
+void MainWindow::prefetch(int nextPage)
 {
     if (m_index < 0 || m_index >= m_files.size())
         return;
 
+    // Nur aktuelle Seite, Nachbarseite und Nachbardateien behalten – sonst
+    // wüchse der Speicher beim Blättern durch lange PDFs ohne Grenze.
     QList<QPair<QString, int>> keep;
-    if (!Media::isVideo(m_files.at(m_index)))
+    if (!Media::isVideo(m_files.at(m_index))) {
         keep.append({m_files.at(m_index), m_page});
+        if (nextPage >= 0)
+            keep.append({m_files.at(m_index), nextPage});
+    }
     for (int i : {m_index + m_lastStep, m_index - m_lastStep}) {
         if (i >= 0 && i < m_files.size() && !Media::isVideo(m_files.at(i)))
             keep.append({m_files.at(i), 0});
@@ -659,7 +714,7 @@ void MainWindow::recognizeText()
     if (m_kind == Kind::Video && m_video)
         image = m_video->currentFrame();
 #endif
-    if (image.isNull())
+    if (image.isNull() || (m_kind == Kind::Image && !hasCurrentImage()))
         return;
 
     QString pdfText;
@@ -773,10 +828,20 @@ bool MainWindow::save()
 {
     if (m_kind == Kind::Video)
         return saveAs();   // Einzelbild aus dem Video
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return false;
     if (m_path.isEmpty() || m_pageCount > 1)
         return saveAs();
+    if (!m_modified) {
+        // Unverändert: nicht neu kodieren (bei JPEG kostete das Qualität).
+        message(tr("Keine Änderungen zu speichern."));
+        return true;
+    }
+    if (m_animated) {
+        // Nur das aktuelle Einzelbild wäre gespeichert, die Animation weg.
+        message(tr("Animationen werden nicht überschrieben – bitte unter neuem Namen speichern."));
+        return saveAs();
+    }
 
     const QByteArray format = formatForSuffix(QFileInfo(m_path).suffix());
     if (!QImageWriter::supportedImageFormats().contains(format))
@@ -792,6 +857,15 @@ bool MainWindow::save()
         updateTitle();
         updateStatus();
         return true;
+    }
+    if (m_deepColor) {
+        const auto answer = QMessageBox::question(
+            this, tr("Farbtiefe geht verloren"),
+            tr("Das Original hat mehr als 8 Bit je Farbkanal. KiekAn! speichert nur 8 Bit, "
+               "feine Abstufungen gehen beim Überschreiben verloren.\n\nTrotzdem überschreiben?"),
+            QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
+        if (answer != QMessageBox::Yes)
+            return false;
     }
     const int quality = QSettings().value(QStringLiteral("jpegQuality"), 90).toInt();
     if (!writeImage(m_path, format, quality, m_view->image()))
@@ -814,7 +888,7 @@ bool MainWindow::saveAs()
     if (videoFrame)
         image = m_video->currentFrame();
 #endif
-    if (image.isNull())
+    if (image.isNull() || (!videoFrame && !hasCurrentImage()))
         return false;
 
     QSettings settings;
@@ -1008,7 +1082,7 @@ void MainWindow::deleteFile()
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
         return;
 
-    if (!QFile::moveToTrash(m_path)) {
+    if (!moveToTrash(m_path)) {
         // Auf manchen Netzlaufwerken gibt es keinen Papierkorb.
         const auto answer = QMessageBox::warning(
             this, tr("Kein Papierkorb"),
@@ -1094,7 +1168,7 @@ void MainWindow::renameFile()
 
 void MainWindow::showInfo()
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     const QImage &img = m_view->image();
     QString text;
@@ -1220,7 +1294,7 @@ void MainWindow::copy()
         return;
     }
 #endif
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     const QImage img = m_view->hasSelection() ? m_view->image().copy(m_view->selection()) : m_view->image();
     QGuiApplication::clipboard()->setImage(img);
@@ -1257,6 +1331,8 @@ void MainWindow::paste()
 
     img = img.convertToFormat(img.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied
                                                     : QImage::Format_RGB32);
+    stopAnimation();   // sonst überschreibt das nächste Einzelbild das eingefügte
+    m_animated = m_deepColor = false;
     m_path.clear();
     resetEdits();
     m_loadError.clear();
@@ -1268,7 +1344,7 @@ void MainWindow::paste()
 
 void MainWindow::crop()
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     if (!m_view->hasSelection()) {
         message(tr("Zuerst mit der linken Maustaste einen Bereich markieren."));
@@ -1279,7 +1355,7 @@ void MainWindow::crop()
 
 void MainWindow::resizeImage()
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     ResizeDialog dlg(m_view->image().size(), this);
     if (dlg.exec() != QDialog::Accepted)
@@ -1296,7 +1372,7 @@ void MainWindow::resizeImage()
 
 void MainWindow::rotate(int degrees)
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     const int d = ((degrees % 360) + 360) % 360;
     const LosslessJpeg::Op op = d == 90 ? LosslessJpeg::Op::Rot90 : d == 180 ? LosslessJpeg::Op::Rot180 : LosslessJpeg::Op::Rot270;
@@ -1305,7 +1381,7 @@ void MainWindow::rotate(int degrees)
 
 void MainWindow::flip(bool horizontal)
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     applyEdit(m_view->image().mirrored(horizontal, !horizontal),
               int(horizontal ? LosslessJpeg::Op::FlipH : LosslessJpeg::Op::FlipV));
@@ -1315,7 +1391,7 @@ void MainWindow::flip(bool horizontal)
 
 void MainWindow::applyToImage(const std::function<QImage(const QImage &)> &op)
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     QApplication::setOverrideCursor(Qt::WaitCursor);
     const QImage &img = m_view->image();
@@ -1345,7 +1421,7 @@ void MainWindow::runFilter(const QString &id, const QVariantMap &params)
 
 void MainWindow::openFilterDialog(const QList<const Kiekan::Filter *> &filters, const Kiekan::Filter *initial)
 {
-    if (!m_view->hasImage() || filters.isEmpty() || !filters.first())
+    if (!hasCurrentImage() || filters.isEmpty() || !filters.first())
         return;
     // Die Vorschau zeigt, worauf der Filter wirkt: Auswahl oder ganzes Bild.
     const QImage source = m_view->hasSelection() ? m_view->image().copy(m_view->selection()) : m_view->image();
@@ -1359,7 +1435,7 @@ void MainWindow::openFilterDialog(const QList<const Kiekan::Filter *> &filters, 
 
 void MainWindow::openCurves()
 {
-    if (!m_view->hasImage())
+    if (!hasCurrentImage())
         return;
     const QImage source = m_view->hasSelection() ? m_view->image().copy(m_view->selection()) : m_view->image();
     CurvesDialog dlg(source, this);
@@ -1461,9 +1537,11 @@ void MainWindow::showPlugins()
 
 void MainWindow::updateViewerServer()
 {
-    if (Settings::aiViewerAccess())
-        m_viewerServer->start();   // false, wenn schon ein anderes Fenster lauscht
-    else
+    if (Settings::aiViewerAccess()) {
+        // false auch, wenn schon ein anderes Fenster lauscht – das ist normal.
+        if (!m_viewerServer->start() && !m_viewerServer->errorString().isEmpty())
+            message(tr("KI-Verbindung zum Fenster nicht möglich: %1").arg(m_viewerServer->errorString()));
+    } else
         m_viewerServer->stop();
 }
 
@@ -1508,7 +1586,9 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
             state.insert(QStringLiteral("page"), m_page);
             state.insert(QStringLiteral("pages"), m_pageCount);
         }
-        if (m_view->hasImage() && m_kind == Kind::Image) {
+        if (m_kind == Kind::Image && m_view->hasImage() && !hasCurrentImage())
+            state.insert(QStringLiteral("loading"), true);
+        if (hasCurrentImage() && m_kind == Kind::Image) {
             state.insert(QStringLiteral("width"), m_view->image().width());
             state.insert(QStringLiteral("height"), m_view->image().height());
             state.insert(QStringLiteral("zoom_percent"), qRound(m_view->zoom() * 100));
@@ -1535,11 +1615,12 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
         if (m_kind == Kind::Video && m_video)
             img = m_video->currentFrame();
 #endif
-        if (img.isNull())
-            return error(QStringLiteral("no image is shown"));
+        if (img.isNull() || (m_kind == Kind::Image && !hasCurrentImage()))
+            return error(QStringLiteral("no image is shown (or it is still loading)"));
         QJsonObject answer{{QStringLiteral("original_width"), img.width()},
                            {QStringLiteral("original_height"), img.height()},
-                           {QStringLiteral("modified"), m_modified}};
+                           {QStringLiteral("modified"), m_modified},
+                           {QStringLiteral("file"), m_path}};
         if (req.value(QLatin1String("selection_only")).toBool()) {
             if (!m_view->hasSelection() || m_kind != Kind::Image)
                 return error(QStringLiteral("the user has not selected an area"));
@@ -1560,8 +1641,8 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
     }
 
     if (cmd == QLatin1String("apply")) {
-        if (m_kind != Kind::Image || !m_view->hasImage())
-            return error(QStringLiteral("no image is shown"));
+        if (m_kind != Kind::Image || !hasCurrentImage())
+            return error(QStringLiteral("no image is shown (or it is still loading)"));
         try {
             const QImage result = EditOps::apply(m_view->image(), req.value(QLatin1String("operations")).toArray());
             applyEdit(result);   // ungespeichert, mit Strg+Z rücknehmbar
@@ -1577,8 +1658,8 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
     }
 
     if (cmd == QLatin1String("select")) {
-        if (m_kind != Kind::Image || !m_view->hasImage())
-            return error(QStringLiteral("no image is shown"));
+        if (m_kind != Kind::Image || !hasCurrentImage())
+            return error(QStringLiteral("no image is shown (or it is still loading)"));
         if (req.value(QLatin1String("clear")).toBool()) {
             m_view->clearSelection();
             return {{QStringLiteral("message"), QStringLiteral("selection cleared")}};
@@ -1780,6 +1861,8 @@ void MainWindow::stopSlideshow()
 void MainWindow::print()
 {
 #ifdef KIEKAN_HAVE_PRINT
+    if (m_kind == Kind::Image && !hasCurrentImage())
+        return;
     QImage image = m_view->image();
 #ifdef KIEKAN_HAVE_MPV
     if (m_kind == Kind::Video)

@@ -106,7 +106,7 @@ int runMcpServer(int argc, char *argv[])
     setIdentity();
     std::setlocale(LC_NUMERIC, "C");
     Metadata::initialize();
-    QImageReader::setAllocationLimit(4096);
+    QImageReader::setAllocationLimit(kiekanAllocationLimitMb);
     ImageLoader::setAutoRotate(Settings::autoRotate());
     FilterRegistry::instance().loadPlugins();
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
             useBundledTessdata();
             setIdentity();
             std::setlocale(LC_NUMERIC, "C");
-            QImageReader::setAllocationLimit(4096);
+            QImageReader::setAllocationLimit(kiekanAllocationLimitMb);
             ImageLoader::setAutoRotate(Settings::autoRotate());
             return OcrWorker::workerMain();
         }
@@ -172,8 +172,9 @@ int main(int argc, char *argv[])
     QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("kiekan"), appIcon));
 
     // Qt begrenzt Bilder standardmäßig auf 256 MB im Speicher; große Fotos
-    // und Panoramen sollen trotzdem aufgehen.
-    QImageReader::setAllocationLimit(4096);
+    // und Panoramen sollen trotzdem aufgehen, präparierte Dateien aber nicht
+    // den ganzen Speicher belegen (bis zu drei Bilder werden parallel geladen).
+    QImageReader::setAllocationLimit(kiekanAllocationLimitMb);
 
     // Sprache: Die Texte im Programm sind deutsch; für andere Sprachen wird
     // eine Übersetzung geladen. Ohne Einstellung gilt die Systemsprache,

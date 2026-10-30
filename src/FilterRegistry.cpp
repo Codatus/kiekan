@@ -11,6 +11,7 @@
 #include <QPluginLoader>
 #include <QStandardPaths>
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 
@@ -413,6 +414,13 @@ QImage FilterRegistry::run(const Filter *filter, const QImage &image, const QVar
     QVariantMap full = defaults(filter);
     for (auto it = params.begin(); it != params.end(); ++it)
         full.insert(it.key(), it.value());
+    // Werte auf den erlaubten Bereich begrenzen (sie können von der KI oder aus
+    // einer Einstellungsdatei kommen); Unsinn ersetzt der Standardwert.
+    for (const FilterParameter &p : filter->parameters()) {
+        bool ok = false;
+        const double v = full.value(p.id).toDouble(&ok);
+        full.insert(p.id, ok && std::isfinite(v) ? std::clamp(v, p.minimum, p.maximum) : p.defaultValue);
+    }
     const QImage result = filter->apply(ImageOps::forProcessing(image), full, scale);
     return result.isNull() ? image : ImageOps::forDisplay(result);
 }

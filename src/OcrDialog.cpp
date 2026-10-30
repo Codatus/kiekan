@@ -86,7 +86,9 @@ OcrDialog::OcrDialog(const QImage &image, const QString &pdfText, const QString 
 OcrDialog::~OcrDialog()
 {
     if (m_thread) {
-        // Dialog während der Erkennung geschlossen: abwarten, aufräumen.
+        // Dialog während der Erkennung geschlossen: Hilfsprozess beenden,
+        // dann aufräumen (dauert höchstens Sekundenbruchteile).
+        m_cancel = true;
         m_thread->wait();
         delete m_thread;
         QApplication::restoreOverrideCursor();
@@ -116,7 +118,8 @@ void OcrDialog::startRecognition()
     job.imageFile = file->fileName();
     job.options.languages = m_language->currentData().toString();
     auto result = std::make_shared<Ocr::Result>();
-    m_thread = QThread::create([job, file, result] { *result = OcrWorker::run(job); });
+    m_cancel = false;
+    m_thread = QThread::create([this, job, file, result] { *result = OcrWorker::run(job, &m_cancel); });
     connect(m_thread, &QThread::finished, this, [this, result] {
         QApplication::restoreOverrideCursor();
         m_thread->deleteLater();

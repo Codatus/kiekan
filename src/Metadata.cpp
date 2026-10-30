@@ -34,17 +34,31 @@ namespace {
 struct OpenImage
 {
     QByteArray data;   // muss so lange leben wie das Bildobjekt
+    QFile file;        // bzw. die eingeblendete Datei (nur lesend)
     decltype(Exiv2::ImageFactory::open(static_cast<const Exiv2::byte *>(nullptr), 0)) image;
 };
 
+constexpr qint64 kMaxMetadataFileBytes = qint64(1) << 30;
+
 // Füllt `o` (exiv2 0.27 verwendet std::auto_ptr, das sich nicht verschieben lässt).
-void openImage(OpenImage &o, const QString &path)
+// Nur lesend (`mapped`): die Datei einblenden statt ganz einzulesen – bei
+// großen Videos liest exiv2 nur die Kopfbereiche.
+void openImage(OpenImage &o, const QString &path, bool mapped = false)
 {
-    QFile f(path);
-    if (!f.open(QIODevice::ReadOnly))
+    o.file.setFileName(path);
+    if (!o.file.open(QIODevice::ReadOnly))
         throw std::runtime_error(("cannot open " + path).toStdString());
-    o.data = f.readAll();
-    o.image = Exiv2::ImageFactory::open(reinterpret_cast<const Exiv2::byte *>(o.data.constData()), o.data.size());
+    qint64 size = o.file.size();
+    const uchar *bytes = mapped && size > 0 ? o.file.map(0, size) : nullptr;
+    if (!bytes) {
+        if (size > kMaxMetadataFileBytes)
+            throw std::runtime_error(("file too large for metadata: " + path).toStdString());
+        o.data = o.file.readAll();
+        o.file.close();
+        bytes = reinterpret_cast<const uchar *>(o.data.constData());
+        size = o.data.size();
+    }
+    o.image = Exiv2::ImageFactory::open(reinterpret_cast<const Exiv2::byte *>(bytes), size);
     o.image->readMetadata();
 }
 
@@ -267,7 +281,7 @@ Loaded load(const QString &path)
     Loaded l;
     try {
         l.opened = std::make_unique<OpenImage>();
-        openImage(*l.opened, path);
+        openImage(*l.opened, path, true);
         l.exif = &l.opened->image->exifData();
     } catch (const std::exception &) {
         l.opened.reset();

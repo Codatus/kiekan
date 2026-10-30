@@ -1,4 +1,11 @@
+# Testdateien für die Distributionstests – NUR in einem Wegwerf-Container
+# ausführen: installiert Pakete, lockert die ImageMagick-Richtlinie für PDF
+# systemweit und legt /root/t neu an.
 set -e
+if ! { systemd-detect-virt -cq 2>/dev/null || [ -e /.dockerenv ] || [ -e /run/.containerenv ] || [ "$KIEKAN_TEST_CONTAINER" = 1 ]; }; then
+    echo "mkfiles.sh: nur in einem Test-Container ausführen (oder KIEKAN_TEST_CONTAINER=1 setzen)" >&2
+    exit 1
+fi
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -y -q --no-install-recommends imagemagick tesseract-ocr tesseract-ocr-deu ffmpeg libheif-examples djvulibre-bin exiftool libimage-exiftool-perl webp fonts-dejavu-core ghostscript >/dev/null 2>&1 || apt-get install -y -q --no-install-recommends imagemagick tesseract-ocr tesseract-ocr-deu ffmpeg libheif-examples djvulibre-bin libimage-exiftool-perl webp fonts-dejavu-core ghostscript >/dev/null
 D=/root/t/bilder; rm -rf /root/t; mkdir -p $D /root/t/ki /root/t/fremd

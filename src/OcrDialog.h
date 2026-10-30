@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include <QDialog>
 #include <QImage>
 
@@ -36,4 +38,5 @@ private:
     QLabel *m_info;
     QPlainTextEdit *m_text;
     QThread *m_thread = nullptr;
+    std::atomic<bool> m_cancel{false};
 };

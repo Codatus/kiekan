@@ -76,8 +76,11 @@ int pageCount(const QString &path, QString *error = nullptr);
 QString findManifest(const QString &path);
 QJsonObject loadManifest(const QString &manifestPath, QString *error = nullptr);
 
-// Prüft Vorhandensein und Prüfsummen der Teile sowie die Quelldatei.
-QStringList verify(const QJsonObject &manifest, const QString &manifestPath);
+// Prüft Vorhandensein und Prüfsummen der Teile sowie die Quelldatei. Teile
+// müssen schlichte Dateinamen im Ordner des Protokolls sein. `mayRead`
+// (optional) entscheidet, ob die Quelldatei geprüft werden darf.
+QStringList verify(const QJsonObject &manifest, const QString &manifestPath,
+                   const std::function<bool(const QString &)> &mayRead = {});
 
 // Informationen eines Teils, aus dessen eigenen PDF-Angaben gelesen
 // (funktioniert auch ohne Protokoll). part == 0: kein KiekAn!-Teil.

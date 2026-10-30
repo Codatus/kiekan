@@ -17,6 +17,7 @@
 
 #include <atomic>
 #include <cmath>
+#include <limits>
 
 namespace {
 std::atomic<bool> s_autoRotate{true};
@@ -35,6 +36,17 @@ QImage toDisplayFormat(QImage img)
 }
 
 #ifdef KIEKAN_HAVE_PDF
+// Punkte (1/72 Zoll) in Pixel bei fester Auflösung, nach oben begrenzt.
+QSize pdfPixelSize(const QSizeF &points, double dpi)
+{
+    double scale = dpi / 72.0;
+    const double longest = std::max(points.width(), points.height()) * scale;
+    if (longest > kPdfMaxSide)
+        scale *= kPdfMaxSide / longest;
+    return QSize(std::max(1, int(std::lround(points.width() * scale))),
+                 std::max(1, int(std::lround(points.height() * scale))));
+}
+
 LoadResult decodePdf(const QString &path, int page, double dpi)
 {
     LoadResult r;
@@ -51,13 +63,7 @@ LoadResult decodePdf(const QString &path, int page, double dpi)
 #else
     const QSizeF points = doc.pageSize(page);
 #endif
-    // Punkte (1/72 Zoll) in Pixel bei fester Auflösung, nach oben begrenzt.
-    double scale = dpi / 72.0;
-    const double longest = std::max(points.width(), points.height()) * scale;
-    if (longest > kPdfMaxSide)
-        scale *= kPdfMaxSide / longest;
-    const QSize size(std::max(1, int(std::lround(points.width() * scale))),
-                     std::max(1, int(std::lround(points.height() * scale))));
+    const QSize size = pdfPixelSize(points, dpi);
 
     const QImage rendered = doc.render(page, size);
     if (rendered.isNull()) {
@@ -83,6 +89,31 @@ LoadResult decodePdf(const QString &path, int page, double dpi)
 void ImageLoader::setAutoRotate(bool on)
 {
     s_autoRotate = on;
+}
+
+bool ImageLoader::autoRotate()
+{
+    return s_autoRotate;
+}
+
+QSize ImageLoader::pdfPageSize(const QString &path, int page, double dpi)
+{
+#ifdef KIEKAN_HAVE_PDF
+    QPdfDocument doc;
+    doc.load(path);
+    if (doc.status() != QPdfDocument::Status::Ready || page < 0 || page >= doc.pageCount())
+        return {};
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+    return pdfPixelSize(doc.pagePointSize(page), dpi);
+#else
+    return pdfPixelSize(doc.pageSize(page), dpi);
+#endif
+#else
+    Q_UNUSED(path);
+    Q_UNUSED(page);
+    Q_UNUSED(dpi);
+    return {};
+#endif
 }
 
 ImageLoader::ImageLoader(QObject *parent)
@@ -131,7 +162,20 @@ LoadResult ImageLoader::decode(const QString &path, int page, double pdfDpi, boo
             reader.jumpToImage(page);
     }
 
+    // Die Anzeige braucht 4 Byte je Pixel – eine 1-Bit-Datei mit riesigen
+    // Maßen wäre beim Lesen klein, nach der Umwandlung aber nicht mehr.
+    const int limitMb = QImageReader::allocationLimit();   // 0 = unbegrenzt
+    const qint64 limit = limitMb > 0 ? qint64(limitMb) * 1024 * 1024 : std::numeric_limits<qint64>::max() / 8;
+    const QSize announced = reader.size();
+    if (announced.isValid() && qint64(announced.width()) * announced.height() * 4 > limit) {
+        r.error = QObject::tr("Bild zu groß (%1 × %2 Pixel)").arg(announced.width()).arg(announced.height());
+        return r;
+    }
     const QImage img = reader.read();
+    if (!img.isNull() && qint64(img.width()) * img.height() * 4 > limit) {
+        r.error = QObject::tr("Bild zu groß (%1 × %2 Pixel)").arg(img.width()).arg(img.height());
+        return r;
+    }
     if (img.isNull()) {
         r.error = reader.errorString();
         return r;
@@ -142,6 +186,7 @@ LoadResult ImageLoader::decode(const QString &path, int page, double pdfDpi, boo
     const QStringList size = img.text(QStringLiteral("kiekan-raw-size")).split(QLatin1Char('x'));
     if (size.size() == 2)
         r.rawFullSize = QSize(size.at(0).toInt(), size.at(1).toInt());
+    r.deepColor = img.depth() > 32 || img.format() == QImage::Format_Grayscale16;
     r.image = toDisplayFormat(img);
     return r;
 }

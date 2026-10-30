@@ -11,11 +11,16 @@
 #include <QStringList>
 #include <QThreadPool>
 
+// Obergrenze für ein einzelnes Bild im Speicher (MB), auch nach der
+// Umwandlung ins Anzeigeformat (32 Bit je Pixel): 256 Megapixel.
+constexpr int kiekanAllocationLimitMb = 1024;
+
 struct LoadResult
 {
     QImage image;
     QString error;
     int pageCount = 1;       // PDF-Seiten oder TIFF-Seiten
+    bool deepColor = false;  // mehr als 8 Bit je Kanal (für die Anzeige reduziert)
     bool animated = false;   // animiertes GIF/WebP: Wiedergabe über QMovie
     bool rawPreview = false; // Kamera-RAW: nur eingebettete Vorschau geladen
     QSize rawFullSize;       // volle Größe des RAW (falls bekannt)
@@ -51,6 +56,9 @@ public:
 
     // EXIF-Ausrichtung anwenden (Standard: ja). Gilt für künftige Ladevorgänge.
     static void setAutoRotate(bool on);
+    static bool autoRotate();
+    // Pixelgröße, in der decode() eine PDF-Seite bei `dpi` liefert.
+    static QSize pdfPageSize(const QString &path, int page, double dpi);
 
 Q_SIGNALS:
     void loaded(const QString &path, int page, const LoadResult &result);

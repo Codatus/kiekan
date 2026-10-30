@@ -11,10 +11,12 @@
 #include <QImage>
 #include <QImageIOHandler>
 #include <QImageIOPlugin>
+#include <QImageReader>
 #include <QIODevice>
 
 #include <libdjvu/ddjvuapi.h>
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 
@@ -73,11 +75,9 @@ public:
             pump(true);
         if (st != DDJVU_JOB_OK)
             return {};
-        const double scale = std::min(1.0, kMaxDpi / std::max(1, info.dpi));
-        QSize s(int(std::lround(info.width * scale)), int(std::lround(info.height * scale)));
-        if (info.rotation % 2 == 1)   // 90° oder 270°
-            s.transpose();
-        return s;
+        // Breite und Höhe berücksichtigen die Drehung bereits.
+        const double scale = renderScale(info.width, info.height, info.dpi);
+        return QSize(std::max(1, int(std::lround(info.width * scale))), std::max(1, int(std::lround(info.height * scale))));
     }
 
     QImage render(int pageNo)
@@ -92,15 +92,17 @@ public:
             return {};
         }
         ddjvu_page_set_rotation(page, ddjvu_page_get_initial_rotation(page));
-        int w = ddjvu_page_get_width(page), h = ddjvu_page_get_height(page);
+        // Breite und Höhe gelten schon für die eingestellte Drehung.
+        const int w = ddjvu_page_get_width(page), h = ddjvu_page_get_height(page);
         const int dpi = std::max(1, ddjvu_page_get_resolution(page));
-        const ddjvu_page_rotation_t rot = ddjvu_page_get_rotation(page);
-        if (rot == DDJVU_ROTATE_90 || rot == DDJVU_ROTATE_270)
-            std::swap(w, h);
-        const double scale = std::min(1.0, kMaxDpi / dpi);
+        const double scale = renderScale(w, h, dpi);
         const int tw = std::max(1, int(std::lround(w * scale))), th = std::max(1, int(std::lround(h * scale)));
 
         QImage img(tw, th, QImage::Format_RGB888);
+        if (img.isNull()) {
+            ddjvu_page_release(page);
+            return {};
+        }
         ddjvu_format_t *fmt = ddjvu_format_create(DDJVU_FORMAT_RGB24, 0, nullptr);
         ddjvu_format_set_row_order(fmt, 1);   // oberste Zeile zuerst
         ddjvu_rect_t rect{0, 0, uint(tw), uint(th)};
@@ -118,6 +120,19 @@ public:
     }
 
 private:
+    // Höchstens kMaxDpi und höchstens so groß, dass das Bild (später als
+    // 32-Bit-Bild) in die Allokationsgrenze passt.
+    static double renderScale(int w, int h, int dpi)
+    {
+        double scale = std::min(1.0, kMaxDpi / std::max(1, dpi));
+        const int limitMb = QImageReader::allocationLimit();
+        const double limit = limitMb > 0 ? double(limitMb) * 1024 * 1024 : double(1 << 30);
+        const double bytes = double(std::max(1, w)) * std::max(1, h) * scale * scale * 4;
+        if (bytes > limit)
+            scale *= std::sqrt(limit / bytes) * 0.99;
+        return scale;
+    }
+
     void pump(bool wait)
     {
         if (wait)

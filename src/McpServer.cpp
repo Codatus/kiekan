@@ -303,6 +303,38 @@ QString checkedWritePath(const QString &path, bool replaces = false)
     return resolved;
 }
 
+// Dateien eines freigegebenen Ordners. Treffer, die (als Symlink) aus den
+// Freigaben hinausführen, fallen weg.
+QStringList releasedFiles(const QString &dir, const QStringList &filters, bool recursive, int max,
+                          bool *truncated = nullptr)
+{
+    const QStringList roots = AiGuard::effectiveReadRoots();
+    QDirIterator it(dir, filters, QDir::Files | QDir::Readable,
+                    recursive ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
+    QStringList out;
+    while (it.hasNext()) {
+        const QString p = it.next();
+        if (!AiGuard::isInside(AiGuard::normalized(p), roots))
+            continue;
+        if (out.size() >= max) {
+            if (truncated)
+                *truncated = true;
+            break;
+        }
+        out << p;
+    }
+    return out;
+}
+
+// Im Protokoll jede gelesene Datei nennen, nicht nur den Ordner.
+void auditRead(const QStringList &paths)
+{
+    if (!g_audit)
+        return;
+    for (const QString &p : paths)
+        g_audit->read << AiGuard::normalized(p);
+}
+
 void requireOverwriteAllowed()
 {
     if (!AiGuard::effectiveOverwrite())
@@ -340,6 +372,8 @@ QImage loadImage(const QString &path, int page, LoadResult *info = nullptr, bool
     const LoadResult r = ImageLoader::decode(path, page, 200, full);
     if (r.image.isNull())
         fail(QStringLiteral("cannot read %1: %2").arg(path, r.error));
+    if (page >= r.pageCount)
+        fail(QStringLiteral("page %1 does not exist (%2 has %3 pages, 0-based)").arg(page).arg(path).arg(r.pageCount));
     if (info)
         *info = r;
     return r.image;
@@ -655,17 +689,9 @@ QJsonArray McpServer::listMedia(const QJsonObject &args)
         fail(QStringLiteral("not a folder: %1").arg(dir));
     const int limit = std::clamp(integer(args, "limit", 500), 1, kMaxListing);
 
-    QDirIterator it(dir, Media::allNameFilters(), QDir::Files | QDir::Readable,
-                    boolean(args, "recursive", false) ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
-    QStringList paths;
     bool truncated = false;
-    while (it.hasNext()) {
-        if (paths.size() >= kMaxListing) {
-            truncated = true;
-            break;
-        }
-        paths << it.next();
-    }
+    QStringList paths = releasedFiles(dir, Media::allNameFilters(), boolean(args, "recursive", false), kMaxListing,
+                                      &truncated);
     // Natürliche Sortierung wie im Fenster (Bild2 vor Bild10).
     QCollator collator;
     collator.setNumericMode(true);
@@ -697,7 +723,13 @@ QJsonArray McpServer::listMedia(const QJsonObject &args)
     }
     QString text = QStringLiteral("%1 (%2 entries%3)\nname\ttype\tdimensions\tbytes\tmodified\n")
                        .arg(dir).arg(count).arg(truncated ? QStringLiteral(", truncated") : QString());
-    text += untrusted(lines.join(QLatin1Char('\n')), QStringLiteral("file names in ") + dir, {dir});
+    // Vertrauen je Datei: KI-Kopien fremder Dateien in einem Schreib-Unterordner
+    // gelten nicht schon deshalb als vertrauenswürdig, weil der Ordner es ist.
+    QStringList resolved;
+    for (const QString &path : paths)
+        resolved << AiGuard::normalized(path);
+    text += untrusted(lines.join(QLatin1Char('\n')), QStringLiteral("file names in ") + dir,
+                      resolved.isEmpty() ? QStringList{dir} : resolved);
     return {textContent(text)};
 }
 
@@ -715,7 +747,7 @@ QJsonArray McpServer::imageInfo(const QJsonObject &args)
         info.insert(QStringLiteral("pages"), Media::pdfPageCount(path));
     } else {
         QImageReader reader(path);
-        reader.setAutoTransform(true);
+        reader.setAutoTransform(ImageLoader::autoRotate());   // wie im Fenster
         QSize size = reader.size();
         if (reader.transformation() & QImageIOHandler::TransformationRotate90)
             size.transpose();
@@ -784,7 +816,8 @@ QJsonArray McpServer::viewImage(const QJsonObject &args)
         drawGrid(preview, region);
     }
 
-    QString text = QStringLiteral("%1: original %2x%3").arg(QFileInfo(path).fileName()).arg(image.width()).arg(image.height());
+    QString text = QStringLiteral("%1: original %2x%3").arg(AiGuard::safeLabel(QFileInfo(path).fileName()))
+                       .arg(image.width()).arg(image.height());
     if (info.pageCount > 1)
         text += QStringLiteral(", page %1 of %2").arg(page + 1).arg(info.pageCount);
     if (info.rawPreview)
@@ -956,10 +989,10 @@ QJsonArray McpServer::convertBatch(const QJsonObject &args)
     const QString dir = str(args, "directory");
     if (!dir.isEmpty()) {
         const QString d = checkedPath(dir, true);
-        QDirIterator it(d, Media::imageNameFilters(), QDir::Files | QDir::Readable,
-                        boolean(args, "recursive", false) ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
-        while (it.hasNext())
-            inputs << it.next();
+        const QStringList found = releasedFiles(d, Media::imageNameFilters(), boolean(args, "recursive", false),
+                                                kMaxListing + 1);
+        auditRead(found);
+        inputs << found;
     }
     if (inputs.isEmpty())
         fail(QStringLiteral("no input files (give inputs or directory)"));
@@ -1008,9 +1041,14 @@ QJsonArray McpServer::convertBatch(const QJsonObject &args)
         }
     }
     QString text = QStringLiteral("converted %1, skipped %2, failed %3\n").arg(done).arg(skipped).arg(failed);
-    text += report.mid(0, 200).join(QLatin1Char('\n'));
+    QString lines = report.mid(0, 200).join(QLatin1Char('\n'));
     if (report.size() > 200)
-        text += QStringLiteral("\n… %1 more lines").arg(report.size() - 200);
+        lines += QStringLiteral("\n… %1 more lines").arg(report.size() - 200);
+    // Die Zeilen enthalten Dateinamen (bei directory aus dem Ordner gelesen).
+    QStringList sources;
+    for (const QString &in : inputs)
+        sources << AiGuard::normalized(in);
+    text += untrusted(lines, QStringLiteral("conversion report"), sources);
     return {textContent(text)};
 }
 
@@ -1039,6 +1077,9 @@ QJsonArray McpServer::viewerState(const QJsonObject &)
 {
     QJsonObject answer;
     viewerCall({{QStringLiteral("cmd"), QStringLiteral("state")}}, &answer);
+    // Fensterzugriff gilt unabhängig von den Leseordnern – im Protokoll nennen.
+    if (g_audit)
+        g_audit->read << QStringLiteral("viewer state: %1").arg(answer.value(QLatin1String("file")).toString());
     return {textContent(untrusted(QString::fromUtf8(QJsonDocument(answer).toJson(QJsonDocument::Indented)),
                                   QStringLiteral("viewer state")))};
 }
@@ -1053,6 +1094,10 @@ QJsonArray McpServer::viewerGetImage(const QJsonObject &args)
     const QImage image = QImage::fromData(QByteArray::fromBase64(answer.value(QLatin1String("data")).toString().toLatin1()));
     if (image.isNull())
         fail(QStringLiteral("KiekAn! sent no image"));
+    if (g_audit) {
+        const QString file = answer.value(QLatin1String("file")).toString();
+        g_audit->read << QStringLiteral("viewer image: %1").arg(file.isEmpty() ? QStringLiteral("(clipboard or video frame)") : file);
+    }
     QString text = QStringLiteral("current image in KiekAn!: original %1x%2")
                        .arg(answer.value(QLatin1String("original_width")).toInt())
                        .arg(answer.value(QLatin1String("original_height")).toInt());
@@ -1078,7 +1123,7 @@ QJsonArray McpServer::viewerSelect(const QJsonObject &args)
     }
     QJsonObject answer;
     viewerCall(req, &answer);
-    return {textContent(answer.value(QLatin1String("message")).toString(QStringLiteral("ok")))};
+    return {textContent(AiGuard::safeLabel(answer.value(QLatin1String("message")).toString(QStringLiteral("ok"))))};
 }
 
 QJsonArray McpServer::viewerApply(const QJsonObject &args)
@@ -1104,11 +1149,8 @@ QJsonArray McpServer::contactSheet(const QJsonObject &args)
     const QString dir = str(args, "directory");
     if (!dir.isEmpty()) {
         const QString d = checkedPath(dir, true);
-        QStringList found;
-        QDirIterator it(d, Media::imageNameFilters(), QDir::Files | QDir::Readable,
-                        boolean(args, "recursive", false) ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
-        while (it.hasNext() && found.size() < 20000)
-            found << it.next();
+        QStringList found = releasedFiles(d, Media::imageNameFilters(), boolean(args, "recursive", false), 20000);
+        auditRead(found);
         QCollator collator;
         collator.setNumericMode(true);
         collator.setCaseSensitivity(Qt::CaseInsensitive);
@@ -1141,7 +1183,7 @@ QJsonArray McpServer::contactSheet(const QJsonObject &args)
                 sizes[size_t(i)] = img.size();
             } else {
                 QImageReader reader(path);
-                reader.setAutoTransform(true);
+                reader.setAutoTransform(ImageLoader::autoRotate());   // wie im Fenster
                 const QSize full = reader.size();
                 sizes[size_t(i)] = (reader.transformation() & QImageIOHandler::TransformationRotate90) ? full.transposed() : full;
                 if (full.isValid() && (full.width() > cell || full.height() > cell))
@@ -1256,8 +1298,10 @@ QJsonArray McpServer::writeMetadata(const QJsonObject &args)
     QJsonObject now{{QStringLiteral("title"), s.title}, {QStringLiteral("description"), s.description},
                     {QStringLiteral("keywords"), QJsonArray::fromStringList(s.keywords)},
                     {QStringLiteral("rating"), s.rating}};
-    return {textContent(QStringLiteral("metadata written to %1:\n%2").arg(path,
-                            QString::fromUtf8(QJsonDocument(now).toJson(QJsonDocument::Indented))))};
+    // Enthält auch unveränderte Angaben aus der Datei.
+    return {textContent(QStringLiteral("metadata written to %1:\n").arg(AiGuard::safeLabel(path))
+                        + untrusted(QString::fromUtf8(QJsonDocument(now).toJson(QJsonDocument::Indented)),
+                                    QStringLiteral("metadata of ") + path, {path}))};
 }
 
 QJsonArray McpServer::extractText(const QJsonObject &args)
@@ -1278,9 +1322,12 @@ QJsonArray McpServer::extractText(const QJsonObject &args)
             pages << p;
     } else {
         for (const QJsonValue &v : args.value(QLatin1String("pages")).toArray())
-            pages << v.toInt();
+            if (!pages.contains(v.toInt()))
+                pages << v.toInt();
         if (pages.isEmpty())
             pages << 0;
+        if (pages.size() > 500)
+            fail(QStringLiteral("too many pages (%1, maximum 500 per call)").arg(pages.size()));
     }
     for (int p : pages)
         if (p < 0 || p >= pageCount)
@@ -1325,6 +1372,7 @@ QJsonArray McpServer::extractText(const QJsonObject &args)
             job.path = path;
             job.page = page;
             job.pdfDpi = 300;
+            job.coordDpi = 200;   // wie view_image/edit_image (loadImage)
             job.region = region;
             job.options = opt;
             job.options.languages = languages;
@@ -1445,8 +1493,8 @@ QJsonArray McpServer::splitPdf(const QJsonObject &args)
     PdfSplit::Options opt;
     if (args.contains(QLatin1String("max_megabytes")))
         opt.maxMegabytes = args.value(QLatin1String("max_megabytes")).toDouble(25);
-    if (opt.maxMegabytes < 0.5)
-        fail(QStringLiteral("max_megabytes must be at least 0.5"));
+    if (!(opt.maxMegabytes >= 0.5 && opt.maxMegabytes <= 100000))
+        fail(QStringLiteral("max_megabytes must be between 0.5 and 100000"));
     opt.pagesPerPart = std::max(0, integer(args, "pages_per_part", 0));
     for (const QJsonValue &v : args.value(QLatin1String("ranges")).toArray()) {
         const QJsonArray pair = v.toArray();
@@ -1557,7 +1605,10 @@ QJsonArray McpServer::pdfParts(const QJsonObject &args)
                     .arg(dir.filePath(p.value(QLatin1String("file")).toString())).arg(bms.join(QStringLiteral("; ")));
     }
     if (boolean(args, "verify", false)) {
-        const QStringList problems = PdfSplit::verify(m, manifestPath);
+        const QStringList problems = PdfSplit::verify(m, manifestPath, [](const QString &p) {
+            return !p.isEmpty() && !QDir::isRelativePath(p)
+                   && AiGuard::isInside(AiGuard::normalized(p), AiGuard::effectiveReadRoots());
+        });
         text += problems.isEmpty() ? QStringLiteral("\nverify: all parts present and unchanged, source unchanged")
                                    : QStringLiteral("\nverify found problems:\n- ") + problems.join(QStringLiteral("\n- "));
     }
