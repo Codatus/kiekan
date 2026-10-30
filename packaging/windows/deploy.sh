@@ -48,6 +48,28 @@ for lang in osd eng deu frk; do
     cp "$PREFIX/share/tessdata/$lang.traineddata" "$OUT/tessdata/"
 done
 
+# Lizenztexte aller mitgelieferten Bibliotheken (Pflicht bei Weitergabe):
+# zu jeder DLL das MSYS2-Paket ermitteln und dessen Lizenzordner kopieren.
+mkdir -p "$OUT/licenses"
+# (Die Kopien gehören keinem Paket – daher das Original in MSYS2 suchen.)
+pkgs=$( { find "$OUT" -iname '*.dll' -printf '%f\n' | sort -u | while read -r name; do
+              orig=$(find "$PREFIX/bin" "$PREFIX/share/qt6/plugins" -iname "$name" 2>/dev/null | head -n 1)
+              [ -n "$orig" ] && pacman -Qqo "$orig" 2>/dev/null || true
+          done
+          for p in tesseract-data-eng tesseract-data-deu tesseract-data-frk; do echo "${MINGW_PACKAGE_PREFIX}-$p"; done; } | sort -u)
+: > "$OUT/licenses/VERSIONEN.txt"
+for pkg in $pkgs; do
+    pacman -Q "$pkg" >> "$OUT/licenses/VERSIONEN.txt" 2>/dev/null || continue
+    short=${pkg#"${MINGW_PACKAGE_PREFIX}-"}
+    if [ -d "$PREFIX/share/licenses/$short" ]; then
+        cp -r "$PREFIX/share/licenses/$short" "$OUT/licenses/"
+    else
+        # Ohne eigenen Lizenzordner: Lizenzangabe aus der Paketbeschreibung
+        pacman -Qi "$pkg" | grep -E '^(Name|Version|Licenses|URL)' > "$OUT/licenses/$short.txt"
+    fi
+done
+cp packaging/DRITTANBIETER.md "$OUT/licenses/"
+
 echo "Paket erstellt in $OUT:"
 du -sh "$OUT"
 ls "$OUT" | head -50

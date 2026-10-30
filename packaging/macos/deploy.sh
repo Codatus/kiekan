@@ -80,6 +80,24 @@ macdeployqt "$APP" "${args[@]}" -verbose=1
 cp "$(qtpaths6 --query QT_INSTALL_PLUGINS)/platforms/libqoffscreen.dylib" "$APP/Contents/PlugIns/platforms/" 2>/dev/null || true
 macdeployqt "$APP" -executable="$APP/Contents/PlugIns/platforms/libqoffscreen.dylib" -verbose=0 || true
 
+# Lizenztexte aller mitgelieferten Bibliotheken (Pflicht bei Weitergabe):
+# Homebrew-Formeln, aus denen macdeployqt Bibliotheken übernommen hat.
+LIC="$APP/Contents/Resources/licenses"
+mkdir -p "$LIC"
+formulas=$(for f in "$APP"/Contents/Frameworks/*; do
+               name=$(basename "$f")
+               real=$(find "$BREW/opt" -maxdepth 3 -name "$name" 2>/dev/null | head -n 1)
+               [ -n "$real" ] && echo "$real" | sed -E "s|^$BREW/opt/([^/]+)/.*|\1|" || true
+           done | sort -u)
+for formula in $formulas tesseract; do
+    dir=$(brew --prefix "$formula" 2>/dev/null) || continue
+    mkdir -p "$LIC/$formula"
+    find -L "$dir" -maxdepth 1 -type f \( -iname 'LICEN[CS]E*' -o -iname 'COPYING*' -o -iname 'COPYRIGHT*' -o -iname 'NOTICE*' \) \
+        -exec cp {} "$LIC/$formula/" \;
+    brew list --versions "$formula" >> "$LIC/VERSIONEN.txt"
+done
+cp packaging/DRITTANBIETER.md "$LIC/"
+
 # Apple Silicon verlangt Signaturen; ohne Entwicklerkonto ad hoc
 codesign --force --deep --sign - "$APP"
 
