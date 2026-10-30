@@ -1,6 +1,7 @@
 # KiekAn! – automatischer Build
-# Baut und testet bei jeder Änderung; bei einem Tag v* wird das .deb als
-# Release veröffentlicht.
+# Bei jeder Änderung nur ein kurzer Linux-Build mit Tests (spart Actions-Minuten).
+# Alle Pakete (Distributionen, ARM64, macOS, Windows) bei einem Tag v* – dann
+# auch als Release – oder von Hand („Run workflow“).
 name: Build
 
 on:
@@ -8,6 +9,12 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
+  workflow_dispatch:
+
+# Ältere Läufe desselben Zweigs abbrechen, wenn schnell nachgeschoben wird
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 permissions:
   contents: write
@@ -18,17 +25,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ['ubuntu:22.04', 'ubuntu:24.04', 'debian:12', 'debian:13']
-        runner: [ubuntu-24.04, ubuntu-24.04-arm]   # amd64 und arm64 (Raspberry Pi, ARM-Laptops)
-        include:
-          - image: ubuntu:22.04
-            suffix: ubuntu22.04
-          - image: ubuntu:24.04
-            suffix: ubuntu24.04
-          - image: debian:12
-            suffix: debian12
-          - image: debian:13
-            suffix: debian13
+        # Volle Matrix nur für Releases/von Hand; sonst nur Ubuntu 24.04 amd64
+        image: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && '["ubuntu:22.04", "ubuntu:24.04", "debian:12", "debian:13"]' || '["ubuntu:24.04"]') }}
+        runner: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && '["ubuntu-24.04", "ubuntu-24.04-arm"]' || '["ubuntu-24.04"]') }}   # amd64 und arm64
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.image }}
     steps:
@@ -48,7 +47,7 @@ jobs:
       - name: Bauen
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
-                -DKIEKAN_PKG_SUFFIX=${{ matrix.suffix }}
+                -DKIEKAN_PKG_SUFFIX=$(echo "${{ matrix.image }}" | tr -d :)
           cmake --build build
 
       - name: Testen
@@ -72,7 +71,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: kiekan-${{ matrix.suffix }}-${{ matrix.runner }}
+          name: kiekan-${{ matrix.runner }}-${{ strategy.job-index }}
           path: build/*.deb
 
       - name: Release veröffentlichen
@@ -83,6 +82,7 @@ jobs:
           generate_release_notes: false   # Notiz nur einmal (Windows-Job)
 
   rpm:
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     # Fedora und openSUSE: je ein eigenes .rpm
     strategy:
       fail-fast: false
@@ -156,6 +156,7 @@ jobs:
           generate_release_notes: false   # Notiz nur einmal (Windows-Job)
 
   arch:
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     # Prüft das PKGBUILD (Vorlage für das AUR) mit dem aktuellen Quelltext
     runs-on: ubuntu-latest
     container: archlinux:latest
@@ -176,6 +177,7 @@ jobs:
           pacman -U --noconfirm /home/bauer/pkg/kiekan-$ver-*-x86_64.pkg.tar.zst
 
   macos:
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     # Apple Silicon; ohne Apple-Entwicklerkonto nur ad hoc signiert
     runs-on: macos-15
     steps:
@@ -228,6 +230,7 @@ jobs:
           generate_release_notes: false   # Notiz nur einmal (Windows-Job)
 
   windows:
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     runs-on: windows-2022
     defaults:
       run:
