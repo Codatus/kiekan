@@ -75,10 +75,21 @@ args=()
 for f in "$APP"/Contents/MacOS/qtplugins/*/*.dylib "$APP"/Contents/lib/kiekan/plugins/*.dylib; do
     [ -e "$f" ] && args+=("-executable=$f")
 done
-macdeployqt "$APP" "${args[@]}" -verbose=1
+# -libpath: Homebrew verlinkt alle Bibliotheken und Qt-Frameworks nach $BREW/lib;
+# ohne das bleiben @rpath-Verweise (z. B. QtSvg, brotli) ungelöst.
+macdeployqt "$APP" "${args[@]}" -libpath="$BREW/lib" -verbose=1
 # MCP-Server und Texterkennung laufen ohne Fenster
 cp "$(qtpaths6 --query QT_INSTALL_PLUGINS)/platforms/libqoffscreen.dylib" "$APP/Contents/PlugIns/platforms/" 2>/dev/null || true
-macdeployqt "$APP" -executable="$APP/Contents/PlugIns/platforms/libqoffscreen.dylib" -verbose=0 || true
+macdeployqt "$APP" -executable="$APP/Contents/PlugIns/platforms/libqoffscreen.dylib" -libpath="$BREW/lib" -verbose=0 || true
+
+# Prüfen: kein Verweis mehr nach Homebrew, alle @rpath-Ziele im Paket
+bad=0
+while IFS= read -r -d '' f; do
+    if otool -L "$f" 2>/dev/null | tail -n +2 | grep -q "$BREW/"; then
+        echo "Verweist noch auf Homebrew: $f"; otool -L "$f" | grep "$BREW/"; bad=1
+    fi
+done < <(find "$APP/Contents" -type f \( -name '*.dylib' -o -perm -111 \) -print0)
+[ "$bad" = 0 ] || exit 1
 
 # Lizenztexte aller mitgelieferten Bibliotheken (Pflicht bei Weitergabe):
 # Homebrew-Formeln, aus denen macdeployqt Bibliotheken übernommen hat.
@@ -97,6 +108,7 @@ for formula in $formulas tesseract; do
     brew list --versions "$formula" >> "$LIC/VERSIONEN.txt"
 done
 cp packaging/DRITTANBIETER.md "$LIC/"
+echo "Lizenzen von $(ls "$LIC" | wc -l) Formeln: $(ls "$LIC" | tr '\n' ' ')"
 
 # Apple Silicon verlangt Signaturen; ohne Entwicklerkonto ad hoc
 codesign --force --deep --sign - "$APP"

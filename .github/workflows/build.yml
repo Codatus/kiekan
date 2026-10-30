@@ -198,9 +198,12 @@ jobs:
         run: |
           VERSION=$(sed -n 's/^CMAKE_PROJECT_VERSION:STATIC=//p' build/CMakeCache.txt)
           packaging/macos/deploy.sh build dist "$VERSION"
+          # Wie auf einem Mac ohne Homebrew: Homebrew für den Rauchtest wegschieben
+          sudo mv /opt/homebrew /opt/homebrew-aus
           printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
                          '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
             | QT_QPA_PLATFORM=offscreen dist/KiekAn.app/Contents/MacOS/kiekan --mcp | tee mcp.out
+          sudo mv /opt/homebrew-aus /opt/homebrew
           grep -q '"extract_text"' mcp.out
           ls -la dist
 
