@@ -82,29 +82,83 @@ macdeployqt "$APP" "${args[@]}" -libpath="$BREW/lib" -verbose=1
 cp "$(qtpaths6 --query QT_INSTALL_PLUGINS)/platforms/libqoffscreen.dylib" "$APP/Contents/PlugIns/platforms/" 2>/dev/null || true
 macdeployqt "$APP" -executable="$APP/Contents/PlugIns/platforms/libqoffscreen.dylib" -libpath="$BREW/lib" -verbose=0 || true
 
-# Prüfen: kein Verweis mehr nach Homebrew, alle @rpath-Ziele im Paket
+# macdeployqt löst nicht alle @rpath-Verweise auf (Homebrew verteilt Qt auf
+# viele Formeln). Fehlende Bibliotheken selbst ins Paket holen und alle
+# Verweise auf @rpath umstellen, bis nichts mehr nach außen zeigt.
+FW="$APP/Contents/Frameworks"
+macho() { find "$APP/Contents" -type f -print0 | while IFS= read -r -d '' f; do
+              file -b "$f" | grep -q 'Mach-O' && printf '%s\0' "$f"; done; }
+relname() {   # Pfad im Frameworks-Ordner für einen Verweis
+    case "$1" in
+        *.framework/*) echo "$1" | sed -E 's|.*/([^/]+\.framework/.*)|\1|' ;;
+        *) basename "$1" ;;
+    esac
+}
+fetch() {     # Bibliothek aus Homebrew ins Paket kopieren
+    local rel="$1" top src
+    top=${rel%%/*}
+    [ -e "$FW/$top" ] && return 0
+    src=$(ls -d "$BREW/lib/$top" "$BREW"/opt/*/lib/"$top" 2>/dev/null | head -n 1)
+    [ -n "$src" ] || { echo "Nicht gefunden: $rel"; return 1; }
+    cp -RH "$src" "$FW/"
+    chmod -R u+w "$FW/$top"
+    install_name_tool -id "@rpath/$rel" "$FW/$rel" 2>/dev/null
+    echo "Ergänzt: $rel"
+}
+ensure_rpath() {   # @rpath relativ zur Datei auf den Frameworks-Ordner zeigen lassen
+    local rp="@loader_path/$(python3 -c 'import os,sys;print(os.path.relpath(sys.argv[1],os.path.dirname(sys.argv[2])))' "$FW" "$1")"
+    otool -l "$1" | grep -q "path $rp " || install_name_tool -add_rpath "$rp" "$1" 2>/dev/null || true
+}
+for pass in 1 2 3 4 5 6 7 8; do
+    changed=0
+    while IFS= read -r -d '' f; do
+        for ref in $(otool -L "$f" | tail -n +2 | awk '{print $1}'); do
+            case "$ref" in
+                "$BREW"/*|/usr/local/*|@rpath/*)
+                    rel=$(relname "${ref#@rpath/}")
+                    [ -e "$FW/$rel" ] || { fetch "$rel" && changed=1; }
+                    if [ "$ref" != "@rpath/$rel" ]; then
+                        install_name_tool -change "$ref" "@rpath/$rel" "$f" 2>/dev/null && changed=1
+                    fi
+                    ensure_rpath "$f" ;;
+            esac
+        done
+    done < <(macho)
+    [ "$changed" = 0 ] && break
+done
+
+# Prüfen: jeder Verweis zeigt ins Paket oder auf das System
 bad=0
 while IFS= read -r -d '' f; do
-    if otool -L "$f" 2>/dev/null | tail -n +2 | grep -q "$BREW/"; then
-        echo "Verweist noch auf Homebrew: $f"; otool -L "$f" | grep "$BREW/"; bad=1
-    fi
-done < <(find "$APP/Contents" -type f \( -name '*.dylib' -o -perm -111 \) -print0)
+    for ref in $(otool -L "$f" | tail -n +2 | awk '{print $1}'); do
+        case "$ref" in
+            @rpath/*) [ -e "$FW/${ref#@rpath/}" ] || { echo "Fehlt im Paket: $ref ($f)"; bad=1; } ;;
+            /usr/lib/*|/System/*|@executable_path/*|@loader_path/*) ;;
+            *) echo "Verweist nach außen: $ref ($f)"; bad=1 ;;
+        esac
+    done
+done < <(macho)
 [ "$bad" = 0 ] || exit 1
+echo "Alle Verweise im Paket aufgelöst ($(ls "$FW" | wc -l | tr -d ' ') Bibliotheken)"
 
 # Lizenztexte aller mitgelieferten Bibliotheken (Pflicht bei Weitergabe):
-# Homebrew-Formeln, aus denen macdeployqt Bibliotheken übernommen hat.
+# zu jeder Bibliothek im Paket die Homebrew-Formel suchen.
 LIC="$APP/Contents/Resources/licenses"
 mkdir -p "$LIC"
-formulas=$(for f in "$APP"/Contents/Frameworks/*; do
+formulas=$(for f in "$FW"/*; do
                name=$(basename "$f")
-               real=$(find "$BREW/opt" -maxdepth 3 -name "$name" 2>/dev/null | head -n 1)
-               [ -n "$real" ] && echo "$real" | sed -E "s|^$BREW/opt/([^/]+)/.*|\1|" || true
+               ls -d "$BREW"/Cellar/*/*/lib/"$name" 2>/dev/null | head -n 1 \
+                   | sed -E "s|^$BREW/Cellar/([^/]+)/.*|\1|" || true
            done | sort -u)
 for formula in $formulas tesseract; do
     dir=$(brew --prefix "$formula" 2>/dev/null) || continue
     mkdir -p "$LIC/$formula"
     find -L "$dir" -maxdepth 1 -type f \( -iname 'LICEN[CS]E*' -o -iname 'COPYING*' -o -iname 'COPYRIGHT*' -o -iname 'NOTICE*' \) \
         -exec cp {} "$LIC/$formula/" \;
+    # Ohne Lizenzdatei im Paketordner: Angabe aus Homebrew
+    [ -n "$(ls "$LIC/$formula")" ] || brew info --json=v2 "$formula" \
+        | python3 -c "import json,sys;f=json.load(sys.stdin)['formulae'][0];print(f['name'],f['versions']['stable'],'License:',f.get('license'),f.get('homepage'))" \
+        > "$LIC/$formula/LIZENZ.txt"
     brew list --versions "$formula" >> "$LIC/VERSIONEN.txt"
 done
 cp packaging/DRITTANBIETER.md "$LIC/"
