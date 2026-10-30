@@ -156,7 +156,7 @@ BatchDialog::BatchDialog(const QStringList &files, const QString &current, QWidg
     });
 
     if (m_outDir->text().isEmpty())
-        m_outDir->setText(QDir(startDir).filePath(tr("konvertiert")));
+        m_outDir->setText(QDir::toNativeSeparators(QDir(startDir).filePath(tr("konvertiert"))));
     addFiles(files);
     resize(980, 640);
 }
@@ -231,13 +231,13 @@ QWidget *BatchDialog::createConvertPage()
     opts->addWidget(m_useRenamePattern);
     form->addRow(tr("Optionen:"), opts);
 
-    m_outDir = new QLineEdit(settings.value(QStringLiteral("batch/outDir")).toString(), page);
+    m_outDir = new QLineEdit(QDir::toNativeSeparators(settings.value(QStringLiteral("batch/outDir")).toString()), page);
     auto *browse = new QPushButton(tr("…"), page);
     browse->setFixedWidth(browse->fontMetrics().horizontalAdvance(QStringLiteral("…")) + 24);
     connect(browse, &QPushButton::clicked, this, [this] {
         const QString dir = QFileDialog::getExistingDirectory(this, tr("Zielordner"), m_outDir->text());
         if (!dir.isEmpty())
-            m_outDir->setText(dir);
+            m_outDir->setText(QDir::toNativeSeparators(dir));
     });
     auto *dirRow = new QHBoxLayout;
     dirRow->addWidget(m_outDir, 1);
@@ -342,7 +342,7 @@ void BatchDialog::addFiles(const QStringList &files)
         present.insert(path);
         auto *item = new QListWidgetItem(QFileInfo(path).fileName(), m_list);
         item->setData(Qt::UserRole, path);
-        item->setToolTip(path);
+        item->setToolTip(QDir::toNativeSeparators(path));
     }
     updateConvertState();
     updatePreview();
@@ -400,7 +400,7 @@ void BatchDialog::updatePreview()
         } else {
             ++changes;
         }
-        from->setToolTip(e.source);
+        from->setToolTip(QDir::toNativeSeparators(e.source));
         m_preview->setItem(row, 0, from);
         m_preview->setItem(row, 1, to);
     }
@@ -414,7 +414,7 @@ void BatchDialog::startConvert()
 {
     BatchConvert::Options options;
     options.format = m_format->currentData().toString();
-    options.outputDir = m_outDir->text().trimmed();
+    options.outputDir = QDir::fromNativeSeparators(m_outDir->text().trimmed());
     options.quality = m_quality->value();
     options.maxSize = m_resize->isChecked() ? m_maxSize->value() : 0;
     options.overwrite = m_overwrite->isChecked();
@@ -538,7 +538,7 @@ void BatchDialog::startRename()
         if (!to.isEmpty()) {
             item->setData(Qt::UserRole, to);
             item->setText(QFileInfo(to).fileName());
-            item->setToolTip(to);
+            item->setToolTip(QDir::toNativeSeparators(to));
         }
     }
     m_undo->setEnabled(!m_lastRename.renamed.isEmpty());
@@ -562,7 +562,7 @@ void BatchDialog::undoRename()
         if (!to.isEmpty()) {
             item->setData(Qt::UserRole, to);
             item->setText(QFileInfo(to).fileName());
-            item->setToolTip(to);
+            item->setToolTip(QDir::toNativeSeparators(to));
         }
     }
     Q_EMIT filesRenamed(back.renamed);
