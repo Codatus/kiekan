@@ -112,7 +112,14 @@ ensure_rpath() {   # @rpath relativ zur Datei auf den Frameworks-Ordner zeigen l
 for pass in 1 2 3 4 5 6 7 8; do
     changed=0
     while IFS= read -r -d '' f; do
-        for ref in $(otool -L "$f" | tail -n +2 | awk '{print $1}'); do
+        # Eigene Kennung (Install-ID) einer Bibliothek auf das Paket umstellen
+        id=$(otool -D "$f" | tail -n +2)
+        case "$id" in
+            "$BREW"/*|/usr/local/*)
+                install_name_tool -id "@rpath/$(relname "$id")" "$f" 2>/dev/null && changed=1 ;;
+        esac
+        id=$(otool -D "$f" | tail -n +2)
+        for ref in $(otool -L "$f" | tail -n +2 | awk '{print $1}' | grep -vxF "${id:-/}"); do
             case "$ref" in
                 "$BREW"/*|/usr/local/*|@rpath/*)
                     rel=$(relname "${ref#@rpath/}")
@@ -130,13 +137,19 @@ done
 # Prüfen: jeder Verweis zeigt ins Paket oder auf das System
 bad=0
 while IFS= read -r -d '' f; do
-    for ref in $(otool -L "$f" | tail -n +2 | awk '{print $1}'); do
+    id=$(otool -D "$f" | tail -n +2)
+    for ref in $(otool -L "$f" | tail -n +2 | awk '{print $1}' | grep -vxF "${id:-/}"); do
         case "$ref" in
             @rpath/*) [ -e "$FW/${ref#@rpath/}" ] || { echo "Fehlt im Paket: $ref ($f)"; bad=1; } ;;
             /usr/lib/*|/System/*|@executable_path/*|@loader_path/*) ;;
             *) echo "Verweist nach außen: $ref ($f)"; bad=1 ;;
         esac
     done
+done < <(macho)
+while IFS= read -r -d '' f; do
+    case "$(otool -D "$f" | tail -n +2)" in
+        "$BREW"/*|/usr/local/*) echo "Kennung zeigt nach außen: $f"; bad=1 ;;
+    esac
 done < <(macho)
 [ "$bad" = 0 ] || exit 1
 echo "Alle Verweise im Paket aufgelöst ($(ls "$FW" | wc -l | tr -d ' ') Bibliotheken)"

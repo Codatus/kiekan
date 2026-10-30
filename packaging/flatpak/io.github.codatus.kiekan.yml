@@ -29,6 +29,8 @@ cleanup:
   - '*.a'
 modules:
   - name: exiv2
+    license-files:
+      - COPYING
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
@@ -45,6 +47,10 @@ modules:
         commit: b0859fc61fea5dedfc898aece6b15893ddf4314e
 
   - name: libraw
+    license-files:
+      - COPYRIGHT
+      - LICENSE.LGPL
+      - LICENSE.CDDL
     buildsystem: simple
     build-commands:
       - autoreconf -fi
@@ -58,6 +64,8 @@ modules:
         commit: cf02d66eb5c19d4e46df7aee0582e47a4918509a
 
   - name: leptonica
+    license-files:
+      - leptonica-license.txt
     config-opts:
       - --disable-programs
       - --disable-static
@@ -68,6 +76,8 @@ modules:
         commit: 13275a278eb55b5746e33f95fbf5a2c8f604b3ab
 
   - name: tesseract
+    license-files:
+      - LICENSE
     config-opts:
       - --disable-static
       - --disable-graphics
@@ -80,6 +90,8 @@ modules:
         commit: 7e548e6eff172f38f97664afe7f7ce40db36c8d6
 
   - name: tessdata
+    license-files:
+      - LICENSE
     buildsystem: simple
     build-commands:
       - install -Dm644 -t /app/share/tessdata *.traineddata
@@ -96,8 +108,15 @@ modules:
       - type: file
         url: https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/deu_latf.traineddata
         sha256: d7c7d9ffdcddd676950fe4982c8733ed4adb63bdcdc4ef252cb461d97baf9815
+      - type: file
+        url: https://raw.githubusercontent.com/tesseract-ocr/tessdata/ced78752cc61322fb554c280d13360b35b8684e4/LICENSE
+        sha256: cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
 
   - name: qpdf
+    license-files:
+      - LICENSE.txt
+      - NOTICE.md
+      - Artistic-2.0
     buildsystem: cmake-ninja
     builddir: true
     config-opts:
@@ -114,6 +133,8 @@ modules:
         commit: 4eba95899886e851cc41d76886483b347612f2a8
 
   - name: djvulibre
+    license-files:
+      - COPYING
     config-opts:
       - --disable-desktopfiles
       - --disable-static
@@ -123,6 +144,8 @@ modules:
         sha256: d3b4b03ae2bdca8516a36ef6eb27b777f0528c9eda26745d9962824a3fdfeccf
 
   - name: libass
+    license-files:
+      - COPYING
     config-opts:
       - --disable-static
     sources:
@@ -132,6 +155,8 @@ modules:
         commit: 4a05d8127f525943ebf45fdc6497c9e665947f0d
 
   - name: libplacebo
+    license-files:
+      - LICENSE
     buildsystem: meson
     config-opts:
       - --libdir=lib
@@ -145,6 +170,10 @@ modules:
         commit: 275f7dea27924cdd34ab2e6c20e448b6bc4fab65
 
   - name: mpv
+    license-files:
+      - Copyright
+      - LICENSE.GPL
+      - LICENSE.LGPL
     buildsystem: meson
     config-opts:
       - --libdir=lib
@@ -161,6 +190,8 @@ modules:
         commit: 41f6a645068483470267271e1d09966ca3b9f413
 
   - name: kiekan
+    license-files:
+      - LICENSE
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
