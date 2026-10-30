@@ -41,6 +41,8 @@ public:
     // Öffnet eine Datei (und liest ihren Ordner zum Blättern ein)
     // oder einen Ordner (zeigt dessen erstes Bild).
     void openPath(const QString &path);
+    // Beim ersten Start fragen, ob KI-Assistenten das Fenster nutzen dürfen.
+    void askAiViewerAccessOnce();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

@@ -1235,12 +1235,12 @@ right-click or double-click removes it.</translation>
         <translation>“%1” has been modified. Save changes?</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
         <source>Keine Änderungen zu speichern.</source>
         <translation>No changes to save.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>Animationen werden nicht überschrieben – bitte unter neuem Namen speichern.</source>
         <translation>Animations are not overwritten – please save under a new name.</translation>
     </message>
@@ -1436,12 +1436,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+823"/>
+        <location line="+845"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-819"/>
+        <location line="-841"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1506,7 +1506,35 @@ Delete permanently?</translation>
         <translation>Position</translation>
     </message>
     <message>
-        <location line="+346"/>
+        <location line="+345"/>
+        <source>KI-Zugriff auf das Fenster</source>
+        <translation>AI access to the window</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>KiekAn! kann mit KI-Assistenten wie Claude zusammenarbeiten.</source>
+        <translation>KiekAn! can work together with AI assistants such as Claude.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Auf Dateien darf eine KI nur in Ordnern zugreifen, die ausdrücklich freigegeben wurden.
+
+Davon getrennt ist der Zugriff auf das offene Fenster: Ist er erlaubt, sieht ein verbundener Assistent das gerade angezeigte Bild – auch wenn es in keinem freigegebenen Ordner liegt. Er kann außerdem einen Bereich markieren und Bearbeitungen als ungespeicherten Vorschlag zeigen. Jeder Zugriff wird im KI-Protokoll vermerkt.
+
+Ohne verbundenen Assistenten hat die Einstellung keine Wirkung. Ändern lässt sie sich jederzeit unter Extras → Einstellungen → KI-Schnittstelle.</source>
+        <translation>An AI may access files only in folders that were explicitly released.
+
+Access to the open window is separate: if it is allowed, a connected assistant sees the image currently shown – even if it is not in a released folder. It can also select an area and show edits as an unsaved proposal. Every access is recorded in the AI log.
+
+Without a connected assistant this setting has no effect. It can be changed at any time under Tools → Settings → AI interface.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>KI-Zugriff auf das offene Fenster standardmäßig aus</source>
+        <translation>AI access to the open window off by default</translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>KI-Verbindung zum Fenster nicht möglich: %1</source>
         <translation>AI connection to the window not possible: %1</translation>
     </message>
@@ -1601,7 +1629,7 @@ Delete permanently?</translation>
         <translation>Double-click</translation>
     </message>
     <message>
-        <location line="-766"/>
+        <location line="-788"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
@@ -1633,12 +1661,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1682"/>
+        <location line="+1704"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1661"/>
+        <location line="-1683"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1858,7 +1886,7 @@ Delete permanently?</translation>
         <translation>Plugins</translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+146"/>
         <source>Vorschlag der KI%1 – Strg+S speichert, Strg+Z verwirft</source>
         <translation>AI proposal%1 – Ctrl+S saves, Ctrl+Z discards</translation>
     </message>
@@ -2335,7 +2363,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+97"/>
+        <location filename="../src/SettingsDialog.cpp" line="+98"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>

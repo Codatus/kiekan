@@ -4,7 +4,9 @@ export DEBIAN_FRONTEND=noninteractive
 command -v openbox >/dev/null || apt-get install -y -q --no-install-recommends openbox >/dev/null
 O=/root/gui; mkdir -p $O; cd $O
 export DISPLAY=:99 XDG_CONFIG_HOME=/root/guicfg XDG_DATA_HOME=/root/guidata KIEKAN_VIEWER_SOCKET=kt-gui
-mkdir -p $XDG_CONFIG_HOME
+mkdir -p $XDG_CONFIG_HOME/kiekan
+# Erststart-Frage zum KI-Fensterzugriff vorab beantworten
+printf '[ai]\nviewerAccess=true\n' > $XDG_CONFIG_HOME/kiekan/kiekan.conf
 Xvfb :99 -screen 0 1280x800x24 >/dev/null 2>&1 & XV=$!
 sleep 1
 openbox >/dev/null 2>&1 &

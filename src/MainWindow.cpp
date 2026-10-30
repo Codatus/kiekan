@@ -1535,6 +1535,28 @@ void MainWindow::showPlugins()
 
 // --- KI-Schnittstelle -------------------------------------------------------
 
+void MainWindow::askAiViewerAccessOnce()
+{
+    if (Settings::aiViewerAccessDecided())
+        return;
+    QMessageBox box(QMessageBox::Question, tr("KI-Zugriff auf das Fenster"),
+                    tr("KiekAn! kann mit KI-Assistenten wie Claude zusammenarbeiten."), QMessageBox::Ok, this);
+    box.setInformativeText(
+        tr("Auf Dateien darf eine KI nur in Ordnern zugreifen, die ausdrücklich freigegeben wurden.\n\n"
+           "Davon getrennt ist der Zugriff auf das offene Fenster: Ist er erlaubt, sieht ein verbundener "
+           "Assistent das gerade angezeigte Bild – auch wenn es in keinem freigegebenen Ordner liegt. Er kann "
+           "außerdem einen Bereich markieren und Bearbeitungen als ungespeicherten Vorschlag zeigen. Jeder "
+           "Zugriff wird im KI-Protokoll vermerkt.\n\n"
+           "Ohne verbundenen Assistenten hat die Einstellung keine Wirkung. Ändern lässt sie sich jederzeit "
+           "unter Extras → Einstellungen → KI-Schnittstelle."));
+    auto *off = new QCheckBox(tr("KI-Zugriff auf das offene Fenster standardmäßig aus"), &box);
+    off->setChecked(true);
+    box.setCheckBox(off);
+    box.exec();
+    Settings::setAiViewerAccess(!off->isChecked());
+    updateViewerServer();
+}
+
 void MainWindow::updateViewerServer()
 {
     if (Settings::aiViewerAccess()) {

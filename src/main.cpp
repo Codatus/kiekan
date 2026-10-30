@@ -11,6 +11,7 @@
 #include "SettingsDialog.h"
 
 #include <QApplication>
+#include <QTimer>
 #include <QGuiApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -208,6 +209,7 @@ int main(int argc, char *argv[])
     const QStringList args = QApplication::arguments();
     if (args.size() > 1)
         window.openPath(args.at(1));
+    QTimer::singleShot(0, &window, [&window] { window.askAiViewerAccessOnce(); });
 
     return app.exec();
 }

@@ -26,7 +26,8 @@ bool losslessJpeg();          // JPEG nur gedreht/gespiegelt: ohne Neukodierung 
 void setLosslessJpeg(bool on);
 bool escapeQuits();
 void setEscapeQuits(bool on);
-bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern
+bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern (Standard: nein)
+bool aiViewerAccessDecided(); // Benutzer hat schon entschieden (Erststart-Frage)
 void setAiViewerAccess(bool on);
 // Ordnerfreigaben für die KI: siehe AiGuard
 }

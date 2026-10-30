@@ -43,7 +43,8 @@ bool losslessJpeg() { return QSettings().value(QStringLiteral("losslessJpeg"), t
 void setLosslessJpeg(bool on) { QSettings().setValue(QStringLiteral("losslessJpeg"), on); }
 bool escapeQuits() { return QSettings().value(QStringLiteral("escapeQuits"), true).toBool(); }
 void setEscapeQuits(bool on) { QSettings().setValue(QStringLiteral("escapeQuits"), on); }
-bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), true).toBool(); }
+bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), false).toBool(); }
+bool aiViewerAccessDecided() { return QSettings().contains(QStringLiteral("ai/viewerAccess")); }
 void setAiViewerAccess(bool on) { QSettings().setValue(QStringLiteral("ai/viewerAccess"), on); }
 
 } // namespace Settings

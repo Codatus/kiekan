@@ -320,11 +320,13 @@ PDF-Text, Metadaten, Dateinamen – kann Anweisungen an die KI enthalten
   Leseordners zum Schreiben. Liegen Leseordner selbst im Schreibbereich, weist
   der Dialog darauf hin. Symlinks, die aus den Freigaben hinausführen, werden
   nicht verfolgt – weder beim Lesen noch beim Schreiben.
-- **Ausnahme: das offene Fenster.** Solange „KI-Assistenten dürfen das offene
-  Fenster abfragen und steuern“ eingeschaltet ist, sieht die KI über `viewer_state` und
+- **Ausnahme: das offene Fenster.** Beim ersten Start fragt KiekAn!, ob
+  KI-Assistenten das offene Fenster nutzen dürfen; vorgeschlagen ist „aus“.
+  Solange „KI-Assistenten dürfen das offene Fenster abfragen und steuern“
+  eingeschaltet ist, sieht die KI über `viewer_state` und
   `viewer_get_image` das Bild, das gerade im Fenster angezeigt wird – auch
   außerhalb der Leseordner. Das KI-Protokoll verzeichnet jeden solchen Zugriff.
-  Wer das nicht möchte, schaltet den Fensterzugriff in den Einstellungen ab.
+  Ändern lässt sich das jederzeit in den Einstellungen.
 - **Nichts Vorhandenes ändern**, solange „KI darf vorhandene Dateien ersetzen
   und Metadaten ändern“ aus ist: kein `overwrite=true`, kein `write_metadata`.
 - **Werkzeug-Kennzeichnung**: Jedes Werkzeug meldet per MCP, ob es nur liest
