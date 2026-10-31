@@ -6,6 +6,7 @@
 
 #include <QDeadlineTimer>
 #include <QDir>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -33,10 +34,23 @@ QString socketName()
     // Benutzers (XDG_RUNTIME_DIR, Rechte 0700) – dort kann kein anderer
     // Benutzer den Namen vorher belegen. Im Flatpak den Ordner, den alle
     // Instanzen derselben App sehen.
+    QString runtime = qEnvironmentVariable("XDG_RUNTIME_DIR");
+    if (runtime.isEmpty()) {
+        // Manche Programme (z. B. Claude Desktop) starten `kiekan --mcp` ohne
+        // XDG_RUNTIME_DIR. Dann den üblichen Ort /run/user/<uid> nehmen – wie
+        // das Fenster –, aber nur, wenn er allein uns gehört.
+        const QString standard = QStringLiteral("/run/user/%1").arg(getuid());
+        const QFileInfo fi(standard);
+        const auto others = QFileDevice::ReadGroup | QFileDevice::WriteGroup | QFileDevice::ExeGroup
+                            | QFileDevice::ReadOther | QFileDevice::WriteOther | QFileDevice::ExeOther;
+        if (fi.isDir() && fi.ownerId() == getuid() && !(fi.permissions() & others))
+            runtime = standard;
+    }
     const QString flatpak = qEnvironmentVariable("FLATPAK_ID");
-    const QString runtime = qEnvironmentVariable("XDG_RUNTIME_DIR");
     if (!flatpak.isEmpty() && !runtime.isEmpty())
         return QDir(runtime).filePath(QStringLiteral("app/%1/kiekan-viewer").arg(flatpak));
+    if (!runtime.isEmpty())
+        return QDir(runtime).filePath(QStringLiteral("kiekan-viewer"));
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     if (!dir.isEmpty())
         return QDir(dir).filePath(QStringLiteral("kiekan-viewer"));
