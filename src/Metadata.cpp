@@ -28,6 +28,13 @@ namespace Metadata {
 
 namespace {
 
+constexpr const char *kKiekanNs = "https://codatus.github.io/kiekan/ns/1.0/";
+constexpr const char *kTextKey = "Xmp.kiekan.textLayer";
+constexpr const char *kTextFormat = "kiekan-text/1";
+// JPEG fasst im XMP-Abschnitt knapp 64 KB.
+constexpr int kMaxTextLayerBytes = 60000;
+
+
 // Dateien liest und schreibt Qt; exiv2 arbeitet nur im Speicher. Das umgeht
 // Unterschiede bei Dateinamen (Windows: Umlaute, UNC-Pfade) und zwischen
 // exiv2 0.27 und 0.28, die Pfade unterschiedlich behandeln.
@@ -299,6 +306,10 @@ void initialize()
 {
     Exiv2::LogMsg::setLevel(Exiv2::LogMsg::mute);
     Exiv2::XmpParser::initialize();
+    try {
+        Exiv2::XmpProperties::registerNs(kKiekanNs, "kiekan");
+    } catch (const std::exception &) {
+    }
 }
 
 QList<Entry> read(const QString &path, QString *error)
@@ -475,6 +486,81 @@ bool writeDescriptive(const QString &path, const DescriptiveFields &f, QString *
     }
 }
 
+// Format: Kopfzeile „kiekan-text/1<TAB>Breite<TAB>Höhe<TAB>Sprachen“, dann je
+// Wort „x y b h Zeile Absatz Text“ (durch Tabulatoren getrennt).
+TextLayer readTextLayer(const QString &path)
+{
+    TextLayer layer;
+    if (!canWrite(path))
+        return layer;
+    try {
+        Loaded l = load(path);
+        if (!l.opened)
+            return layer;
+        const Exiv2::XmpData &xmp = l.opened->image->xmpData();
+        const auto it = xmp.findKey(Exiv2::XmpKey(kTextKey));
+        if (it == xmp.end())
+            return layer;
+        const QStringList lines = QString::fromStdString(it->toString()).split(QLatin1Char('\n'));
+        const QStringList head = lines.value(0).split(QLatin1Char('\t'));
+        if (head.value(0) != QLatin1String(kTextFormat) || head.size() < 3)
+            return layer;
+        layer.size = QSize(head.at(1).toInt(), head.at(2).toInt());
+        layer.languages = head.value(3);
+        for (int i = 1; i < lines.size(); ++i) {
+            const QStringList f = lines.at(i).split(QLatin1Char('\t'));
+            if (f.size() < 7)
+                continue;
+            TextWord w;
+            w.box = QRect(f.at(0).toInt(), f.at(1).toInt(), f.at(2).toInt(), f.at(3).toInt());
+            w.line = f.at(4).toInt();
+            w.para = f.at(5).toInt();
+            w.text = f.mid(6).join(QLatin1Char(' '));
+            if (!w.text.isEmpty() && w.box.isValid())
+                layer.words.append(w);
+        }
+    } catch (const std::exception &) {
+        layer = {};
+    }
+    return layer;
+}
+
+bool writeTextLayer(const QString &path, const TextLayer &layer, QString *error)
+{
+    if (!canWrite(path)) {
+        if (error)
+            *error = QStringLiteral("text can only be stored in JPEG, PNG, TIFF and WebP files");
+        return false;
+    }
+    QString data = QStringLiteral("%1\t%2\t%3\t%4").arg(QLatin1String(kTextFormat)).arg(layer.size.width())
+                       .arg(layer.size.height()).arg(layer.languages);
+    for (const TextWord &w : layer.words) {
+        QString text = w.text;
+        text.replace(QLatin1Char('\t'), QLatin1Char(' ')).replace(QLatin1Char('\n'), QLatin1Char(' '));
+        data += QStringLiteral("\n%1\t%2\t%3\t%4\t%5\t%6\t%7").arg(w.box.x()).arg(w.box.y()).arg(w.box.width())
+                    .arg(w.box.height()).arg(w.line).arg(w.para).arg(text);
+    }
+    const QByteArray utf8 = data.toUtf8();
+    if (utf8.size() > kMaxTextLayerBytes) {
+        if (error)
+            *error = QStringLiteral("too much text for the image metadata (%1 KB)").arg(utf8.size() / 1024);
+        return false;
+    }
+    try {
+        OpenImage opened;
+        openImage(opened, path);
+        Exiv2::XmpData &xmp = opened.image->xmpData();
+        eraseKey(xmp, kTextKey);
+        xmp[kTextKey] = std::string(utf8.constData(), size_t(utf8.size()));
+        saveImage(opened, path);
+        return true;
+    } catch (const std::exception &e) {
+        if (error)
+            *error = QString::fromLocal8Bit(e.what());
+        return false;
+    }
+}
+
 bool setOrientation(QByteArray &data, int orientation, bool swapDimensions, QString *error)
 {
     try {
@@ -594,6 +680,13 @@ bool available() { return false; }
 void initialize() {}
 bool canWrite(const QString &) { return false; }
 bool setOrientation(QByteArray &, int, bool, QString *error)
+{
+    if (error)
+        *error = QStringLiteral("this build has no metadata support");
+    return false;
+}
+TextLayer readTextLayer(const QString &) { return {}; }
+bool writeTextLayer(const QString &, const TextLayer &, QString *error)
 {
     if (error)
         *error = QStringLiteral("this build has no metadata support");

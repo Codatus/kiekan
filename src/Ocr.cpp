@@ -16,17 +16,40 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <thread>
 #include <vector>
 
 #ifdef KIEKAN_HAVE_TESSERACT
 #include <tesseract/baseapi.h>
+#include <tesseract/ocrclass.h>
 #endif
+
+#include <atomic>
+#include <mutex>
 
 namespace Ocr {
 
 namespace {
+
+// Fortschritt 0..100; nur steigend, aus jedem Thread meldbar.
+std::mutex g_progressMutex;
+std::function<void(int)> g_progress;
+std::atomic<int> g_progressValue{-1};
+
+void reportProgress(int percent)
+{
+    percent = std::clamp(percent, 0, 100);
+    int old = g_progressValue.load();
+    while (percent > old && !g_progressValue.compare_exchange_weak(old, percent)) {
+    }
+    if (percent <= old)
+        return;
+    std::lock_guard<std::mutex> lock(g_progressMutex);
+    if (g_progress)
+        g_progress(percent);
+}
 
 struct Profile
 {
@@ -166,6 +189,7 @@ QString run(const QString &languages, const QImage &gray, int dpi, double *confi
         return {};
     }
     *confidence = e.api.MeanTextConf();
+    reportProgress(std::min(35, g_progressValue.load() + 5));   // Probe fertig
     return takeText(e.api.GetUTF8Text());
 }
 
@@ -294,6 +318,12 @@ Installed installed()
     return cache;
 }
 
+void setProgressCallback(std::function<void(int)> callback)
+{
+    std::lock_guard<std::mutex> lock(g_progressMutex);
+    g_progress = std::move(callback);
+}
+
 Result recognize(const QImage &input, const Options &options)
 {
     Result r;
@@ -322,6 +352,8 @@ Result recognize(const QImage &input, const Options &options)
         dpi *= 2;
     }
     const double backScale = double(input.width()) / gray.width();
+    g_progressValue = -1;
+    reportProgress(3);
 
     // 1. Lage und Schrift
     r.script = QStringLiteral("Latin");
@@ -344,6 +376,7 @@ Result recognize(const QImage &input, const Options &options)
             osd.End();
         }
     }
+    reportProgress(10);
     QTransform toUpright;
     if (r.rotation != 0) {
         toUpright = QImage::trueMatrix(QTransform().rotate(r.rotation), gray.width(), gray.height());
@@ -471,7 +504,14 @@ Result recognize(const QImage &input, const Options &options)
     }
     e.api.SetPageSegMode(tesseract::PSM_AUTO);
     e.setImage(gray, dpi);
-    if (e.api.Recognize(nullptr) != 0) {
+    reportProgress(35);
+    // Volltext: Tesseracts eigener Fortschritt, auf 35..95 % abgebildet
+    ETEXT_DESC monitor;
+    monitor.progress_callback2 = [](ETEXT_DESC *m, int, int, int, int) -> bool {
+        reportProgress(35 + m->progress * 60 / 100);
+        return true;
+    };
+    if (e.api.Recognize(&monitor) != 0) {
         r.error = QStringLiteral("recognition failed");
         return r;
     }
@@ -483,12 +523,19 @@ Result recognize(const QImage &input, const Options &options)
         // Wortrahmen zurück in die Koordinaten des Eingabebildes rechnen.
         const QTransform back = toUpright.inverted();
         std::unique_ptr<tesseract::ResultIterator> it(e.api.GetIterator());
+        int line = -1, para = -1;
         if (it) {
             do {
+                if (it->IsAtBeginningOf(tesseract::RIL_PARA))
+                    ++para;
+                if (it->IsAtBeginningOf(tesseract::RIL_TEXTLINE))
+                    ++line;
                 const char *w = it->GetUTF8Text(tesseract::RIL_WORD);
                 if (!w)
                     continue;
                 Word word;
+                word.line = std::max(0, line);
+                word.para = std::max(0, para);
                 word.text = QString::fromUtf8(w);
                 delete[] w;
                 word.confidence = int(it->Confidence(tesseract::RIL_WORD));
@@ -503,6 +550,7 @@ Result recognize(const QImage &input, const Options &options)
         }
     }
 
+    reportProgress(100);
     if (r.text.isEmpty())
         r.hints << QStringLiteral("no text found");
     else if (r.confidence < 60)
@@ -515,6 +563,8 @@ Result recognize(const QImage &input, const Options &options)
 
 bool available() { return false; }
 Installed installed() { return {}; }
+void setProgressCallback(std::function<void(int)>) {}
+
 Result recognize(const QImage &, const Options &)
 {
     Result r;

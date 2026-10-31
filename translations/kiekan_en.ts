@@ -925,7 +925,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+235"/>
+        <location filename="../src/MainWindow.cpp" line="+250"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -995,7 +995,7 @@ right-click or double-click removes it.</translation>
         <translation>Select &amp;all</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+6"/>
         <source>Auswahl &amp;zuschneiden</source>
         <translation>&amp;Crop selection</translation>
     </message>
@@ -1100,7 +1100,17 @@ right-click or double-click removes it.</translation>
         <translation>&amp;Plugins …</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+7"/>
+        <source>Text &amp;markieren</source>
+        <translation>Select &amp;text</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Text markieren (T): erkennt den Text im Bild, danach lässt er sich mit der Maus markieren und mit Strg+C kopieren</source>
+        <translation>Select text (T): recognizes the text in the image; then it can be selected with the mouse and copied with Ctrl+C</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Diashow angehalten – Leertaste setzt fort, Esc beendet.</source>
         <translation>Slideshow paused – Space resumes, Esc ends.</translation>
     </message>
@@ -1180,7 +1190,7 @@ right-click or double-click removes it.</translation>
         <translation>&amp;Edit</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>B&amp;ild</source>
         <translation>&amp;Image</translation>
     </message>
@@ -1210,17 +1220,90 @@ right-click or double-click removes it.</translation>
         <translation>Toolbar</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+43"/>
         <source>Nicht gefunden: %1</source>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+421"/>
+        <location line="+373"/>
+        <source>Text markieren geht nur bei Bildern und PDF-Seiten.</source>
+        <translation>Text selection works only for images and PDF pages.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Text mit der Maus markieren, Doppelklick markiert ein Wort; Strg+C kopiert, Strg+A markiert alles.</source>
+        <translation>Select text with the mouse, double-click selects a word; Ctrl+C copies, Ctrl+A selects all.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Texterkennung ist nicht verfügbar – Tesseract-Sprachpakete installieren (z. B. %1).</source>
+        <translation>Text recognition is not available – install Tesseract language packs (e.g. %1).</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Texterkennung nicht möglich: kein Platz für eine Zwischendatei.</source>
+        <translation>Text recognition not possible: no space for a temporary file.</translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Kein Text gefunden.</source>
+        <translation>No text found.</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Texterkennung fehlgeschlagen: %1</source>
+        <translation>Text recognition failed: %1</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+22"/>
+        <source>%n Wörter erkannt (%1)%2 – mit der Maus markieren, Strg+C kopiert.</source>
+        <translation>
+            <numerusform>%n word recognized (%1)%2 – select with the mouse, Ctrl+C copies.</numerusform>
+            <numerusform>%n words recognized (%1)%2 – select with the mouse, Ctrl+C copies.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>, Bild aufgerichtet</source>
+        <translation>, image turned upright</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Erkannter Text konnte nicht gespeichert werden: %1</source>
+        <translation>Recognized text could not be saved: %1</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Erkannter Text in „%1“ gespeichert.</source>
+        <translation>Recognized text saved in “%1”.</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Erkannten Text speichern?</source>
+        <translation>Save recognized text?</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Für „%1“ wurde Text erkannt und das Bild aufgerichtet. Text und Drehung in der Datei speichern? Dann ist der Text beim nächsten Öffnen sofort markierbar.</source>
+        <translation>Text was recognized in “%1” and the image was turned upright. Save the text and the rotation in the file? The text can then be selected immediately the next time.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Für „%1“ wurde Text erkannt. Den Text in der Datei speichern? Dann ist er beim nächsten Öffnen sofort markierbar.</source>
+        <translation>Text was recognized in “%1”. Save the text in the file? It can then be selected immediately the next time.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Diese Entscheidung merken (änderbar in den Einstellungen)</source>
+        <translation>Remember this decision (can be changed in the settings)</translation>
+    </message>
+    <message>
+        <location line="+114"/>
         <source>Bild öffnen</source>
         <translation>Open image</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+19"/>
         <source>Änderung an „%1“ verworfen – zum Behalten vorher Strg+S drücken.</source>
         <translation>Change to “%1” discarded – press Ctrl+S first to keep it.</translation>
     </message>
@@ -1240,7 +1323,7 @@ right-click or double-click removes it.</translation>
         <translation>“%1” has been modified. Save changes?</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+23"/>
         <source>Keine Änderungen zu speichern.</source>
         <translation>No changes to save.</translation>
     </message>
@@ -1250,7 +1333,7 @@ right-click or double-click removes it.</translation>
         <translation>Animations are not overwritten – please save under a new name.</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+24"/>
         <source>Farbtiefe geht verloren</source>
         <translation>Colour depth will be lost</translation>
     </message>
@@ -1264,7 +1347,7 @@ Trotzdem überschreiben?</source>
 Overwrite anyway?</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+17"/>
         <location line="+98"/>
         <location line="+19"/>
         <source>Gespeichert: %1</source>
@@ -1441,12 +1524,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+861"/>
+        <location line="+871"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-857"/>
+        <location line="-867"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1511,7 +1594,12 @@ Delete permanently?</translation>
         <translation>Position</translation>
     </message>
     <message>
-        <location line="+345"/>
+        <location line="+105"/>
+        <source>Text kopiert.</source>
+        <translation>Text copied.</translation>
+    </message>
+    <message>
+        <location line="+246"/>
         <source>KI-Zugriff auf das Fenster</source>
         <translation>AI access to the window</translation>
     </message>
@@ -1544,7 +1632,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>AI connection to the window not possible: %1</translation>
     </message>
     <message>
-        <location line="+239"/>
+        <location line="+243"/>
         <source>Für eine Diashow braucht der Ordner mindestens zwei Bilder.</source>
         <translation>A slideshow needs at least two images in the folder.</translation>
     </message>
@@ -1654,13 +1742,13 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-805"/>
+        <location line="-815"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-971"/>
+        <location line="-1178"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -1685,13 +1773,13 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Recognize &amp;text (OCR) …</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+1758"/>
+        <location line="+8"/>
+        <location line="+1970"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1737"/>
+        <location line="-1949"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1706,12 +1794,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>&amp;Mute/unmute</translation>
     </message>
     <message>
-        <location line="+184"/>
+        <location line="+192"/>
         <source>Keine Bilder oder Videos in diesem Ordner.</source>
         <translation>No images or videos in this folder.</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+101"/>
         <source>Letzte Seite.</source>
         <translation>Last page.</translation>
     </message>
@@ -1738,7 +1826,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Video playback not available (libmpv)</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+253"/>
         <source>Das Bild wurde bereits bearbeitet – zum Entwickeln erst speichern oder verwerfen.</source>
         <translation>The image has already been edited – save or discard first to develop.</translation>
     </message>
@@ -1768,7 +1856,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Images and videos (%1);;All files (*)</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+138"/>
         <source>%1_Bild_%2s.png</source>
         <translation>%1_frame_%2s.png</translation>
     </message>
@@ -1838,7 +1926,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>All EXIF data …</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+40"/>
         <source>Nichts rückgängig zu machen.</source>
         <translation>Nothing to undo.</translation>
     </message>
@@ -1853,7 +1941,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Video frame copied.</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+13"/>
         <source>Auswahl kopiert.</source>
         <translation>Selection copied.</translation>
     </message>
@@ -1955,7 +2043,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+240"/>
+        <location line="+244"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -2380,7 +2468,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+113"/>
+        <location filename="../src/SettingsDialog.cpp" line="+119"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2416,12 +2504,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+160"/>
+        <location line="+168"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-158"/>
+        <location line="-166"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2432,6 +2520,31 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+6"/>
+        <source>nachfragen</source>
+        <translation>ask</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>immer speichern</source>
+        <translation>always save</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>nicht speichern</source>
+        <translation>do not save</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Nach „Text markieren“ (T): beim Weiterblättern den erkannten Text – und eine dabei nötige Drehung – in der Datei speichern?</source>
+        <translation>After “Select text” (T): when moving on, save the recognized text – and any rotation needed for it – in the file?</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Erkannten Text speichern:</source>
+        <translation>Save recognized text:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Bilder</source>
         <translation>Images</translation>
     </message>
@@ -2531,7 +2644,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+35"/>
         <source>So öffnen Sie Bilder mit KiekAn!:
 
 1. Im Finder ein Bild auswählen und „Informationen“ öffnen (⌘I).
@@ -2659,7 +2772,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-410"/>
+        <location line="-411"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>

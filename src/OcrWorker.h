@@ -38,7 +38,9 @@ int workerMain();
 
 // Ein Auftrag, blockierend.
 // `cancel` (optional): auf true gesetzt, wird der Hilfsprozess beendet.
-Ocr::Result run(const Job &job, const std::atomic<bool> *cancel = nullptr);
+// `progress` (optional): Fortschritt 0..100, aus dem aufrufenden Thread.
+Ocr::Result run(const Job &job, const std::atomic<bool> *cancel = nullptr,
+                const std::function<void(int)> &progress = {});
 
 // Mehrere Aufträge mit höchstens `parallel` gleichzeitigen Prozessen.
 // Ergebnisse in Auftragsreihenfolge.

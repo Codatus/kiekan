@@ -8,6 +8,9 @@
 #include <QHash>
 #include <QKeySequence>
 #include <QElapsedTimer>
+
+#include <atomic>
+#include <memory>
 #include <QMainWindow>
 #include <QPointer>
 #include <QThreadPool>
@@ -25,6 +28,7 @@ class VideoView;
 class ViewerServer;
 class ImageLoader;
 class ImageView;
+class QThread;
 class QLabel;
 class QMenu;
 class QMessageBox;
@@ -60,6 +64,11 @@ private:
     void showPage();
     void applyLoadResult(const LoadResult &result);
     bool hasCurrentImage() const;
+    bool canStoreText() const;
+    void loadStoredText();
+    void toggleTextMode(bool on);
+    bool storeTextLayer();
+    bool resolveUnsavedText();
     void pageStep(int delta);
     void step(int delta);
     void jump(int delta);
@@ -171,6 +180,14 @@ private:
     QString m_shownPath;          // Datei/Seite, zu der das angezeigte Bild gehört
     int m_shownPage = -1;
     bool m_animated = false;
+    // Text markieren
+    QAction *m_textAct = nullptr;
+    class ProgressToolButton *m_textButton = nullptr;
+    quint64 m_ocrGeneration = 0;
+    std::shared_ptr<std::atomic<bool>> m_ocrCancel;
+    QList<QThread *> m_ocrThreads;
+    bool m_textUnsaved = false;   // erkannter Text noch nicht in der Datei
+    bool m_ocrRotation = false;   // Bild wurde von der Texterkennung aufgerichtet
     bool m_deepColor = false;
     QVector<QImage> m_undo;
     // Seit dem Laden/Speichern: nur Drehungen/Spiegelungen? (für verlustfreies JPEG)

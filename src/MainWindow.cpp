@@ -28,6 +28,9 @@
 #include "ResizeDialog.h"
 #include "SettingsDialog.h"
 #include "ViewerBridge.h"
+#include "Ocr.h"
+#include "OcrWorker.h"
+#include "ProgressToolButton.h"
 #ifdef KIEKAN_HAVE_MPV
 #include "VideoView.h"
 #endif
@@ -53,6 +56,8 @@
 #include <QPushButton>
 #include <QFormLayout>
 #include <QTimer>
+#include <QPointer>
+#include <QTemporaryFile>
 #ifdef KIEKAN_HAVE_PRINT
 #include <QPageLayout>
 #include <QPrintPreviewDialog>
@@ -156,6 +161,16 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     m_view = new ImageView(this);
+    // Neues oder verändertes Bild: erkannter Text gilt nicht mehr
+    connect(m_view, &ImageView::textLayerCleared, this, [this] {
+        m_textUnsaved = false;
+        if (m_textButton)
+            m_textButton->setDone(false);
+        if (m_textAct && m_textAct->isChecked()) {
+            m_textAct->setChecked(false);
+            m_view->setTextMode(false);
+        }
+    });
     m_view->setBackground(kViewBackground);
     // Bild und Video teilen sich die Fläche; der Videoplayer wird erst beim
     // ersten Video erzeugt, damit der Start schnell bleibt.
@@ -246,7 +261,12 @@ void MainWindow::createActions()
     QAction *undoAct = make(QStringLiteral("undoAct"), tr("&Rückgängig"), "edit-undo", {K::Undo}, [this] { undo(); });
     QAction *copyAct = make(QStringLiteral("copyAct"), tr("&Kopieren"), "edit-copy", {K::Copy}, [this] { copy(); });
     QAction *pasteAct = make(QStringLiteral("pasteAct"), tr("&Einfügen"), "edit-paste", {K::Paste}, [this] { paste(); });
-    QAction *selAll = make(QStringLiteral("selAll"), tr("&Alles auswählen"), "edit-select-all", {K::SelectAll}, [this] { m_view->selectAll(); });
+    QAction *selAll = make(QStringLiteral("selAll"), tr("&Alles auswählen"), "edit-select-all", {K::SelectAll}, [this] {
+        if (m_view->textMode())
+            m_view->selectAllText();
+        else
+            m_view->selectAll();
+    });
     QAction *cropAct = make(QStringLiteral("cropAct"), tr("Auswahl &zuschneiden"), "transform-crop", {K(Qt::CTRL | Qt::Key_Y)}, [this] { crop(); });
 
     QAction *rotR = make(QStringLiteral("rotR"), tr("Nach &rechts drehen"), "object-rotate-right", {K(Qt::Key_R)}, [this] { rotate(90); });
@@ -286,6 +306,11 @@ void MainWindow::createActions()
     QAction *developAct = make(QStringLiteral("developAct"), tr("RAW voll &entwickeln"), "", {K(Qt::CTRL | Qt::Key_D)}, [this] { developRaw(); });
     QAction *splitAct = make(QStringLiteral("splitAct"), tr("PDF &teilen …"), "", {}, [this] { splitPdf(); });
     QAction *ocrAct = make(QStringLiteral("ocrAct"), tr("&Text erkennen (OCR) …"), "", {K(Qt::CTRL | Qt::Key_T)}, [this] { recognizeText(); });
+    m_textAct = make(QStringLiteral("textSelect"), tr("Text &markieren"), "kiekan-text-select", {K(Qt::Key_T)},
+                     [this] { toggleTextMode(m_textAct->isChecked()); });
+    m_textAct->setCheckable(true);
+    m_textAct->setToolTip(tr("Text markieren (T): erkennt den Text im Bild, danach lässt er sich mit der Maus "
+                             "markieren und mit Strg+C kopieren"));
 
     // Leertaste: bei Videos Pause, sonst nächstes Bild.
     make(QStringLiteral("space"), tr("Leertaste"), "", {K(Qt::Key_Space)}, [this] {
@@ -351,6 +376,8 @@ void MainWindow::createActions()
     edit->addAction(undoAct);
     edit->addSeparator();
     edit->addActions({copyAct, pasteAct, selAll, cropAct});
+    edit->addSeparator();
+    edit->addAction(m_textAct);
 
     QMenu *image = menuBar()->addMenu(tr("B&ild"));
     image->addActions({rotL, rotR, flipH, flipV});
@@ -399,6 +426,12 @@ void MainWindow::createActions()
     m_toolBar->addActions({zoomIn, zoomOut, zoom100, zoomFit});
     m_toolBar->addSeparator();
     m_toolBar->addActions({rotL, rotR, cropAct});
+    m_toolBar->addSeparator();
+    m_textButton = new ProgressToolButton(m_toolBar);
+    m_textButton->setDefaultAction(m_textAct);
+    m_textButton->setAutoRaise(true);
+    m_textButton->setFocusPolicy(Qt::NoFocus);
+    m_toolBar->addWidget(m_textButton);
     m_toolBar->addSeparator();
     m_toolBar->addActions({del, info, full});
 
@@ -529,6 +562,10 @@ void MainWindow::showIndex(int index)
     }
 
     if (Media::isVideo(m_path)) {
+        if (m_textAct->isChecked()) {
+            m_textAct->setChecked(false);
+            toggleTextMode(false);
+        }
         showVideo();
     } else {
         m_kind = Kind::Image;
@@ -572,6 +609,7 @@ void MainWindow::applyLoadResult(const LoadResult &r)
     m_shownPage = m_page;
     m_animated = r.animated;
     m_deepColor = r.deepColor;
+    loadStoredText();
     updateStatus();
 }
 
@@ -755,6 +793,185 @@ void MainWindow::stopAnimation()
     m_movie = nullptr;
 }
 
+// --- Text markieren ------------------------------------------------------------
+
+// Kann der erkannte Text in dieser Datei gespeichert werden?
+bool MainWindow::canStoreText() const
+{
+    return !m_path.isEmpty() && m_kind == Kind::Image && m_pageCount == 1 && !m_animated
+           && Metadata::available() && Metadata::canWrite(m_path);
+}
+
+void MainWindow::loadStoredText()
+{
+    m_textUnsaved = false;
+    m_textButton->setDone(false);
+    if (!canStoreText() || !hasCurrentImage())
+        return;
+    const TextLayer layer = Metadata::readTextLayer(m_path);
+    if (layer.isEmpty() || layer.size != m_view->image().size()) {
+        if (m_textAct->isChecked()) {
+            m_textAct->setChecked(false);
+            m_view->setTextMode(false);
+        }
+        return;
+    }
+    m_view->setTextLayer(layer);
+    m_textButton->setDone(true);
+    m_view->setTextMode(m_textAct->isChecked());
+}
+
+void MainWindow::toggleTextMode(bool on)
+{
+    if (!on) {
+        if (m_ocrCancel)
+            *m_ocrCancel = true;
+        m_textButton->setProgress(-1);
+        m_view->setTextMode(false);
+        return;
+    }
+    if (m_kind != Kind::Image || !hasCurrentImage()) {
+        m_textAct->setChecked(false);
+        message(tr("Text markieren geht nur bei Bildern und PDF-Seiten."));
+        return;
+    }
+    if (m_view->hasTextLayer()) {
+        m_view->setTextMode(true);
+        message(tr("Text mit der Maus markieren, Doppelklick markiert ein Wort; Strg+C kopiert, Strg+A markiert alles."));
+        return;
+    }
+    if (!Ocr::available()) {
+        m_textAct->setChecked(false);
+        message(tr("Texterkennung ist nicht verfügbar – Tesseract-Sprachpakete installieren (z. B. %1).")
+                    .arg(Ocr::installCommand(QStringLiteral("deu"))));
+        return;
+    }
+
+    // Erkennung im Hintergrund; der Knopf zeigt den Fortschritt.
+    const QImage image = m_view->image();
+    auto file = std::make_shared<QTemporaryFile>(QDir::tempPath() + QStringLiteral("/kiekan-text-XXXXXX.png"));
+    if (!file->open() || !image.save(file.get(), "png")) {
+        m_textAct->setChecked(false);
+        message(tr("Texterkennung nicht möglich: kein Platz für eine Zwischendatei."));
+        return;
+    }
+    file->close();
+    OcrWorker::Job job;
+    job.imageFile = file->fileName();
+    job.options.words = true;
+    job.options.languages = QStringLiteral("auto");
+
+    const quint64 generation = ++m_ocrGeneration;
+    const QString path = m_path;
+    const int page = m_page;
+    const qint64 key = image.cacheKey();
+    auto cancel = std::make_shared<std::atomic<bool>>(false);
+    m_ocrCancel = cancel;
+    auto result = std::make_shared<Ocr::Result>();
+    m_textButton->setProgress(0);
+    QPointer<MainWindow> self(this);
+    QThread *thread = QThread::create([job, cancel, result, file, self, generation] {
+        *result = OcrWorker::run(job, cancel.get(), [self, generation](int percent) {
+            QMetaObject::invokeMethod(qApp, [self, generation, percent] {
+                if (self && generation == self->m_ocrGeneration)
+                    self->m_textButton->setProgress(percent);
+            }, Qt::QueuedConnection);
+        });
+    });
+    m_ocrThreads.append(thread);
+    connect(thread, &QThread::finished, this, [this, thread, generation, path, page, key, result] {
+        m_ocrThreads.removeAll(thread);
+        thread->deleteLater();
+        if (generation != m_ocrGeneration)
+            return;   // inzwischen neu gestartet
+        m_textButton->setProgress(-1);
+        m_ocrCancel.reset();
+        // Abgebrochen oder inzwischen ein anderes Bild?
+        if (!m_textAct->isChecked() || path != m_path || page != m_page || m_view->image().cacheKey() != key)
+            return;
+        if (!result->ok || result->words.isEmpty()) {
+            m_textAct->setChecked(false);
+            m_view->setTextMode(false);
+            message(result->ok ? tr("Kein Text gefunden.") : tr("Texterkennung fehlgeschlagen: %1").arg(result->error));
+            return;
+        }
+        TextLayer layer;
+        layer.languages = result->languages;
+        for (const Ocr::Word &w : result->words)
+            layer.words.append({w.box, w.text, w.line, w.para});
+        if (result->rotation != 0) {
+            // Liegt die Seite quer oder kopf, das Bild aufrichten (wie mit R/L).
+            const QSize before = m_view->image().size();
+            rotate(result->rotation);
+            const QTransform t = QImage::trueMatrix(QTransform().rotate(result->rotation), before.width(), before.height());
+            for (TextWord &w : layer.words)
+                w.box = t.mapRect(w.box);
+            m_ocrRotation = true;
+        }
+        layer.size = m_view->image().size();
+        m_view->setTextLayer(layer);
+        m_view->setTextMode(true);
+        m_textAct->setChecked(true);
+        m_textButton->setDone(true);
+        m_textUnsaved = canStoreText();
+        message(tr("%n Wörter erkannt (%1)%2 – mit der Maus markieren, Strg+C kopiert.", nullptr, int(layer.words.size()))
+                    .arg(Ocr::languageName(layer.languages.section(QLatin1Char('+'), 0, 0)),
+                         result->rotation != 0 ? tr(", Bild aufgerichtet") : QString()));
+    });
+    thread->start();
+}
+
+bool MainWindow::storeTextLayer()
+{
+    QString error;
+    if (!Metadata::writeTextLayer(m_path, m_view->textLayer(), &error)) {
+        message(tr("Erkannter Text konnte nicht gespeichert werden: %1").arg(error));
+        return false;
+    }
+    m_textUnsaved = false;
+    m_loader->remove(m_path);
+    message(tr("Erkannter Text in „%1“ gespeichert.").arg(QFileInfo(m_path).fileName()));
+    return true;
+}
+
+// Beim Weiterblättern nach einer Texterkennung: Text (und Drehung) speichern?
+// Die Antwort lässt sich merken; dann wird nicht mehr gefragt.
+bool MainWindow::resolveUnsavedText()
+{
+    const QString mode = Settings::saveRecognizedText();
+    bool store = mode == QLatin1String("always");
+    if (mode == QLatin1String("ask")) {
+        QMessageBox box(QMessageBox::Question, tr("Erkannten Text speichern?"),
+                        m_ocrRotation
+                            ? tr("Für „%1“ wurde Text erkannt und das Bild aufgerichtet. Text und Drehung in der "
+                                 "Datei speichern? Dann ist der Text beim nächsten Öffnen sofort markierbar.")
+                                  .arg(QFileInfo(m_path).fileName())
+                            : tr("Für „%1“ wurde Text erkannt. Den Text in der Datei speichern? Dann ist er beim "
+                                 "nächsten Öffnen sofort markierbar.").arg(QFileInfo(m_path).fileName()),
+                        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, this);
+        box.setDefaultButton(QMessageBox::Save);
+        auto *remember = new QCheckBox(tr("Diese Entscheidung merken (änderbar in den Einstellungen)"), &box);
+        box.setCheckBox(remember);
+        const int answer = box.exec();
+        if (answer == QMessageBox::Cancel)
+            return false;
+        store = answer == QMessageBox::Save;
+        if (remember->isChecked())
+            Settings::setSaveRecognizedText(store ? QStringLiteral("always") : QStringLiteral("never"));
+    }
+    if (store) {
+        if (m_modified)
+            save();   // Drehung (bei JPEG verlustfrei), danach der Text
+        else
+            storeTextLayer();
+    } else if (m_ocrRotation && m_editOps.size() == 1) {
+        m_modified = false;   // die Drehung kam nur von der Texterkennung
+    }
+    m_textUnsaved = false;
+    m_ocrRotation = false;
+    return true;
+}
+
 void MainWindow::recognizeText()
 {
     QImage image = m_view->image();
@@ -856,6 +1073,8 @@ void MainWindow::openDialog()
 
 bool MainWindow::confirmDiscard()
 {
+    if (m_textUnsaved && !resolveUnsavedText())
+        return false;
     if (!m_modified)
         return true;
     // KiekAn! ist zuerst Betrachter: Änderungen an einer Datei werden beim
@@ -890,6 +1109,8 @@ bool MainWindow::save()
     if (m_path.isEmpty() || m_pageCount > 1)
         return saveAs();
     if (!m_modified) {
+        if (m_textUnsaved)
+            return storeTextLayer();
         // Unverändert: nicht neu kodieren (bei JPEG kostete das Qualität).
         message(tr("Keine Änderungen zu speichern."));
         return true;
@@ -911,6 +1132,9 @@ bool MainWindow::save()
         m_loader->remove(m_path);
         m_modified = false;
         m_editOps.clear();
+        m_ocrRotation = false;
+        if (m_textUnsaved)
+            storeTextLayer();
         updateTitle();
         updateStatus();
         return true;
@@ -930,6 +1154,9 @@ bool MainWindow::save()
     m_loader->remove(m_path);
     m_editOps.clear();
     m_modified = false;
+    m_ocrRotation = false;
+    if (m_textUnsaved)
+        storeTextLayer();
     updateTitle();
     updateStatus();
     message(tr("Gespeichert: %1").arg(QFileInfo(m_path).fileName()));
@@ -1312,6 +1539,7 @@ void MainWindow::applyEdit(const QImage &result, int geoOp)
         total -= m_undo.first().sizeInBytes();
         m_undo.removeFirst();
     }
+    m_ocrRotation = false;   // nur die Drehung der Texterkennung selbst setzt das wieder
     m_view->replaceImage(result);
     m_modified = true;
     updateTitle();
@@ -1353,6 +1581,11 @@ void MainWindow::copy()
 #endif
     if (!hasCurrentImage())
         return;
+    if (m_view->textMode() && m_view->hasTextSelection()) {
+        QGuiApplication::clipboard()->setText(m_view->selectedText());
+        message(tr("Text kopiert."));
+        return;
+    }
     const QImage img = m_view->hasSelection() ? m_view->image().copy(m_view->selection()) : m_view->image();
     QGuiApplication::clipboard()->setImage(img);
     message(m_view->hasSelection() ? tr("Auswahl kopiert.") : tr("Bild kopiert."));
@@ -1857,6 +2090,10 @@ void MainWindow::escape()
         toggleFullScreen();
     else if (m_view->hasSelection())
         m_view->clearSelection();
+    else if (m_textAct->isChecked()) {
+        m_textAct->setChecked(false);
+        toggleTextMode(false);
+    }
     else if (Settings::escapeQuits())
         close();     // wie in IrfanView
 }
@@ -2165,6 +2402,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
         return;
     }
+    if (m_ocrCancel)
+        *m_ocrCancel = true;
+    for (QThread *t : m_ocrThreads)
+        t->wait();
     if (isFullScreen())
         toggleFullScreen();
     QSettings().setValue(QStringLiteral("window/geometry"), saveGeometry());

@@ -99,6 +99,9 @@ qt_add_executable(kiekan WIN32
     src/MainWindow.h
     src/ImageView.cpp
     src/ImageView.h
+    src/ProgressToolButton.cpp
+    src/ProgressToolButton.h
+    src/TextLayer.h
     src/ImageLoader.cpp
     src/ImageLoader.h
     src/ImageOps.cpp

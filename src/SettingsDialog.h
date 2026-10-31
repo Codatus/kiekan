@@ -26,6 +26,8 @@ bool losslessJpeg();          // JPEG nur gedreht/gespiegelt: ohne Neukodierung 
 void setLosslessJpeg(bool on);
 bool escapeQuits();
 void setEscapeQuits(bool on);
+QString saveRecognizedText();  // "ask", "always", "never"
+void setSaveRecognizedText(const QString &mode);
 bool askBeforeDiscard();      // Nachfrage „Änderungen speichern?“ (Standard: nein)
 void setAskBeforeDiscard(bool on);
 bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern (Standard: nein)
@@ -52,6 +54,7 @@ private:
     QSpinBox *m_quality;
     QCheckBox *m_escape;
     QCheckBox *m_askDiscard;
+    QComboBox *m_saveText = nullptr;
     QCheckBox *m_lossless;
     QComboBox *m_aiWindow = nullptr;
     QCheckBox *m_aiAccess;

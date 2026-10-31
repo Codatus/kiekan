@@ -8,6 +8,8 @@
 #include <QTimer>
 #include <QWidget>
 
+#include "TextLayer.h"
+
 // Zeichnet ein Bild mit Zoom, Verschieben und Rechteckauswahl.
 //
 // Für die Geschwindigkeit wichtig: Bei Verkleinerung wird das Bild einmal
@@ -47,6 +49,18 @@ public:
 
     void setBackground(const QColor &color);
 
+    // Erkannter Text: Im Textmodus markiert die linke Maustaste Wörter statt
+    // eines Rechtecks. Die Rahmen gelten für das aktuelle Bild; ein neues
+    // oder verändertes Bild löscht die Textschicht.
+    void setTextLayer(const TextLayer &layer);
+    const TextLayer &textLayer() const { return m_text; }
+    bool hasTextLayer() const { return !m_text.isEmpty(); }
+    void setTextMode(bool on);
+    bool textMode() const { return m_textMode; }
+    bool hasTextSelection() const { return m_textFrom >= 0; }
+    QString selectedText() const;
+    void selectAllText();
+
 Q_SIGNALS:
     void imageChanged();
     void zoomChanged(double zoom);
@@ -54,6 +68,8 @@ Q_SIGNALS:
     void navigateRequested(int step);            // Mausrad ohne Strg
     void doubleClicked();
     void contextMenuRequested(const QPoint &globalPos);
+    void textLayerCleared();
+    void textSelectionChanged();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -74,6 +90,8 @@ private:
     void clampOffset();
     void invalidateScaled(bool immediate);
     void rebuildScaled();
+    int wordAt(const QPointF &imagePos, bool nearest) const;
+    void clearTextLayer();
 
     QImage m_image;
     QImage m_scaled;          // geglättete Kopie für Zoom < 1
@@ -97,4 +115,11 @@ private:
     int m_wheelAccum = 0;     // für Touchpads mit feinen Radschritten
 
     QColor m_background;
+
+    TextLayer m_text;
+    bool m_textMode = false;
+    bool m_textSelecting = false;
+    int m_textAnchor = -1;
+    int m_textFrom = -1;      // markierte Wörter from..to, -1 = keine
+    int m_textTo = -1;
 };

@@ -47,6 +47,12 @@ bool losslessJpeg() { return QSettings().value(QStringLiteral("losslessJpeg"), t
 void setLosslessJpeg(bool on) { QSettings().setValue(QStringLiteral("losslessJpeg"), on); }
 bool escapeQuits() { return QSettings().value(QStringLiteral("escapeQuits"), true).toBool(); }
 void setEscapeQuits(bool on) { QSettings().setValue(QStringLiteral("escapeQuits"), on); }
+QString saveRecognizedText()
+{
+    const QString v = QSettings().value(QStringLiteral("ocr/saveText"), QStringLiteral("ask")).toString();
+    return v == QLatin1String("always") || v == QLatin1String("never") ? v : QStringLiteral("ask");
+}
+void setSaveRecognizedText(const QString &mode) { QSettings().setValue(QStringLiteral("ocr/saveText"), mode); }
 bool askBeforeDiscard() { return QSettings().value(QStringLiteral("askBeforeDiscard"), false).toBool(); }
 void setAskBeforeDiscard(bool on) { QSettings().setValue(QStringLiteral("askBeforeDiscard"), on); }
 bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), false).toBool(); }
@@ -152,6 +158,14 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     gForm->addRow(QString(), note);
     gForm->addRow(escapeRow);
     gForm->addRow(askRow);
+    m_saveText = new QComboBox(this);
+    m_saveText->addItem(tr("nachfragen"), QStringLiteral("ask"));
+    m_saveText->addItem(tr("immer speichern"), QStringLiteral("always"));
+    m_saveText->addItem(tr("nicht speichern"), QStringLiteral("never"));
+    m_saveText->setCurrentIndex(m_saveText->findData(Settings::saveRecognizedText()));
+    m_saveText->setToolTip(tr("Nach „Text markieren“ (T): beim Weiterblättern den erkannten Text – und eine "
+                              "dabei nötige Drehung – in der Datei speichern?"));
+    gForm->addRow(tr("Erkannten Text speichern:"), m_saveText);
 
     auto *images = new QGroupBox(tr("Bilder"), this);
     auto *iForm = new QFormLayout(images);
@@ -404,6 +418,7 @@ bool SettingsDialog::apply()
     Settings::setJpegQuality(m_quality->value());
     Settings::setEscapeQuits(m_escape->isChecked());
     Settings::setAskBeforeDiscard(m_askDiscard->isChecked());
+    Settings::setSaveRecognizedText(m_saveText->currentData().toString());
     Settings::setLosslessJpeg(m_lossless->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
     QSettings().setValue(QStringLiteral("ai/viewerLastUsed"), m_aiWindow->currentData().toBool());

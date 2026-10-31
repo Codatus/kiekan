@@ -13,6 +13,8 @@
 
 #include <QStringList>
 
+#include "TextLayer.h"
+
 // EXIF/IPTC/XMP lesen und beim Speichern übernehmen (über exiv2).
 // Ohne exiv2 gebaut, liefern alle Funktionen leere Ergebnisse.
 namespace Metadata {
@@ -72,6 +74,12 @@ bool canWrite(const QString &path);
 // Vorschaubild entfernen. Arbeitet nur im Speicher.
 bool setOrientation(QByteArray &data, int orientation, bool swapDimensions, QString *error = nullptr);
 bool writeDescriptive(const QString &path, const DescriptiveFields &fields, QString *error = nullptr);
+
+// Erkannter Text mit Wortrahmen (XMP, eigener Namensraum „kiekan“), damit er
+// beim nächsten Öffnen ohne neue Texterkennung markierbar ist. Leer, wenn
+// nichts gespeichert ist.
+TextLayer readTextLayer(const QString &path);
+bool writeTextLayer(const QString &path, const TextLayer &layer, QString *error = nullptr);
 
 // Hält die Metadaten einer Datei fest, bevor sie überschrieben wird, und
 // schreibt sie anschließend in die neue Datei.

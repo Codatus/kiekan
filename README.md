@@ -161,6 +161,14 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - JPEGs werden **verlustfrei** gedreht und gespiegelt: Beim Speichern ordnet
   KiekAn! die komprimierten Bildblöcke um (libjpeg-turbo), statt neu zu kodieren;
   passen die Maße nicht dazu, ändert es nur die EXIF-Ausrichtung
+- **Text markieren** (Knopf in der Werkzeugleiste oder Taste T): erkennt den
+  Text im Bild (der Fortschritt läuft als Kreis im Knopf), richtet quer oder
+  kopfstehend gescannte Seiten dabei auf und macht den Text markierbar –
+  ziehen markiert, Doppelklick markiert ein Wort, Strg+A alles, Strg+C kopiert.
+  Beim Weiterblättern fragt KiekAn!, ob Text und Drehung in der Datei
+  gespeichert werden sollen (bei JPEG verlustfrei, der Text in den
+  XMP-Metadaten); dann ist der Text beim nächsten Öffnen sofort markierbar.
+  Die Antwort lässt sich merken und in den Einstellungen ändern
 - Zuerst Betrachter: Wer ein Bild dreht oder bearbeitet und dann weiterblättert,
   verwirft die Änderung ohne Rückfrage – gespeichert wird nur mit Strg+S. Die
   Nachfrage „Änderungen speichern?“ lässt sich in den Einstellungen einschalten

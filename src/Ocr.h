@@ -9,6 +9,8 @@
 #include <QRect>
 #include <QStringList>
 
+#include <functional>
+
 // Texterkennung über Tesseract mit automatischer Wahl des Sprachpakets:
 //  1. Schrift und Lage (OSD) bestimmen, gedrehte Seiten aufrichten.
 //  2. Probe-Erkennung auf einem Streifen; die Sprache des Textes wird an
@@ -31,6 +33,8 @@ struct Word
     QString text;
     int confidence = 0;
     QRect box;   // in Koordinaten des übergebenen Bildes
+    int line = 0;   // fortlaufende Zeilennummer
+    int para = 0;   // fortlaufende Absatznummer
 };
 
 struct Candidate
@@ -64,6 +68,9 @@ struct Result
 };
 
 Result recognize(const QImage &image, const Options &options = {});
+
+// Fortschritt (0..100) während recognize(); wird aus Arbeitsthreads gerufen.
+void setProgressCallback(std::function<void(int)> callback);
 
 // Anzeigename für einen Tesseract-Code („deu“ → „Deutsch“).
 QString languageName(const QString &code);

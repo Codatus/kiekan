@@ -37,6 +37,7 @@ ImageView::ImageView(QWidget *parent)
 
 void ImageView::setImage(const QImage &image)
 {
+    clearTextLayer();
     m_image = image;
     m_selection = QRect();
     m_fit = true;
@@ -51,6 +52,7 @@ void ImageView::setImage(const QImage &image)
 
 void ImageView::replaceImage(const QImage &image)
 {
+    clearTextLayer();
     m_image = image;
     m_selection = QRect();
     if (m_fit)
@@ -75,6 +77,7 @@ void ImageView::setFrame(const QImage &frame)
 
 void ImageView::clear()
 {
+    clearTextLayer();
     m_image = QImage();
     m_scaled = QImage();
     m_selection = QRect();
@@ -265,6 +268,22 @@ void ImageView::paintEvent(QPaintEvent *)
         }
     }
 
+    if (m_textMode && !m_text.isEmpty()) {
+        // Erkannte Wörter leicht andeuten, markierte deutlich hervorheben
+        p.setRenderHint(QPainter::Antialiasing, false);
+        p.setPen(Qt::NoPen);
+        const QColor hint(70, 130, 220, 28);
+        QColor marked = palette().color(QPalette::Highlight);
+        marked.setAlpha(110);
+        for (int i = 0; i < m_text.words.size(); ++i) {
+            const QRect &b = m_text.words.at(i).box;
+            const QRectF r(toWidget(b.topLeft()), toWidget(b.topLeft() + QPointF(b.width(), b.height())));
+            const bool sel = m_textFrom >= 0 && i >= m_textFrom && i <= m_textTo;
+            p.setBrush(sel ? marked : hint);
+            p.drawRect(r.adjusted(-1, -1, 1, 1));
+        }
+    }
+
     if (!m_selection.isEmpty()) {
         const QRectF sel = QRectF(toWidget(m_selection.topLeft()),
                                   toWidget(m_selection.topLeft() + QPointF(m_selection.width(), m_selection.height())));
@@ -329,6 +348,18 @@ void ImageView::mousePressEvent(QMouseEvent *event)
             Q_EMIT contextMenuRequested(event->globalPosition().toPoint());
         return;
     }
+    if (event->button() == Qt::LeftButton && m_textMode && !m_text.isEmpty()) {
+        const int w = wordAt(toImage(event->position()), true);
+        m_textSelecting = true;
+        m_textAnchor = w;
+        const int hit = wordAt(toImage(event->position()), false);
+        m_textFrom = m_textTo = hit;   // Klick ins Leere hebt die Markierung auf
+        if (hit < 0)
+            m_textAnchor = w;
+        Q_EMIT textSelectionChanged();
+        update();
+        return;
+    }
     if (event->button() == Qt::LeftButton) {
         m_selecting = true;
         QPointF pt = toImage(event->position());
@@ -350,6 +381,20 @@ void ImageView::mousePressEvent(QMouseEvent *event)
 
 void ImageView::mouseMoveEvent(QMouseEvent *event)
 {
+    if (m_textMode && !m_text.isEmpty() && !m_panning) {
+        const int hit = wordAt(toImage(event->position()), false);
+        setCursor(hit >= 0 || m_textSelecting ? Qt::IBeamCursor : Qt::ArrowCursor);
+    }
+    if (m_textSelecting) {
+        const int w = wordAt(toImage(event->position()), true);
+        if (w >= 0 && m_textAnchor >= 0) {
+            m_textFrom = std::min(m_textAnchor, w);
+            m_textTo = std::max(m_textAnchor, w);
+            Q_EMIT textSelectionChanged();
+            update();
+        }
+        return;
+    }
     if (m_selecting) {
         QPointF pt = toImage(event->position());
         pt.setX(std::clamp(pt.x(), 0.0, double(m_image.width())));
@@ -378,6 +423,10 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
 
 void ImageView::mouseReleaseEvent(QMouseEvent *event)
 {
+    if (event->button() == Qt::LeftButton && m_textSelecting) {
+        m_textSelecting = false;
+        return;
+    }
     if (event->button() == Qt::LeftButton && m_selecting) {
         m_selecting = false;
         if (m_selection.width() < 2 || m_selection.height() < 2) {
@@ -395,8 +444,89 @@ void ImageView::mouseReleaseEvent(QMouseEvent *event)
 
 void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-        Q_EMIT doubleClicked();
+    if (event->button() != Qt::LeftButton)
+        return;
+    // Im Textmodus: Doppelklick markiert das Wort statt Vollbild
+    if (m_textMode && !m_text.isEmpty()) {
+        const int hit = wordAt(toImage(event->position()), false);
+        if (hit >= 0) {
+            m_textFrom = m_textTo = m_textAnchor = hit;
+            Q_EMIT textSelectionChanged();
+            update();
+        }
+        return;
+    }
+    Q_EMIT doubleClicked();
+}
+
+// --- Erkannter Text ----------------------------------------------------------
+
+void ImageView::setTextLayer(const TextLayer &layer)
+{
+    m_text = layer;
+    m_textFrom = m_textTo = m_textAnchor = -1;
+    update();
+}
+
+void ImageView::clearTextLayer()
+{
+    const bool had = !m_text.isEmpty();
+    m_text = TextLayer();
+    m_textFrom = m_textTo = m_textAnchor = -1;
+    m_textSelecting = false;
+    if (had)
+        Q_EMIT textLayerCleared();
+}
+
+void ImageView::setTextMode(bool on)
+{
+    m_textMode = on;
+    if (!on) {
+        m_textFrom = m_textTo = -1;
+        unsetCursor();
+    } else if (!m_selection.isEmpty()) {
+        clearSelection();
+    }
+    update();
+}
+
+QString ImageView::selectedText() const
+{
+    return m_textFrom < 0 ? QString() : m_text.text(m_textFrom, m_textTo);
+}
+
+void ImageView::selectAllText()
+{
+    if (m_text.isEmpty())
+        return;
+    m_textFrom = 0;
+    m_textTo = int(m_text.words.size()) - 1;
+    Q_EMIT textSelectionChanged();
+    update();
+}
+
+// Wort unter einem Punkt (Bildkoordinaten). `nearest`: sonst das nächstgelegene
+// – beim Ziehen über Zwischenräume und Zeilenenden.
+int ImageView::wordAt(const QPointF &pt, bool nearest) const
+{
+    int best = -1;
+    double bestDist = 0;
+    for (int i = 0; i < m_text.words.size(); ++i) {
+        const QRectF b = QRectF(m_text.words.at(i).box).adjusted(-2, -2, 2, 2);
+        if (b.contains(pt))
+            return i;
+        if (!nearest)
+            continue;
+        // Abstand, vertikal stärker gewichtet: erst die Zeile, dann das Wort
+        const double dx = pt.x() < b.left() ? b.left() - pt.x() : pt.x() > b.right() ? pt.x() - b.right() : 0;
+        const double dy = pt.y() < b.top() ? b.top() - pt.y() : pt.y() > b.bottom() ? pt.y() - b.bottom() : 0;
+        const double d = dx + 4 * dy;
+        if (best < 0 || d < bestDist) {
+            best = i;
+            bestDist = d;
+        }
+    }
+    return best;
 }
 
 // --- Auswahl ---------------------------------------------------------------

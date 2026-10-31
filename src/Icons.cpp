@@ -136,6 +136,21 @@ const QHash<QString, Drawer> &glyphs()
          }},
         {QStringLiteral("object-rotate-right"), [](QPainter &p, const QRectF &b) { rotateArrow(p, b, true); }},
         {QStringLiteral("object-rotate-left"), [](QPainter &p, const QRectF &b) { rotateArrow(p, b, false); }},
+        // Text markieren: drei Textzeilen, die mittlere als markiert umrahmt
+        {QStringLiteral("kiekan-text-select"), [](QPainter &p, const QRectF &b) {
+             const qreal h = b.height();
+             p.drawLine(QPointF(b.left(), b.top() + h * 0.12), QPointF(b.right(), b.top() + h * 0.12));
+             p.drawLine(QPointF(b.left(), b.top() + h * 0.88), QPointF(b.right() - b.width() * 0.3, b.top() + h * 0.88));
+             const QRectF mark(b.left() - b.width() * 0.04, b.top() + h * 0.32, b.width() * 1.08, h * 0.36);
+             p.save();
+             QColor fill = p.pen().color();
+             fill.setAlpha(70);
+             p.setBrush(fill);
+             p.drawRect(mark);
+             p.restore();
+             p.drawLine(QPointF(b.left() + b.width() * 0.12, mark.center().y()),
+                        QPointF(b.right() - b.width() * 0.12, mark.center().y()));
+         }},
     };
     return map;
 }

@@ -68,7 +68,7 @@ QJsonObject resultToJson(const Ocr::Result &r)
                                    {QStringLiteral("s"), c.stopwords}, {QStringLiteral("score"), c.score}});
     QJsonArray words;
     for (const Ocr::Word &w : r.words)
-        words.append(QJsonArray{w.text, w.confidence, w.box.x(), w.box.y(), w.box.width(), w.box.height()});
+        words.append(QJsonArray{w.text, w.confidence, w.box.x(), w.box.y(), w.box.width(), w.box.height(), w.line, w.para});
     return {
         {QStringLiteral("ok"), r.ok}, {QStringLiteral("error"), r.error}, {QStringLiteral("text"), r.text},
         {QStringLiteral("languages"), r.languages}, {QStringLiteral("confidence"), r.confidence},
@@ -98,8 +98,9 @@ Ocr::Result resultFromJson(const QJsonObject &o)
         r.hints << v.toString();
     for (const QJsonValue &v : o.value(QLatin1String("words")).toArray()) {
         const QJsonArray a = v.toArray();
-        if (a.size() == 6)
-            r.words.append({a.at(0).toString(), a.at(1).toInt(), QRect(a.at(2).toInt(), a.at(3).toInt(), a.at(4).toInt(), a.at(5).toInt())});
+        if (a.size() >= 6)
+            r.words.append({a.at(0).toString(), a.at(1).toInt(), QRect(a.at(2).toInt(), a.at(3).toInt(), a.at(4).toInt(), a.at(5).toInt()),
+                            a.at(6).toInt(), a.at(7).toInt()});
     }
     return r;
 }
@@ -128,11 +129,35 @@ QProcess *startWorker(const Job &job)
     return p;
 }
 
-Ocr::Result collect(QProcess *p, const std::atomic<bool> *cancel = nullptr)
+// Fortschrittszeilen „P <Prozent>“ des Hilfsprozesses auswerten; alles
+// andere auf stderr bleibt für Fehlermeldungen liegen.
+void readProgress(QProcess *p, QByteArray &stderrText, const std::function<void(int)> &progress)
+{
+    stderrText += p->readAllStandardError();
+    qsizetype nl;
+    QByteArray rest;
+    while ((nl = stderrText.indexOf('\n')) >= 0) {
+        const QByteArray line = stderrText.left(nl);
+        stderrText.remove(0, nl + 1);
+        if (line.startsWith("P ")) {
+            if (progress)
+                progress(line.mid(2).toInt());
+        } else {
+            rest += line + '\n';
+        }
+    }
+    stderrText.prepend(rest);
+}
+
+Ocr::Result collect(QProcess *p, const std::atomic<bool> *cancel = nullptr,
+                    const std::function<void(int)> &progress = {})
 {
     QElapsedTimer timer;
     timer.start();
+    QByteArray stderrText;
     while (p->state() != QProcess::NotRunning && !p->waitForFinished(100)) {
+        if (progress)
+            readProgress(p, stderrText, progress);
         const bool cancelled = cancel && *cancel;
         if (cancelled || timer.elapsed() > kTimeoutMs) {
             p->kill();
@@ -145,7 +170,7 @@ Ocr::Result collect(QProcess *p, const std::atomic<bool> *cancel = nullptr)
     const QJsonDocument doc = QJsonDocument::fromJson(p->readAllStandardOutput());
     if (!doc.isObject())
         return failure(QStringLiteral("OCR worker gave no result: %1")
-                           .arg(QString::fromLocal8Bit(p->readAllStandardError()).trimmed().right(300)));
+                           .arg(QString::fromLocal8Bit(stderrText + p->readAllStandardError()).trimmed().right(300)));
     return resultFromJson(doc.object());
 }
 
@@ -186,6 +211,10 @@ int workerMain()
                 image = image.copy(clipped);
                 offset = clipped.topLeft();   // tatsächlicher Ausschnitt, auch am Rand
             }
+            Ocr::setProgressCallback([](int percent) {
+                std::fprintf(stderr, "P %d\n", percent);
+                std::fflush(stderr);
+            });
             r = Ocr::recognize(image, job.options);
             // Wortrahmen auf das ganze Bild und die Koordinaten des Aufrufers beziehen
             for (Ocr::Word &w : r.words) {
@@ -201,10 +230,10 @@ int workerMain()
     return 0;
 }
 
-Ocr::Result run(const Job &job, const std::atomic<bool> *cancel)
+Ocr::Result run(const Job &job, const std::atomic<bool> *cancel, const std::function<void(int)> &progress)
 {
     std::unique_ptr<QProcess> p(startWorker(job));
-    return collect(p.get(), cancel);
+    return collect(p.get(), cancel, progress);
 }
 
 QList<Ocr::Result> runMany(const QList<Job> &jobs, int parallel, const std::function<void(int, int)> &progress)
