@@ -24,6 +24,11 @@
 #ifdef KIEKAN_HAVE_TESSERACT
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
+// Tesseract 5 hat den Fortschrittsmonitor in den Namensraum verschoben
+// (TESSERACT_MAJOR_VERSION kommt über baseapi.h: tess_version.h bzw. version.h).
+#if TESSERACT_MAJOR_VERSION >= 5
+using tesseract::ETEXT_DESC;
+#endif
 #endif
 
 #include <atomic>
