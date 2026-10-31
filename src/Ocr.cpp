@@ -200,6 +200,11 @@ QString run(const QString &languages, const QImage &gray, int dpi, double *confi
     return takeText(e.api.GetUTF8Text());
 }
 
+int alnumCount(const QString &text)
+{
+    return int(std::count_if(text.begin(), text.end(), [](QChar c) { return c.isLetterOrNumber(); }));
+}
+
 // Anteil dunkler Pixel: Briefe und Scans liegen meist unter 10 %.
 double darkShare(const QImage &gray)
 {
@@ -272,6 +277,11 @@ QList<Line> readLines(tesseract::TessBaseAPI &api, int pass)
     return lines;
 }
 
+bool hasRealWord(const Line &ln)
+{
+    return std::any_of(ln.words.begin(), ln.words.end(), [](const Word &w) { return alnumCount(w.text) >= 4; });
+}
+
 // Normalen und invertierten Durchgang zusammenführen: Überlappen sich
 // Zeilen, gewinnt die deutlich sicherere; Zeilen nur aus dem invertierten
 // Bild kommen hinzu, wenn sie sehr sicher sind. Die Reihenfolge des normalen
@@ -313,10 +323,150 @@ QList<Line> mergeLines(QList<Line> lines, const QList<Line> &inverted)
                                       [&](const Line &ln) { return ln.box.top() > inv.box.top(); });
         lines.insert(pos, inv);
     }
-    // Was in beiden Durchgängen unsicher blieb, ist meist Zeichnung.
-    lines.erase(std::remove_if(lines.begin(), lines.end(), [](const Line &ln) { return ln.confidence < 40; }),
+    // Was in beiden Durchgängen unsicher blieb, ist meist Zeichnung – außer,
+    // es enthält ein richtiges Wort (dann bekommt es den zweiten Blick).
+    lines.erase(std::remove_if(lines.begin(), lines.end(), [](const Line &ln) { return ln.confidence < 40 && !hasRealWord(ln); }),
                 lines.end());
     return lines;
+}
+
+// Wörter aus dem Durchgang „verstreuter Text“ ergänzen, die sonst fehlen:
+// nur sicher gelesene, echte Wörter an Stellen, wo noch nichts steht.
+bool addMissing(QList<Line> &lines, const QList<Line> &sparse)
+{
+    auto overlapsAny = [&lines](const QRect &b) {
+        for (const Line &ln : std::as_const(lines)) {
+            if (!ln.box.intersects(b))
+                continue;
+            for (const Word &w : ln.words) {
+                const QRect i = w.box.intersected(b);
+                if (!i.isEmpty() && qint64(i.width()) * i.height() * 10
+                                        >= std::min(qint64(w.box.width()) * w.box.height(), qint64(b.width()) * b.height()) * 3)
+                    return true;
+            }
+        }
+        return false;
+    };
+    bool changed = false;
+    for (Line ln : sparse) {
+        ln.words.erase(std::remove_if(ln.words.begin(), ln.words.end(), [&](const Word &w) {
+                           return w.confidence < 70 || alnumCount(w.text) < 3 || overlapsAny(w.box);
+                       }),
+                       ln.words.end());
+        if (ln.words.isEmpty())
+            continue;
+        ln.box = ln.words.first().box;
+        double sum = 0;
+        for (const Word &w : ln.words) {
+            ln.box = ln.box.united(w.box);
+            sum += w.confidence;
+        }
+        ln.confidence = sum / ln.words.size();
+        const auto pos = std::find_if(lines.begin(), lines.end(), [&](const Line &x) { return x.box.top() > ln.box.top(); });
+        lines.insert(pos, ln);
+        changed = true;
+    }
+    return changed;
+}
+
+// Zweiter Blick: Unsichere Wörter stehen oft in einer falsch zerlegten Zeile
+// (großes Logo-Wort, Text neben einer Grafik). Allein mit ihrer Umgebung
+// gelesen erkennt Tesseract sie meist richtig. Gibt zurück, ob sich etwas
+// geändert hat.
+bool secondLook(QList<Line> &lines, const QImage &gray, const QString &languages, int dpi)
+{
+    // Bereiche um unsichere Wörter mit mindestens drei Buchstaben/Ziffern
+    QList<QRect> regions;
+    for (const Line &ln : std::as_const(lines))
+        for (const Word &w : ln.words) {
+            if (w.confidence >= 60 || alnumCount(w.text) < 3)
+                continue;
+            const int pad = std::max(8, w.box.height() / 3);
+            const QRect r = w.box.adjusted(-pad, -pad, pad, pad).intersected(gray.rect());
+            bool merged = false;
+            for (QRect &x : regions)
+                if (x.intersects(r)) {
+                    x = x.united(r);
+                    merged = true;
+                    break;
+                }
+            if (!merged)
+                regions << r;
+        }
+    if (regions.isEmpty() || regions.size() > 40)
+        return false;   // nichts zu tun bzw. ganze Seite schlecht: kein Gewinn zu erwarten
+
+    Engine e(languages);
+    if (!e.ok)
+        return false;
+    e.api.SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
+    bool changed = false;
+    int pass = 2;
+    for (const QRect &region : std::as_const(regions)) {
+        QImage crop = gray.copy(region);
+        if (darkShare(crop) > 0.5)
+            crop.invertPixels();   // heller Text auf dunklem Grund
+        e.setImage(crop, dpi);
+        if (e.api.Recognize(nullptr) != 0)
+            continue;
+        QList<Line> fresh = readLines(e.api, pass++);
+        auto inside = [&region](const QRect &b) { return region.contains(b.center()); };
+        // Alte Wörter im Bereich gegen die neuen abwägen
+        double oldSum = 0, newSum = 0;
+        int oldCount = 0, newCount = 0;
+        for (const Line &ln : std::as_const(lines))
+            for (const Word &w : ln.words)
+                if (inside(w.box)) {
+                    oldSum += w.confidence;
+                    ++oldCount;
+                }
+        for (Line &ln : fresh) {
+            for (Word &w : ln.words)
+                w.box.translate(region.topLeft());
+            ln.box.translate(region.topLeft());
+            // Am Rand angeschnittene Reste weglassen
+            ln.words.erase(std::remove_if(ln.words.begin(), ln.words.end(),
+                                          [](const Word &w) { return w.confidence < 30 && alnumCount(w.text) < 3; }),
+                           ln.words.end());
+            for (const Word &w : ln.words) {
+                newSum += w.confidence;
+                ++newCount;
+            }
+        }
+        fresh.erase(std::remove_if(fresh.begin(), fresh.end(), [](const Line &ln) { return ln.words.isEmpty(); }), fresh.end());
+        if (newCount == 0 || (oldCount > 0 && newSum / newCount < oldSum / oldCount + 15))
+            continue;
+        // Ersetzen: alte Wörter im Bereich raus, neue Zeilen an der Stelle der ersten betroffenen Zeile
+        int at = -1;
+        int paraKey = 0;
+        for (int i = 0; i < lines.size(); ++i) {
+            Line &ln = lines[i];
+            const auto before = ln.words.size();
+            ln.words.erase(std::remove_if(ln.words.begin(), ln.words.end(), [&](const Word &w) { return inside(w.box); }),
+                           ln.words.end());
+            if (ln.words.size() != before && at < 0) {
+                at = i;
+                paraKey = ln.paraKey;
+            }
+            if (!ln.words.isEmpty() && ln.words.size() != before) {
+                ln.box = ln.words.first().box;
+                for (const Word &w : ln.words)
+                    ln.box = ln.box.united(w.box);
+            }
+        }
+        if (at < 0) {
+            at = int(std::find_if(lines.begin(), lines.end(), [&](const Line &ln) { return ln.box.top() > region.top(); })
+                     - lines.begin());
+            paraKey = at < lines.size() ? lines.at(at).paraKey : (lines.isEmpty() ? 0 : lines.last().paraKey);
+        }
+        for (Line &ln : fresh)
+            ln.paraKey = paraKey;
+        for (int k = 0; k < fresh.size(); ++k)
+            lines.insert(at + 1 + k <= lines.size() ? at + 1 + k : lines.size(), fresh.at(k));
+        lines.erase(std::remove_if(lines.begin(), lines.end(), [](const Line &ln) { return ln.words.isEmpty(); }), lines.end());
+        changed = true;
+    }
+    return changed;
 }
 
 #endif
@@ -639,6 +789,9 @@ Result recognize(const QImage &input, const Options &options)
     }
     Engine e(chosen);
     Engine einv(tryInverted ? chosen : QString());
+    // Gründlich: zusätzlich „verstreuter Text“ – findet Wörter neben Grafiken
+    // und in Logos, die die normale Seitenzerlegung für Bild hält.
+    Engine esparse(options.thorough ? chosen : QString());
     if (!e.ok) {
         r.error = QStringLiteral("Tesseract could not load '%1'").arg(chosen);
         return r;
@@ -659,9 +812,18 @@ Result recognize(const QImage &input, const Options &options)
         einv.setImage(inverted, dpi);
         invThread = std::thread([&] { invertedOk = einv.api.Recognize(nullptr) == 0; });
     }
+    bool sparseOk = false;
+    std::thread sparseThread;
+    if (esparse.ok) {
+        esparse.api.SetPageSegMode(tesseract::PSM_SPARSE_TEXT);
+        esparse.setImage(gray, dpi);
+        sparseThread = std::thread([&] { sparseOk = esparse.api.Recognize(nullptr) == 0; });
+    }
     const bool mainOk = e.api.Recognize(&monitor) == 0;
     if (invThread.joinable())
         invThread.join();
+    if (sparseThread.joinable())
+        sparseThread.join();
     if (!mainOk) {
         r.error = QStringLiteral("recognition failed");
         return r;
@@ -676,9 +838,10 @@ Result recognize(const QImage &input, const Options &options)
                       orig.height() * backScale).toAlignedRect();
     };
 
-    QList<Line> lines;
-    if (invertedOk) {
-        lines = mergeLines(readLines(e.api, 0), readLines(einv.api, 1));
+    QList<Line> lines = invertedOk ? mergeLines(readLines(e.api, 0), readLines(einv.api, 1)) : readLines(e.api, 0);
+    bool improved = sparseOk && addMissing(lines, readLines(esparse.api, 3));
+    improved = secondLook(lines, gray, chosen, dpi) || improved;
+    if (invertedOk || improved) {
         QStringList parts;
         double confSum = 0;
         int confCount = 0;
@@ -699,8 +862,6 @@ Result recognize(const QImage &input, const Options &options)
     } else {
         r.text = takeText(e.api.GetUTF8Text()).trimmed();
         r.confidence = e.api.MeanTextConf();
-        if (options.words)
-            lines = readLines(e.api, 0);
     }
 
     if (options.words) {
