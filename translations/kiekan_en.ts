@@ -975,7 +975,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+255"/>
+        <location filename="../src/MainWindow.cpp" line="+256"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1275,7 +1275,7 @@ right-click or double-click removes it.</translation>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+499"/>
+        <location line="+588"/>
         <source>Text markieren geht nur bei Bildern und PDF-Seiten.</source>
         <translation>Text selection works only for images and PDF pages.</translation>
     </message>
@@ -1319,7 +1319,7 @@ right-click or double-click removes it.</translation>
         <translation>, image turned upright</translation>
     </message>
     <message>
-        <location line="-758"/>
+        <location line="-847"/>
         <source>Bild&amp;beschreibung …</source>
         <translation>Image &amp;description …</translation>
     </message>
@@ -1334,7 +1334,12 @@ right-click or double-click removes it.</translation>
         <translation>Recognize text &amp;again, thoroughly</translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+391"/>
+        <source>Seite automatisch aufgerichtet – Strg+Z nimmt es zurück, Strg+S speichert die Drehung.</source>
+        <translation>Page turned upright automatically – Ctrl+Z undoes it, Ctrl+S saves the rotation.</translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>Bild aus der Zwischenablage</source>
         <translation>Image from the clipboard</translation>
     </message>
@@ -1365,7 +1370,7 @@ right-click or double-click removes it.</translation>
     </message>
     <message numerus="yes">
         <location line="+4"/>
-        <location line="+304"/>
+        <location line="+306"/>
         <source>%n Wörter.</source>
         <translation>
             <numerusform>%n word.</numerusform>
@@ -1373,7 +1378,7 @@ right-click or double-click removes it.</translation>
         </translation>
     </message>
     <message>
-        <location line="-294"/>
+        <location line="-296"/>
         <source>Pfeiltasten lesen, Umschalt markiert, Strg+C kopiert, Esc beendet den Textmodus.</source>
         <translation>Arrow keys read, Shift selects, Ctrl+C copies, Esc leaves text mode.</translation>
     </message>
@@ -1416,7 +1421,7 @@ right-click or double-click removes it.</translation>
         <translation>The AI describes only the image shown (can be changed in the settings).</translation>
     </message>
     <message>
-        <location line="+216"/>
+        <location line="+218"/>
         <source>Text erkennen geht nur bei Bildern und PDF-Seiten.</source>
         <translation>Text recognition works only for images and PDF pages.</translation>
     </message>
@@ -1550,7 +1555,7 @@ right-click or double-click removes it.</translation>
         <translation>Open image</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+25"/>
         <source>Änderung an „%1“ verworfen – zum Behalten vorher Strg+S drücken.</source>
         <translation>Change to “%1” discarded – press Ctrl+S first to keep it.</translation>
     </message>
@@ -1580,7 +1585,7 @@ right-click or double-click removes it.</translation>
         <translation>Animations are not overwritten – please save under a new name.</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+26"/>
         <source>Farbtiefe geht verloren</source>
         <translation>Colour depth will be lost</translation>
     </message>
@@ -1594,7 +1599,7 @@ Trotzdem überschreiben?</source>
 Overwrite anyway?</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+19"/>
         <location line="+98"/>
         <location line="+19"/>
         <source>Gespeichert: %1</source>
@@ -1771,12 +1776,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+1005"/>
+        <location line="+1007"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-1001"/>
+        <location line="-1003"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1886,7 +1891,7 @@ Delete permanently?</translation>
         <translation>Description applied (for this session only).</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+74"/>
         <source>Text kopiert.</source>
         <translation>Text copied.</translation>
     </message>
@@ -2034,13 +2039,13 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-946"/>
+        <location line="-948"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-1453"/>
+        <location line="-1552"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -2066,12 +2071,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+12"/>
-        <location line="+2370"/>
+        <location line="+2471"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-2349"/>
+        <location line="-2450"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -2091,7 +2096,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>No images or videos in this folder.</translation>
     </message>
     <message>
-        <location line="+212"/>
+        <location line="+299"/>
         <source>Letzte Seite.</source>
         <translation>Last page.</translation>
     </message>
@@ -2113,7 +2118,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>First file in folder.</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+73"/>
         <source>Videowiedergabe nicht verfügbar (libmpv)</source>
         <translation>Video playback not available (libmpv)</translation>
     </message>
@@ -2148,7 +2153,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Images and videos (%1);;All files (*)</translation>
     </message>
     <message>
-        <location line="+138"/>
+        <location line="+148"/>
         <source>%1_Bild_%2s.png</source>
         <translation>%1_frame_%2s.png</translation>
     </message>
@@ -2218,12 +2223,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>All EXIF data …</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+92"/>
         <source>Nichts rückgängig zu machen.</source>
         <translation>Nothing to undo.</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
         <source>Kein Videobild verfügbar.</source>
         <translation>No video frame available.</translation>
     </message>
@@ -2435,8 +2440,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation> – page %1 of %2</translation>
     </message>
     <message>
-        <location line="-2090"/>
-        <location line="+2105"/>
+        <location line="-2104"/>
+        <location line="+2119"/>
         <source>Kann nicht geöffnet werden: %1</source>
         <translation>Cannot be opened: %1</translation>
     </message>
@@ -2786,7 +2791,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+145"/>
+        <location filename="../src/SettingsDialog.cpp" line="+148"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2822,12 +2827,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+199"/>
+        <location line="+208"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-197"/>
+        <location line="-206"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2868,6 +2873,16 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+4"/>
+        <source>Dokumente automatisch aufrichten (Lage aus dem Text erkannt)</source>
+        <translation>Turn documents upright automatically (orientation detected from the text)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Quer oder kopfstehend fotografierte Seiten werden im Hintergrund erkannt und richtig herum gezeigt, auch wenn die EXIF-Angabe etwas anderes sagt. Gilt nur für Bilder, die wie ein Dokument aussehen; Fotos bleiben unberührt. Die Drehung wird erst mit Strg+S gespeichert, Strg+Z nimmt sie zurück.</source>
+        <translation>Pages photographed sideways or upside down are detected in the background and shown the right way up, even if the EXIF data say otherwise. Applies only to images that look like a document; photos are left alone. The rotation is saved only with Ctrl+S; Ctrl+Z undoes it.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>JPEGs verlustfrei drehen und spiegeln (ohne Neukodierung)</source>
         <translation>Rotate and flip JPEGs losslessly (without re-encoding)</translation>
     </message>
@@ -3012,7 +3027,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+42"/>
         <source>KiekAn! arbeitet mit Bildschirmlesern wie Orca, NVDA und VoiceOver. Beim Blättern wird das neue Bild angesagt; mit T wird der Text im Bild erkannt und lässt sich mit den Pfeiltasten lesen.</source>
         <translation>KiekAn! works with screen readers such as Orca, NVDA and VoiceOver. When you browse, the new image is announced; T recognizes the text in the image, which you can then read with the arrow keys.</translation>
     </message>
@@ -3210,7 +3225,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-471"/>
+        <location line="-472"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>

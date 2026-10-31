@@ -203,6 +203,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_view, &ImageView::imageChanged, this, &MainWindow::refreshHistogram);
 
     m_scanPool.setMaxThreadCount(1);
+    m_uprightPool.setMaxThreadCount(1);   // im Hintergrund, eine Seite nach der anderen
 
     ImageLoader::setAutoRotate(Settings::autoRotate());
     FilterRegistry::instance().loadPlugins();
@@ -556,6 +557,8 @@ void MainWindow::showIndex(int index)
         return;
 
     stopMedia();
+    dropQueuedUpright();
+    m_autoUprighted = false;
     m_index = index;
     m_path = m_files.at(index);
     m_page = 0;
@@ -623,6 +626,91 @@ void MainWindow::applyLoadResult(const LoadResult &r)
     m_deepColor = r.deepColor;
     loadStoredText();
     updateStatus();
+    applyUpright();
+    announceCurrent();
+}
+
+// --- Dokumente aufrichten ------------------------------------------------------
+
+namespace {
+
+// Sieht das Bild wie eine Dokumentseite aus? Viel heller Grund, etwas dunkle
+// Schrift, kaum Farbe. Kostet auf dem Vorschaubild nur Millisekunden.
+bool looksLikeDocument(const QImage &image)
+{
+    const QImage t = image.scaled(256, 256, Qt::KeepAspectRatio, Qt::FastTransformation).convertToFormat(QImage::Format_RGB32);
+    qint64 bright = 0, dark = 0, chroma = 0, all = 0;
+    for (int y = 0; y < t.height(); ++y) {
+        const auto *row = reinterpret_cast<const QRgb *>(t.constScanLine(y));
+        for (int x = 0; x < t.width(); ++x, ++all) {
+            const int r = qRed(row[x]), g = qGreen(row[x]), b = qBlue(row[x]);
+            const int lum = (r * 299 + g * 587 + b * 114) / 1000;
+            bright += lum > 170;
+            dark += lum < 110;
+            chroma += std::max({r, g, b}) - std::min({r, g, b});
+        }
+    }
+    if (all == 0)
+        return false;
+    const double brightShare = double(bright) / all, darkShare = double(dark) / all;
+    return brightShare > 0.45 && darkShare > 0.005 && darkShare < 0.3 && double(chroma) / all < 45;
+}
+
+} // namespace
+
+void MainWindow::requestUpright(const QString &path, const QImage &image)
+{
+    if (!Settings::autoUpright() || path.isEmpty() || m_upright.contains(path) || Media::isPdf(path)
+        || Media::isVideo(path) || !Ocr::available() || !looksLikeDocument(image))
+        return;
+    m_upright.insert(path, -1);
+    auto started = std::make_shared<std::atomic<bool>>(false);
+    m_uprightStarted.insert(path, started);
+    QPointer<MainWindow> self(this);
+    m_uprightPool.start(QRunnable::create([self, path, started] {
+        *started = true;
+        OcrWorker::Job job;
+        job.path = path;
+        job.options.orientationOnly = true;
+        const Ocr::Result r = OcrWorker::run(job);
+        // Nur bei klarer Lage drehen – dieselbe Schwelle wie beim Aufrichten
+        // durch die Texterkennung (Seiten liegen meist bei 3–10, Fotos bei 0).
+        const int rotation = r.ok && r.confidence > 1.5 ? r.rotation : 0;
+        QMetaObject::invokeMethod(qApp, [self, path, rotation] {
+            if (!self)
+                return;
+            self->m_upright.insert(path, rotation);
+            self->m_uprightStarted.remove(path);
+            if (path == self->m_path)
+                self->applyUpright();
+        }, Qt::QueuedConnection);
+    }));
+}
+
+// Beim Blättern: noch nicht begonnene Prüfungen verwerfen, damit die
+// Warteschlange nicht wächst – die neuen Nachbarn kommen beim Vorladen dazu.
+void MainWindow::dropQueuedUpright()
+{
+    m_uprightPool.clear();
+    for (auto it = m_uprightStarted.begin(); it != m_uprightStarted.end();) {
+        if (!*it.value()) {
+            m_upright.remove(it.key());
+            it = m_uprightStarted.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void MainWindow::applyUpright()
+{
+    const int rotation = m_upright.value(m_path, 0);
+    if (rotation <= 0 || !Settings::autoUpright() || m_kind != Kind::Image || !hasCurrentImage() || m_modified
+        || m_pageCount != 1 || m_animated || m_view->hasTextLayer() || m_textAct->isChecked())
+        return;
+    rotate(rotation);
+    m_autoUprighted = true;
+    message(tr("Seite automatisch aufgerichtet – Strg+Z nimmt es zurück, Strg+S speichert die Drehung."));
     announceCurrent();
 }
 
@@ -848,6 +936,8 @@ void MainWindow::prefetch(int nextPage)
 
 void MainWindow::onLoaded(const QString &path, int page, const LoadResult &result)
 {
+    if (page == 0 && !result.image.isNull() && result.pageCount == 1 && !result.animated)
+        requestUpright(path, result.image);   // auch vorgeladene Nachbarn
     if (path != m_path || page != m_page || m_modified || m_kind != Kind::Image)
         return;
     applyLoadResult(result);
@@ -1361,6 +1451,12 @@ bool MainWindow::confirmDiscard()
     // Weiterblättern ohne Rückfrage verworfen, außer der Benutzer möchte die
     // Nachfrage. Ein eingefügtes Bild gibt es dagegen noch nirgends als Datei –
     // dort wird immer gefragt.
+    // Nur automatisch aufgerichtet: keine Änderung des Benutzers, nichts zu fragen.
+    if (m_autoUprighted && m_editOps.size() == 1) {
+        m_modified = false;
+        m_autoUprighted = false;
+        return true;
+    }
     if (!m_path.isEmpty() && !Settings::askBeforeDiscard()) {
         m_modified = false;
         message(tr("Änderung an „%1“ verworfen – zum Behalten vorher Strg+S drücken.").arg(QFileInfo(m_path).fileName()));
@@ -1413,6 +1509,8 @@ bool MainWindow::save()
         m_modified = false;
         m_editOps.clear();
         m_ocrRotation = false;
+        m_autoUprighted = false;
+        m_upright.insert(m_path, 0);   // die Datei liegt jetzt richtig
         if (m_textUnsaved)
             storeTextLayer();
         updateTitle();
@@ -1435,6 +1533,8 @@ bool MainWindow::save()
     m_editOps.clear();
     m_modified = false;
     m_ocrRotation = false;
+    m_autoUprighted = false;
+    m_upright.insert(m_path, 0);   // die Datei liegt jetzt richtig
     if (m_textUnsaved)
         storeTextLayer();
     updateTitle();
@@ -1872,6 +1972,7 @@ void MainWindow::applyEdit(const QImage &result, int geoOp)
         m_undo.removeFirst();
     }
     m_ocrRotation = false;   // nur die Drehung der Texterkennung selbst setzt das wieder
+    m_autoUprighted = false;  // ebenso das automatische Aufrichten
     m_view->replaceImage(result);
     m_modified = true;
     updateTitle();
@@ -1893,6 +1994,7 @@ void MainWindow::undo()
         m_editOps.removeLast();
     // Erst wenn alle Schritte zurückgenommen sind, entspricht das Bild der Datei.
     m_modified = !m_undo.isEmpty() || m_path.isEmpty();
+    m_autoUprighted = false;   // zurückgenommen oder danach weiter bearbeitet
     updateTitle();
     updateStatus();
 }
@@ -2820,6 +2922,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
         *m_ocrCancel = true;
     for (QThread *t : m_ocrThreads)
         t->wait();
+    m_uprightPool.clear();
+    m_uprightPool.waitForDone();
     if (isFullScreen())
         toggleFullScreen();
     QSettings().setValue(QStringLiteral("window/geometry"), saveGeometry());

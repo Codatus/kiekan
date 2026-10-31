@@ -7,6 +7,7 @@
 #include "AiGuard.h"
 #include "AiLogDialog.h"
 #include "FileAssoc.h"
+#include "Ocr.h"
 #include "ViewerBridge.h"
 
 #include <QHash>
@@ -43,6 +44,8 @@ QString language() { return QSettings().value(QStringLiteral("language")).toStri
 void setLanguage(const QString &code) { QSettings().setValue(QStringLiteral("language"), code); }
 bool autoRotate() { return QSettings().value(QStringLiteral("autoRotate"), true).toBool(); }
 void setAutoRotate(bool on) { QSettings().setValue(QStringLiteral("autoRotate"), on); }
+bool autoUpright() { return QSettings().value(QStringLiteral("autoUpright"), false).toBool(); }
+void setAutoUpright(bool on) { QSettings().setValue(QStringLiteral("autoUpright"), on); }
 int jpegQuality() { return QSettings().value(QStringLiteral("jpegQuality"), 90).toInt(); }
 void setJpegQuality(int q) { QSettings().setValue(QStringLiteral("jpegQuality"), q); }
 bool losslessJpeg() { return QSettings().value(QStringLiteral("losslessJpeg"), true).toBool(); }
@@ -196,6 +199,15 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     auto *images = new QGroupBox(tr("Bilder"), this);
     auto *iForm = new QFormLayout(images);
     iForm->addRow(autoRotateRow);
+    QWidget *uprightRow = nullptr;
+    m_autoUpright = wrappingCheckBox(tr("Dokumente automatisch aufrichten (Lage aus dem Text erkannt)"), this, &uprightRow);
+    m_autoUpright->setChecked(Settings::autoUpright());
+    m_autoUpright->setToolTip(tr("Quer oder kopfstehend fotografierte Seiten werden im Hintergrund erkannt und richtig "
+                                 "herum gezeigt, auch wenn die EXIF-Angabe etwas anderes sagt. Gilt nur für Bilder, die "
+                                 "wie ein Dokument aussehen; Fotos bleiben unberührt. Die Drehung wird erst mit Strg+S "
+                                 "gespeichert, Strg+Z nimmt sie zurück."));
+    m_autoUpright->setEnabled(Ocr::available());
+    iForm->addRow(uprightRow);
     QWidget *losslessRow = nullptr;
     m_lossless = wrappingCheckBox(tr("JPEGs verlustfrei drehen und spiegeln (ohne Neukodierung)"), this, &losslessRow);
     m_lossless->setChecked(Settings::losslessJpeg());
@@ -473,6 +485,7 @@ bool SettingsDialog::apply()
     const bool langChanged = lang != Settings::language();
     Settings::setLanguage(lang);
     Settings::setAutoRotate(m_autoRotate->isChecked());
+    Settings::setAutoUpright(m_autoUpright->isChecked());
     Settings::setJpegQuality(m_quality->value());
     Settings::setEscapeQuits(m_escape->isChecked());
     Settings::setAskBeforeDiscard(m_askDiscard->isChecked());

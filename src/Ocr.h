@@ -51,6 +51,7 @@ struct Options
     bool words = false;                            // Wortliste mit Rahmen
     int dpi = 0;                                   // 0 = aus dem Bild / 300
     bool thorough = false;                         // gründlicher, aber langsamer
+    bool orientationOnly = false;                  // nur Lage bestimmen (rotation, confidence = Sicherheit der Lage)
 };
 
 struct Result

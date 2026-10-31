@@ -625,7 +625,12 @@ Result recognize(const QImage &input, const Options &options)
             dpi = 300;
     }
     const int longest = std::max(gray.width(), gray.height());
-    if (longest < 1200) {
+    if (options.orientationOnly) {
+        // Für die Lage genügen etwa 1200 Pixel; kleiner findet Tesseract zu
+        // wenige Zeichen, größer kostet nur Zeit.
+        if (longest > 1400)
+            gray = gray.scaled(gray.size() * 1200 / longest, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    } else if (longest < 1200) {
         gray = gray.scaled(gray.size() * 2, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         dpi *= 2;
     } else if (options.thorough && longest < 5000) {
@@ -653,11 +658,19 @@ Result recognize(const QImage &input, const Options &options)
                 // orient = Drehung des Bildes im Uhrzeigersinn; zurückdrehen.
                 if (orient != 0 && orientConf > 1.5f)
                     r.rotation = (360 - orient) % 360;
+                if (options.orientationOnly)
+                    r.confidence = orientConf;
             }
             osd.End();
         }
     }
     reportProgress(10);
+    if (options.orientationOnly) {
+        r.ok = inst.osd;
+        if (!inst.osd)
+            r.error = QStringLiteral("orientation detection (osd.traineddata) is not installed");
+        return r;
+    }
     QTransform toUpright;
     if (r.rotation != 0) {
         toUpright = QImage::trueMatrix(QTransform().rotate(r.rotation), gray.width(), gray.height());

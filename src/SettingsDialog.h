@@ -19,6 +19,8 @@ namespace Settings {
 QString language();          // "" = Systemsprache, sonst "de" / "en"
 void setLanguage(const QString &code);
 bool autoRotate();           // EXIF-Ausrichtung beim Laden anwenden
+bool autoUpright();          // Dokumente anhand des Textes aufrichten (Standard: aus)
+void setAutoUpright(bool on);
 void setAutoRotate(bool on);
 int jpegQuality();
 void setJpegQuality(int q);
@@ -67,6 +69,7 @@ public:
 private:
     QComboBox *m_language;
     QCheckBox *m_autoRotate;
+    QCheckBox *m_autoUpright = nullptr;
     QSpinBox *m_quality;
     QCheckBox *m_escape;
     QCheckBox *m_askDiscard;

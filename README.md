@@ -172,6 +172,12 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
   Liest die Erkennung nicht alles, liest **Strg+T** neu und gründlicher
   (vergrößert, zusätzlich hell auf dunkel). Hellen Text auf dunklem Grund,
   etwa auf Buchumschlägen, erkennt KiekAn! auch ohne Strg+T
+- **Dokumente automatisch aufrichten** (Einstellungen, standardmäßig aus): Quer
+  oder kopfstehend fotografierte Seiten erkennt KiekAn! im Hintergrund am Text
+  und zeigt sie richtig herum, auch wenn die EXIF-Angabe etwas anderes sagt.
+  Fotos bleiben unberührt. Die Drehung gilt zunächst nur für die Anzeige:
+  Strg+S speichert sie (bei JPEG verlustfrei), Strg+Z nimmt sie zurück, und
+  beim Weiterblättern fragt KiekAn! deswegen nicht nach
 - **Text im ganzen Ordner erkennen** (Datei-Menü): erkennt den Text aller Bilder
   des Ordners und speichert ihn in den Dateien – danach ist er beim Blättern
   sofort markierbar und vorlesbar

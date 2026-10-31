@@ -41,6 +41,7 @@ QJsonObject jobToJson(const Job &j)
         {QStringLiteral("words"), j.options.words},
         {QStringLiteral("dpi"), j.options.dpi},
         {QStringLiteral("thorough"), j.options.thorough},
+        {QStringLiteral("orientation_only"), j.options.orientationOnly},
     };
 }
 
@@ -59,6 +60,7 @@ Job jobFromJson(const QJsonObject &o)
     j.options.words = o.value(QLatin1String("words")).toBool();
     j.options.dpi = o.value(QLatin1String("dpi")).toInt();
     j.options.thorough = o.value(QLatin1String("thorough")).toBool();
+    j.options.orientationOnly = o.value(QLatin1String("orientation_only")).toBool();
     return j;
 }
 

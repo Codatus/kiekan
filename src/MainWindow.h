@@ -77,6 +77,11 @@ private:
     QString descriptionFor(const QString &path) const;
     QStringList upcomingFiles(int count) const;
     void askDescribeAheadOnce();
+
+    // Dokumente automatisch aufrichten (Lage aus dem Text, im Hintergrund)
+    void requestUpright(const QString &path, const QImage &image);
+    void applyUpright();
+    void dropQueuedUpright();
     void editDescription();
     bool storeTextLayer();
     bool resolveUnsavedText();
@@ -202,6 +207,10 @@ private:
     bool m_deepColor = false;
     QHash<QString, QString> m_aiDescriptions;   // Bildbeschreibungen der KI (Pfad → Text)
     bool m_describeQuestionShown = false;
+    QHash<QString, int> m_upright;   // Pfad → nötige Drehung; -1 = wird noch geprüft
+    QHash<QString, std::shared_ptr<std::atomic<bool>>> m_uprightStarted;
+    bool m_autoUprighted = false;    // einzige Änderung ist das automatische Aufrichten
+    QThreadPool m_uprightPool;
     QVector<QImage> m_undo;
     // Seit dem Laden/Speichern: nur Drehungen/Spiegelungen? (für verlustfreies JPEG)
     QVector<int> m_editOps;
