@@ -5,6 +5,10 @@
 #include "ViewerBridge.h"
 
 #include <QDeadlineTimer>
+#include <QSettings>
+#include <QSaveFile>
+#include <QFile>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -61,6 +65,38 @@ QString socketName()
     return QStringLiteral("kiekan-viewer-") + user;
 }
 
+// Eigener Socket je Fenster und die Datei, in der das zuletzt benutzte Fenster
+// steht – nur bei einem Pfad im privaten Laufzeitordner (nicht unter Windows
+// und nicht bei kurzen Namen aus KIEKAN_VIEWER_SOCKET).
+QString windowSocketName(qint64 pid)
+{
+    const QString base = socketName();
+    return QDir::isAbsolutePath(base) ? base + QLatin1Char('.') + QString::number(pid) : QString();
+}
+
+QString activeFile()
+{
+    const QString base = socketName();
+    return QDir::isAbsolutePath(base) ? base + QStringLiteral(".aktiv") : QString();
+}
+
+void markActive()
+{
+    const QString file = activeFile();
+    if (file.isEmpty())
+        return;
+    QSaveFile f(file);
+    if (f.open(QIODevice::WriteOnly)) {
+        f.write(QByteArray::number(QCoreApplication::applicationPid()));
+        f.commit();
+    }
+}
+
+bool preferLastUsed()
+{
+    return QSettings().value(QStringLiteral("ai/viewerLastUsed"), true).toBool();
+}
+
 namespace {
 
 // Gehört die Gegenseite dem eigenen Benutzer?
@@ -91,8 +127,24 @@ constexpr qint64 kMaxAnswer = 64 * 1024 * 1024;
 QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
 {
     QLocalSocket socket;
-    socket.connectToServer(socketName());
-    if (!socket.waitForConnected(1000)) {
+    bool connected = false;
+    // Einstellung „zuletzt benutztes Fenster“: dessen eigenen Socket nehmen.
+    if (preferLastUsed()) {
+        QFile f(activeFile());
+        if (!activeFile().isEmpty() && f.open(QIODevice::ReadOnly)) {
+            const qint64 pid = f.read(32).trimmed().toLongLong();
+            if (pid > 0) {
+                socket.connectToServer(windowSocketName(pid));
+                connected = socket.waitForConnected(500);
+            }
+        }
+    }
+    if (!connected) {
+        socket.abort();
+        socket.connectToServer(socketName());
+        connected = socket.waitForConnected(1000);
+    }
+    if (!connected) {
         if (error)
             *error = QStringLiteral("no KiekAn! window is running");
         return {};
@@ -135,16 +187,25 @@ QJsonObject request(const QJsonObject &req, int timeoutMs, QString *error)
 ViewerServer::ViewerServer(Handler handler, QObject *parent)
     : QObject(parent)
     , m_server(new QLocalServer(this))
+    , m_own(new QLocalServer(this))
     , m_handler(std::move(handler))
 {
-    m_server->setSocketOptions(QLocalServer::UserAccessOption);
-    connect(m_server, &QLocalServer::newConnection, this, &ViewerServer::onNewConnection);
+    for (QLocalServer *server : {m_server, m_own}) {
+        server->setSocketOptions(QLocalServer::UserAccessOption);
+        connect(server, &QLocalServer::newConnection, this, [this, server] { onNewConnection(server); });
+    }
 }
 
 ViewerServer::~ViewerServer() = default;
 
 bool ViewerServer::start()
 {
+    // Eigener Socket dieses Fensters (für „zuletzt benutztes Fenster“)
+    const QString own = ViewerBridge::windowSocketName(QCoreApplication::applicationPid());
+    if (!own.isEmpty() && !m_own->isListening()) {
+        QLocalServer::removeServer(own);
+        m_own->listen(own);
+    }
     if (m_server->isListening())
         return true;
     const QString name = ViewerBridge::socketName();
@@ -175,6 +236,7 @@ QString ViewerServer::errorString() const
 void ViewerServer::stop()
 {
     m_server->close();
+    m_own->close();
 }
 
 bool ViewerServer::isListening() const
@@ -182,9 +244,10 @@ bool ViewerServer::isListening() const
     return m_server->isListening();
 }
 
-void ViewerServer::onNewConnection()
+void ViewerServer::onNewConnection(QLocalServer *server)
+
 {
-    while (QLocalSocket *socket = m_server->nextPendingConnection()) {
+    while (QLocalSocket *socket = server->nextPendingConnection()) {
         connect(socket, &QLocalSocket::disconnected, socket, &QObject::deleteLater);
         if (!ViewerBridge::peerIsSelf(*socket)) {
             socket->abort();

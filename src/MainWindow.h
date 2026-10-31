@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QHash>
 #include <QKeySequence>
+#include <QElapsedTimer>
 #include <QMainWindow>
 #include <QPointer>
 #include <QThreadPool>
@@ -47,6 +48,7 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 
@@ -61,6 +63,7 @@ private:
     void pageStep(int delta);
     void step(int delta);
     void jump(int delta);
+    void keyStep(int delta, bool autoRepeat);
     void first();
     void last();
     void prefetch(int nextPage = -1);   // nextPage: zusätzlich vorzuladende Seite
@@ -155,6 +158,7 @@ private:
     QStringList m_files;          // Bilder im aktuellen Ordner, natürlich sortiert
     int m_index = -1;
     int m_lastStep = 1;           // Blätterrichtung, für das Vorladen
+    QElapsedTimer m_holdTimer;    // Blättern bei gedrückt gehaltener Taste
     int m_page = 0;               // Seite in PDF/TIFF
     int m_pageCount = 1;
     bool m_rawPreview = false;      // Kamera-RAW: nur eingebettete Vorschau angezeigt

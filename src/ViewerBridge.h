@@ -17,6 +17,10 @@ class QLocalServer;
 namespace ViewerBridge {
 
 QString socketName();
+QString windowSocketName(qint64 pid);   // eigener Socket je Fenster (leer = nicht möglich)
+QString activeFile();                   // hält die PID des zuletzt benutzten Fensters
+void markActive();                      // dieses Fenster als zuletzt benutzt eintragen
+bool preferLastUsed();                  // Einstellung: KI spricht mit dem zuletzt benutzten Fenster
 
 // Sendet eine Anfrage an das laufende Fenster. Bei Fehlern (kein Fenster
 // offen, Zeitüberschreitung) leeres Objekt und Text in `error`.
@@ -42,9 +46,10 @@ public:
     QString errorString() const;   // leer, wenn nur schon ein Fenster lauscht
 
 private:
-    void onNewConnection();
+    void onNewConnection(QLocalServer *server);
 
-    QLocalServer *m_server;
+    QLocalServer *m_server;   // gemeinsamer Name: das zuerst geöffnete Fenster
+    QLocalServer *m_own;      // eigener Name je Fenster
     Handler m_handler;
     QString m_error;
 };

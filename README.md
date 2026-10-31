@@ -251,6 +251,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 | E | EXIF-Daten |
 | Strg+Bild ab / Strg+Bild auf | Nächste / vorherige Seite (PDF, TIFF) |
 | Leertaste (Video) | Abspielen / Pause |
+| Pfeiltaste gedrückt halten | zügig blättern (jedes Bild bleibt kurz sichtbar) |
 | 1 … 9, 0 | 1 … 9 bzw. 10 Dateien vor; mit Umschalt zurück |
 | → / ← (Video) | 5 s vor / zurück, mit Umschalt 60 s (blättern mit ↑ / ↓) |
 | M (Video) | Ton aus / an |
@@ -473,7 +474,10 @@ Die Umgebungsvariablen `KIEKAN_MCP_ROOTS`, `KIEKAN_MCP_WRITE_ROOTS` und
 aus den Einstellungen, sie ersetzen sie nicht. Die Fensterverbindung ist ein
 lokaler Socket im privaten Laufzeitordner des Benutzers (`$XDG_RUNTIME_DIR`);
 beide Seiten prüfen, dass die Gegenseite demselben Benutzer gehört. Unter
-Windows ist es eine Named Pipe mit den Standardrechten des Benutzers. Mit der Umgebungsvariable
+Windows ist es eine Named Pipe mit den Standardrechten des Benutzers.
+Sind mehrere Fenster offen, sieht die KI standardmäßig das zuletzt benutzte;
+in den Einstellungen lässt sich stattdessen das zuerst geöffnete wählen (unter
+Windows gilt immer das zuerst geöffnete). Mit der Umgebungsvariable
 `KIEKAN_VIEWER_SOCKET=<name>` (für Fenster und `kiekan --mcp` gleich gesetzt)
 bekommt eine Instanz eine eigene Verbindung – praktisch für Tests neben einem
 normal laufenden KiekAn!

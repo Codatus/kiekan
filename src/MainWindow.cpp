@@ -206,6 +206,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_viewerServer = new ViewerServer([this](const QJsonObject &req) { return handleViewerRequest(req); }, this);
     updateViewerServer();
+    // Wird das zuerst geöffnete Fenster geschlossen, übernimmt ein anderes
+    // den gemeinsamen Namen.
+    auto *viewerRetry = new QTimer(this);
+    viewerRetry->setInterval(3000);
+    connect(viewerRetry, &QTimer::timeout, this, [this] {
+        if (Settings::aiViewerAccess() && !m_viewerServer->isListening())
+            m_viewerServer->start();
+    });
+    viewerRetry->start();
 
     QSettings settings;
     if (!restoreGeometry(settings.value(QStringLiteral("window/geometry")).toByteArray()))
@@ -609,6 +618,22 @@ void MainWindow::pageStep(int delta)
     prefetch(target + delta >= 0 && target + delta < m_pageCount ? target + delta : -1);
     updateTitle();
     updateStatus();
+}
+
+// Blättern per Taste. Gedrückt gehalten geht es zügig weiter, aber jedes Bild
+// bleibt sichtbar: frühestens nach kHoldStepMs und erst, wenn das aktuelle
+// Bild angezeigt wird (ein langsam ladendes wartet höchstens kHoldWaitMs).
+void MainWindow::keyStep(int delta, bool autoRepeat)
+{
+    constexpr qint64 kHoldStepMs = 120, kHoldWaitMs = 600;
+    if (autoRepeat && m_holdTimer.isValid()) {
+        const qint64 ms = m_holdTimer.elapsed();
+        const bool shown = m_kind != Kind::Image || hasCurrentImage();
+        if (ms < kHoldStepMs || (!shown && ms < kHoldWaitMs))
+            return;
+    }
+    m_holdTimer.start();
+    step(delta);
 }
 
 // Sprung um mehrere Dateien; am Ende des Ordners wird bei der ersten bzw.
@@ -1594,6 +1619,14 @@ void MainWindow::askAiViewerAccessOnce()
     updateViewerServer();
 }
 
+void MainWindow::changeEvent(QEvent *event)
+{
+    // Für die Einstellung „KI sieht das zuletzt benutzte Fenster“
+    if (event->type() == QEvent::ActivationChange && isActiveWindow() && Settings::aiViewerAccess())
+        ViewerBridge::markActive();
+    QMainWindow::changeEvent(event);
+}
+
 void MainWindow::updateViewerServer()
 {
     if (Settings::aiViewerAccess()) {
@@ -1980,18 +2013,19 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
     // Pfeiltasten: Ist das Bild größer als das Fenster, wird verschoben,
     // sonst geblättert.
+    const bool held = event->isAutoRepeat();
     switch (event->key()) {
     case Qt::Key_Right:
-        if (m_view->canPan()) m_view->panBy(kPanStep, 0); else step(1);
+        if (m_view->canPan()) m_view->panBy(kPanStep, 0); else keyStep(1, held);
         return;
     case Qt::Key_Left:
-        if (m_view->canPan()) m_view->panBy(-kPanStep, 0); else step(-1);
+        if (m_view->canPan()) m_view->panBy(-kPanStep, 0); else keyStep(-1, held);
         return;
     case Qt::Key_Down:
-        if (m_view->canPan()) m_view->panBy(0, kPanStep); else step(1);
+        if (m_view->canPan()) m_view->panBy(0, kPanStep); else keyStep(1, held);
         return;
     case Qt::Key_Up:
-        if (m_view->canPan()) m_view->panBy(0, -kPanStep); else step(-1);
+        if (m_view->canPan()) m_view->panBy(0, -kPanStep); else keyStep(-1, held);
         return;
     default:
         QMainWindow::keyPressEvent(event);

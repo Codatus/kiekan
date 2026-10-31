@@ -7,6 +7,7 @@
 #include "AiGuard.h"
 #include "AiLogDialog.h"
 #include "FileAssoc.h"
+#include "ViewerBridge.h"
 
 #include <QHash>
 #include <QLineEdit>
@@ -170,6 +171,30 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_aiAccess->setToolTip(tr("Erlaubt einem verbundenen Assistenten wie Claude, das angezeigte Bild und "
                               "die Auswahl abzufragen, Dateien anzuzeigen und Bereiche zu markieren."));
     aiLayout->addWidget(aiAccessRow);
+    {
+        auto *row = new QHBoxLayout;
+        auto *label = new QLabel(tr("Bei mehreren Fenstern sieht die KI:"), this);
+        m_aiWindow = new QComboBox(this);
+        m_aiWindow->addItem(tr("das zuletzt benutzte Fenster"), true);
+        m_aiWindow->addItem(tr("das zuerst geöffnete Fenster"), false);
+        m_aiWindow->setCurrentIndex(ViewerBridge::preferLastUsed() ? 0 : 1);
+#ifdef Q_OS_WIN
+        m_aiWindow->setCurrentIndex(1);
+        m_aiWindow->setEnabled(false);
+        m_aiWindow->setToolTip(tr("Unter Windows immer das zuerst geöffnete Fenster."));
+#endif
+        label->setBuddy(m_aiWindow);
+        row->addWidget(label);
+        row->addWidget(m_aiWindow);
+        row->addStretch(1);
+        aiLayout->addLayout(row);
+        m_aiWindow->setEnabled(m_aiWindow->isEnabled() && m_aiAccess->isChecked());
+        connect(m_aiAccess, &QCheckBox::toggled, m_aiWindow, [this](bool on) {
+#ifndef Q_OS_WIN
+            m_aiWindow->setEnabled(on);
+#endif
+        });
+    }
 
     auto dirEditor = [this, aiLayout](const QString &label, const QStringList &dirs, const QString &dialogTitle) {
         auto *caption = new QLabel(label, this);
@@ -370,6 +395,7 @@ bool SettingsDialog::apply()
     Settings::setEscapeQuits(m_escape->isChecked());
     Settings::setLosslessJpeg(m_lossless->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
+    QSettings().setValue(QStringLiteral("ai/viewerLastUsed"), m_aiWindow->currentData().toBool());
     AiGuard::setReadDirs(dirLines(m_aiReadDirs));
     AiGuard::setWriteDirs(dirLines(m_aiWriteDirs));
     AiGuard::setAllowOverwrite(m_aiOverwrite->isChecked());

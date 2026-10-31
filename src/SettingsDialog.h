@@ -50,6 +50,7 @@ private:
     QSpinBox *m_quality;
     QCheckBox *m_escape;
     QCheckBox *m_lossless;
+    QComboBox *m_aiWindow = nullptr;
     QCheckBox *m_aiAccess;
     void updateOverlapNote();
 

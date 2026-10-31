@@ -925,7 +925,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+240"/>
+        <location filename="../src/MainWindow.cpp" line="+249"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1215,7 +1215,7 @@ right-click or double-click removes it.</translation>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+405"/>
+        <location line="+421"/>
         <source>Bild öffnen</source>
         <translation>Open image</translation>
     </message>
@@ -1436,12 +1436,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+851"/>
+        <location line="+860"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-847"/>
+        <location line="-856"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1534,7 +1534,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>AI access to the open window off by default</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+21"/>
         <source>KI-Verbindung zum Fenster nicht möglich: %1</source>
         <translation>AI connection to the window not possible: %1</translation>
     </message>
@@ -1619,7 +1619,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>This build of KiekAn! has no printing support.</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+64"/>
         <source>Nächstes Bild; bei Videos Abspielen / Pause; in der Diashow Anhalten</source>
         <translation>Next image; play / pause for videos; pause the slideshow</translation>
     </message>
@@ -1649,13 +1649,13 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-795"/>
+        <location line="-804"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-946"/>
+        <location line="-962"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -1681,12 +1681,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1723"/>
+        <location line="+1748"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1702"/>
+        <location line="-1727"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1716,7 +1716,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>First page.</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+39"/>
         <location line="+13"/>
         <source>Letzte Datei im Ordner.</source>
         <translation>Last file in folder.</translation>
@@ -1908,7 +1908,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Plugins</translation>
     </message>
     <message>
-        <location line="+146"/>
+        <location line="+154"/>
         <source>Vorschlag der KI%1 – Strg+S speichert, Strg+Z verwirft</source>
         <translation>AI proposal%1 – Ctrl+S saves, Ctrl+Z discards</translation>
     </message>
@@ -1950,7 +1950,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+238"/>
+        <location line="+239"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -2383,7 +2383,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+110"/>
+        <location filename="../src/SettingsDialog.cpp" line="+111"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2409,12 +2409,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+135"/>
+        <location line="+159"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-133"/>
+        <location line="-157"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2459,7 +2459,27 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Text recognition, pages in parallel:</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+13"/>
+        <source>Bei mehreren Fenstern sieht die KI:</source>
+        <translation>With several windows, the AI sees:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>das zuletzt benutzte Fenster</source>
+        <translation>the most recently used window</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>das zuerst geöffnete Fenster</source>
+        <translation>the window opened first</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Unter Windows immer das zuerst geöffnete Fenster.</source>
+        <translation>On Windows always the window opened first.</translation>
+    </message>
+    <message>
+        <location line="+35"/>
         <source>Lesen: Ordner, deren Bilder und Dokumente die KI öffnen darf (ein Ordner pro Zeile; leer = keine):</source>
         <translation>Read: folders whose images and documents the AI may open (one folder per line; empty = none):</translation>
     </message>
@@ -2504,7 +2524,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+33"/>
         <source>So öffnen Sie Bilder mit KiekAn!:
 
 1. Im Finder ein Bild auswählen und „Informationen“ öffnen (⌘I).
@@ -2632,7 +2652,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-409"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
@@ -2674,7 +2694,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>. Existing files stay unchanged as long as replacing is not allowed.</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-207"/>
         <source>KI-Assistenten dürfen das offene Fenster abfragen und steuern</source>
         <translation>AI assistants may query and control the open window</translation>
     </message>
@@ -2684,7 +2704,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Allows a connected assistant such as Claude to read the displayed image and the selection, show files and mark areas.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+35"/>
         <source>Ordner hinzufügen …</source>
         <translation>Add folder …</translation>
     </message>
