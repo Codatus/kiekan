@@ -252,7 +252,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 | Strg+Bild ab / Strg+Bild auf | Nächste / vorherige Seite (PDF, TIFF) |
 | Leertaste (Video) | Abspielen / Pause |
 | Pfeiltaste gedrückt halten | zügig blättern (jedes Bild bleibt kurz sichtbar) |
-| 1 … 9, 0 | 1 … 9 bzw. 10 Dateien vor; mit Strg zurück |
+| 1 … 9, 0 (auch Ziffernblock) | 1 … 9 bzw. 10 Dateien vor; mit Strg zurück |
 | → / ← (Video) | 5 s vor / zurück, mit Umschalt 60 s (blättern mit ↑ / ↓) |
 | M (Video) | Ton aus / an |
 | Strg+C (Video) | Aktuelles Videobild kopieren |

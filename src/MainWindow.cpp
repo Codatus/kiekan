@@ -120,10 +120,10 @@ QString humanSize(qint64 bytes)
 
 namespace {
 
-// Welche Zifferntaste (Hauptblock) wurde gedrückt? -1 = keine.
+// Welche Zifferntaste wurde gedrückt (Hauptblock oder Ziffernblock)? -1 = keine.
 int digitKey(const QKeyEvent *event)
 {
-    if (!(event->modifiers() & Qt::KeypadModifier) && event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9)
+    if (event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9)
         return event->key() - Qt::Key_0;
     return -1;
 }
