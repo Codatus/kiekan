@@ -8,6 +8,8 @@ if ! { systemd-detect-virt -cq 2>/dev/null || [ -e /.dockerenv ] || [ -e /run/.c
 fi
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -y -q --no-install-recommends imagemagick tesseract-ocr tesseract-ocr-deu ffmpeg libheif-examples djvulibre-bin exiftool libimage-exiftool-perl webp fonts-dejavu-core ghostscript >/dev/null 2>&1 || apt-get install -y -q --no-install-recommends imagemagick tesseract-ocr tesseract-ocr-deu ffmpeg libheif-examples djvulibre-bin libimage-exiftool-perl webp fonts-dejavu-core ghostscript >/dev/null
+# Ab Ubuntu 24.04 / Debian 13 ist der HEVC-Encoder für heif-enc ein eigenes Paket
+apt-get install -y -q --no-install-recommends libheif-plugin-x265 >/dev/null 2>&1 || true
 D=/root/t/bilder; rm -rf /root/t; mkdir -p $D /root/t/ki /root/t/fremd
 cd $D
 convert -size 1600x1067 plasma:fractal -blur 0x2 foto.jpg
