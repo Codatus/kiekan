@@ -110,6 +110,11 @@
   </requires>
 
   <releases>
+    <release version="0.14.0" date="2026-10-31">
+      <description>
+        <p>Screen reader support (Orca, NVDA, VoiceOver): browsing announces the file name, position and image description; recognized text can be read with the arrow keys and selected with Shift. Image descriptions (alt text) can be written with the D key, and AI assistants can describe the image shown and the next images in advance so the description is read aloud right away. Also: text recognition reads light text on dark backgrounds, Ctrl+T recognizes again more thoroughly, and the text of a whole folder can be recognized and stored at once.</p>
+      </description>
+    </release>
     <release version="0.13.0" date="2026-10-31">
       <description>
         <p>Select text in images: one button recognizes the text (progress shown in the button), turns scanned pages upright and lets you select and copy the text; text and rotation can be stored in the file. Also: per-extension file associations, number keys to jump through a folder, faster browsing with held arrow keys, seeking in videos with the arrow keys, no save prompt when browsing on (optional), and the AI connection follows the most recently used window.</p>

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Erzeugt das Manifest für den Flathub-Antrag: wie das lokale Manifest, aber
 # KiekAn! selbst aus dem Git-Tag (Flathub baut nur aus festen Quellen).
-# Aufruf: packaging/flatpak/flathub-manifest.sh v0.13.0 > io.github.codatus.kiekan.yml
+# Aufruf: packaging/flatpak/flathub-manifest.sh v0.14.0 > io.github.codatus.kiekan.yml
 set -euo pipefail
 tag="$1"
 commit=$(git rev-parse "$tag^{commit}")
