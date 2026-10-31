@@ -251,6 +251,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 | E | EXIF-Daten |
 | Strg+Bild ab / Strg+Bild auf | Nächste / vorherige Seite (PDF, TIFF) |
 | Leertaste (Video) | Abspielen / Pause |
+| 1 … 9, 0 | 1 … 9 bzw. 10 Dateien vor; mit Umschalt zurück |
 | → / ← (Video) | 5 s vor / zurück, mit Umschalt 60 s (blättern mit ↑ / ↓) |
 | M (Video) | Ton aus / an |
 | Strg+C (Video) | Aktuelles Videobild kopieren |

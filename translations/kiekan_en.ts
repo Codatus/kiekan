@@ -925,7 +925,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+217"/>
+        <location filename="../src/MainWindow.cpp" line="+240"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1215,7 +1215,7 @@ right-click or double-click removes it.</translation>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+391"/>
+        <location line="+405"/>
         <source>Bild öffnen</source>
         <translation>Open image</translation>
     </message>
@@ -1436,12 +1436,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+844"/>
+        <location line="+851"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-840"/>
+        <location line="-847"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1619,7 +1619,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>This build of KiekAn! has no printing support.</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+63"/>
         <source>Nächstes Bild; bei Videos Abspielen / Pause; in der Diashow Anhalten</source>
         <translation>Next image; play / pause for videos; pause the slideshow</translation>
     </message>
@@ -1627,6 +1627,16 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <location line="+6"/>
         <source>Doppelklick</source>
         <translation>Double-click</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>1 … 9, 0</source>
+        <translation>1 … 9, 0</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>1 … 9 bzw. 10 Dateien vor; mit Umschalt zurück</source>
+        <translation>1 … 9 or 10 files forward; with Shift back</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1639,13 +1649,13 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-788"/>
+        <location line="-795"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-932"/>
+        <location line="-946"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -1671,12 +1681,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1703"/>
+        <location line="+1723"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1682"/>
+        <location line="-1702"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1706,12 +1716,14 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>First page.</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
+        <location line="+13"/>
         <source>Letzte Datei im Ordner.</source>
         <translation>Last file in folder.</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="-13"/>
+        <location line="+13"/>
         <source>Erste Datei im Ordner.</source>
         <translation>First file in folder.</translation>
     </message>
@@ -1938,7 +1950,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+232"/>
+        <location line="+238"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -2001,7 +2013,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation type="vanished">5 s forward / back (with Ctrl: 60 s)</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Tastenkürzel</source>
         <translation>Keyboard shortcuts</translation>
     </message>

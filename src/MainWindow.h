@@ -60,6 +60,7 @@ private:
     bool hasCurrentImage() const;
     void pageStep(int delta);
     void step(int delta);
+    void jump(int delta);
     void first();
     void last();
     void prefetch(int nextPage = -1);   // nextPage: zusätzlich vorzuladende Seite
