@@ -925,7 +925,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+249"/>
+        <location filename="../src/MainWindow.cpp" line="+235"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1436,12 +1436,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+860"/>
+        <location line="+861"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-856"/>
+        <location line="-857"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1619,7 +1619,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>This build of KiekAn! has no printing support.</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+65"/>
         <source>Nächstes Bild; bei Videos Abspielen / Pause; in der Diashow Anhalten</source>
         <translation>Next image; play / pause for videos; pause the slideshow</translation>
     </message>
@@ -1635,8 +1635,8 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+0"/>
-        <source>1 … 9 bzw. 10 Dateien vor; mit Umschalt zurück</source>
-        <translation>1 … 9 or 10 files forward; with Shift back</translation>
+        <source>1 … 9 bzw. 10 Dateien vor; mit Strg zurück</source>
+        <translation>1 … 9 or 10 files forward; with Ctrl back</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1649,7 +1649,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-804"/>
+        <location line="-805"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
@@ -1681,12 +1681,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1748"/>
+        <location line="+1749"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1727"/>
+        <location line="-1728"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1950,7 +1950,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+239"/>
+        <location line="+240"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -2003,14 +2003,6 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <location line="+0"/>
         <source>Linke Maustaste ziehen</source>
         <translation>Drag with left mouse button</translation>
-    </message>
-    <message>
-        <source>Umschalt+→ / ← (Video)</source>
-        <translation type="vanished">Shift+→ / ← (video)</translation>
-    </message>
-    <message>
-        <source>5 s vor / zurück (mit Strg: 60 s)</source>
-        <translation type="vanished">5 s forward / back (with Ctrl: 60 s)</translation>
     </message>
     <message>
         <location line="+14"/>

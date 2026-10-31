@@ -120,26 +120,12 @@ QString humanSize(qint64 bytes)
 
 namespace {
 
-// Welche Zifferntaste (Hauptblock) wurde gedrückt? -1 = keine. Mit Umschalt
-// liefert Qt je nach Tastaturbelegung ein Sonderzeichen („!“, „\"“, „§“ …),
-// deshalb dann über die physische Taste.
+// Welche Zifferntaste (Hauptblock) wurde gedrückt? -1 = keine.
 int digitKey(const QKeyEvent *event)
 {
     if (!(event->modifiers() & Qt::KeypadModifier) && event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9)
         return event->key() - Qt::Key_0;
-    if (!(event->modifiers() & Qt::ShiftModifier))
-        return -1;
-#if defined(Q_OS_MACOS)
-    static const QHash<quint32, int> mac = {{0x12, 1}, {0x13, 2}, {0x14, 3}, {0x15, 4}, {0x17, 5},
-                                            {0x16, 6}, {0x1A, 7}, {0x1C, 8}, {0x19, 9}, {0x1D, 0}};
-    return mac.value(event->nativeVirtualKey(), -1);
-#elif defined(Q_OS_WIN)
-    const quint32 sc = event->nativeScanCode();   // Ziffernreihe: 2 („1“) … 11 („0“)
-    return sc >= 2 && sc <= 11 ? int(sc - 1) % 10 : -1;
-#else
-    const quint32 sc = event->nativeScanCode();   // XKB/evdev: 10 („1“) … 19 („0“)
-    return sc >= 10 && sc <= 19 ? int(sc - 9) % 10 : -1;
-#endif
+    return -1;
 }
 
 // Papierkorb. Im Flatpak über das Portal: QFile::moveToTrash nähme dort den
@@ -2005,10 +1991,11 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         return;
     }
 #endif
-    // Ziffern: n Dateien vor, mit Umschalt n zurück (0 = 10).
-    if (const int n = digitKey(event); n >= 0 && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
+    // Ziffern: n Dateien vor, mit Strg n zurück (0 = 10). Strg+Ziffer liefert
+    // anders als Umschalt+Ziffer bei jeder Tastaturbelegung die Ziffer selbst.
+    if (const int n = digitKey(event); n >= 0 && !(event->modifiers() & (Qt::ShiftModifier | Qt::AltModifier))) {
         const int count = n == 0 ? 10 : n;
-        jump((event->modifiers() & Qt::ShiftModifier) ? -count : count);
+        jump((event->modifiers() & Qt::ControlModifier) ? -count : count);
         return;
     }
     // Pfeiltasten: Ist das Bild größer als das Fenster, wird verschoben,
@@ -2057,7 +2044,7 @@ void MainWindow::showHelp()
         {QT_TR_NOOP("Pfeiltasten, rechte Maustaste ziehen"), QT_TR_NOOP("Verschieben (wenn gezoomt)")},
         {QT_TR_NOOP("Linke Maustaste ziehen"), QT_TR_NOOP("Bereich auswählen")},
         {QT_TR_NOOP("Doppelklick"), QT_TR_NOOP("Vollbild")},
-        {QT_TR_NOOP("1 … 9, 0"), QT_TR_NOOP("1 … 9 bzw. 10 Dateien vor; mit Umschalt zurück")},
+        {QT_TR_NOOP("1 … 9, 0"), QT_TR_NOOP("1 … 9 bzw. 10 Dateien vor; mit Strg zurück")},
         {QT_TR_NOOP("→ / ← (Video)"), QT_TR_NOOP("5 s vor / zurück (mit Umschalt: 60 s); ↑ / ↓ blättern")},
     };
     for (const auto &e : extra)
