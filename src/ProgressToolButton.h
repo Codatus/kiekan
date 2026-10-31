@@ -7,8 +7,8 @@
 #include <QToolButton>
 
 // Werkzeugknopf mit Fortschrittskreis um das Symbol (z. B. Texterkennung).
-// progress < 0: kein Kreis; 0..100: Kreis füllt sich; done: dezenter voller
-// Kreis als Zeichen, dass das Ergebnis bereitliegt.
+// progress < 0: kein Kreis; 0..100: Kreis füllt sich; done: grüner Ring mit
+// Haken als Zeichen, dass das Ergebnis bereitliegt.
 class ProgressToolButton : public QToolButton
 {
     Q_OBJECT

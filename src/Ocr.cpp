@@ -159,6 +159,8 @@ struct Engine
 
     explicit Engine(const QString &languages)
     {
+        if (languages.isEmpty())
+            return;   // nicht benötigt
         ok = api.Init(nullptr, languages.toUtf8().constData(), tesseract::OEM_LSTM_ONLY) == 0;
         if (!ok)
             ok = api.Init(nullptr, languages.toUtf8().constData(), tesseract::OEM_DEFAULT) == 0;
@@ -196,6 +198,125 @@ QString run(const QString &languages, const QImage &gray, int dpi, double *confi
     *confidence = e.api.MeanTextConf();
     reportProgress(std::min(35, g_progressValue.load() + 5));   // Probe fertig
     return takeText(e.api.GetUTF8Text());
+}
+
+// Anteil dunkler Pixel: Briefe und Scans liegen meist unter 10 %.
+double darkShare(const QImage &gray)
+{
+    const int step = std::max(1, std::max(gray.width(), gray.height()) / 400);
+    qint64 dark = 0, all = 0;
+    for (int y = 0; y < gray.height(); y += step) {
+        const uchar *row = gray.constScanLine(y);
+        for (int x = 0; x < gray.width(); x += step, ++all)
+            dark += row[x] < 100;
+    }
+    return all ? double(dark) / double(all) : 0.0;
+}
+
+// Eine erkannte Zeile mit Rahmen und Wörtern (Rahmen im Bild der Erkennung).
+struct Line
+{
+    QRect box;
+    QList<Word> words;
+    double confidence = 0;   // nach Zeichen gewichtetes Mittel
+    int paraKey = 0;         // Durchgang und Absatz
+};
+
+// Zeilen aus einem fertigen Durchgang lesen; Zeilen ohne Buchstaben und
+// Ziffern (Striche aus Zeichnungen, Rauschen) fallen weg.
+QList<Line> readLines(tesseract::TessBaseAPI &api, int pass)
+{
+    QList<Line> lines;
+    std::unique_ptr<tesseract::ResultIterator> it(api.GetIterator());
+    if (!it)
+        return lines;
+    int para = -1;
+    Line cur;
+    double weighted = 0;
+    int chars = 0;
+    auto finish = [&] {
+        bool hasText = false;
+        for (const Word &w : cur.words)
+            hasText = hasText || std::any_of(w.text.begin(), w.text.end(), [](QChar c) { return c.isLetterOrNumber(); });
+        if (hasText) {
+            cur.confidence = chars ? weighted / chars : 0;
+            lines.append(cur);
+        }
+        cur = Line();
+        weighted = 0;
+        chars = 0;
+    };
+    do {
+        if (it->IsAtBeginningOf(tesseract::RIL_PARA))
+            ++para;
+        if (it->IsAtBeginningOf(tesseract::RIL_TEXTLINE) && !cur.words.isEmpty())
+            finish();
+        const char *w = it->GetUTF8Text(tesseract::RIL_WORD);
+        if (!w)
+            continue;
+        Word word;
+        word.text = QString::fromUtf8(w);
+        delete[] w;
+        word.confidence = int(it->Confidence(tesseract::RIL_WORD));
+        int l, t, rr, b;
+        it->BoundingBox(tesseract::RIL_WORD, &l, &t, &rr, &b);
+        word.box = QRect(QPoint(l, t), QPoint(rr - 1, b - 1));
+        cur.box = cur.words.isEmpty() ? word.box : cur.box.united(word.box);
+        cur.paraKey = pass * 1000000 + std::max(0, para);
+        weighted += double(word.confidence) * word.text.size();
+        chars += int(word.text.size());
+        cur.words.append(word);
+    } while (it->Next(tesseract::RIL_WORD));
+    if (!cur.words.isEmpty())
+        finish();
+    return lines;
+}
+
+// Normalen und invertierten Durchgang zusammenführen: Überlappen sich
+// Zeilen, gewinnt die deutlich sicherere; Zeilen nur aus dem invertierten
+// Bild kommen hinzu, wenn sie sehr sicher sind. Die Reihenfolge des normalen
+// Durchgangs bleibt, neue Zeilen werden nach ihrer Höhe einsortiert.
+QList<Line> mergeLines(QList<Line> lines, const QList<Line> &inverted)
+{
+    auto overlaps = [](const QRect &a, const QRect &b) {
+        const QRect i = a.intersected(b);
+        if (i.isEmpty())
+            return false;
+        const qint64 small = std::min(qint64(a.width()) * a.height(), qint64(b.width()) * b.height());
+        return qint64(i.width()) * i.height() * 10 >= small * 3;
+    };
+    for (const Line &inv : inverted) {
+        double best = -1;
+        for (const Line &ln : lines)
+            if (overlaps(ln.box, inv.box))
+                best = std::max(best, ln.confidence);
+        if (best >= 0 && inv.confidence < best + 10) {
+            // Zeile insgesamt gleichwertig: einzelne Wörter tauschen, die im
+            // anderen Durchgang deutlich sicherer gelesen wurden.
+            for (Line &ln : lines) {
+                if (!overlaps(ln.box, inv.box) || ln.words.size() != inv.words.size())
+                    continue;
+                for (int i = 0; i < ln.words.size(); ++i) {
+                    const Word &w = inv.words.at(i);
+                    if (overlaps(ln.words.at(i).box, w.box) && w.confidence >= ln.words.at(i).confidence + 20)
+                        ln.words[i] = w;
+                }
+            }
+            continue;
+        }
+        if (best < 0 && inv.confidence < 60)
+            continue;
+        lines.erase(std::remove_if(lines.begin(), lines.end(),
+                                   [&](const Line &ln) { return overlaps(ln.box, inv.box); }),
+                    lines.end());
+        const auto pos = std::find_if(lines.begin(), lines.end(),
+                                      [&](const Line &ln) { return ln.box.top() > inv.box.top(); });
+        lines.insert(pos, inv);
+    }
+    // Was in beiden Durchgängen unsicher blieb, ist meist Zeichnung.
+    lines.erase(std::remove_if(lines.begin(), lines.end(), [](const Line &ln) { return ln.confidence < 40; }),
+                lines.end());
+    return lines;
 }
 
 #endif
@@ -501,8 +622,18 @@ Result recognize(const QImage &input, const Options &options)
             }
     }
 
-    // Volltext
+    // Volltext. Tesseract liest hellen Text auf dunklem Grund schlecht (z. B.
+    // gelbe Schrift auf einem Buchumschlag). Hat das Bild viele dunkle
+    // Flächen, läuft parallel ein Durchgang auf dem invertierten Bild; je
+    // Zeile gewinnt der sicherere Durchgang.
+    const bool tryInverted = darkShare(gray) > 0.2;
+    QImage inverted;
+    if (tryInverted) {
+        inverted = gray;
+        inverted.invertPixels();
+    }
     Engine e(chosen);
+    Engine einv(tryInverted ? chosen : QString());
     if (!e.ok) {
         r.error = QStringLiteral("Tesseract could not load '%1'").arg(chosen);
         return r;
@@ -510,51 +641,76 @@ Result recognize(const QImage &input, const Options &options)
     e.api.SetPageSegMode(tesseract::PSM_AUTO);
     e.setImage(gray, dpi);
     reportProgress(35);
-    // Volltext: Tesseracts eigener Fortschritt, auf 35..95 % abgebildet
+    // Tesseracts eigener Fortschritt, auf 35..95 % abgebildet
     ETEXT_DESC monitor;
     monitor.progress_callback2 = [](ETEXT_DESC *m, int, int, int, int) -> bool {
         reportProgress(35 + m->progress * 60 / 100);
         return true;
     };
-    if (e.api.Recognize(&monitor) != 0) {
+    bool invertedOk = false;
+    std::thread invThread;
+    if (tryInverted && einv.ok) {
+        einv.api.SetPageSegMode(tesseract::PSM_AUTO);
+        einv.setImage(inverted, dpi);
+        invThread = std::thread([&] { invertedOk = einv.api.Recognize(nullptr) == 0; });
+    }
+    const bool mainOk = e.api.Recognize(&monitor) == 0;
+    if (invThread.joinable())
+        invThread.join();
+    if (!mainOk) {
         r.error = QStringLiteral("recognition failed");
         return r;
     }
-    r.text = takeText(e.api.GetUTF8Text()).trimmed();
-    r.confidence = e.api.MeanTextConf();
     r.languages = chosen;
 
-    if (options.words) {
-        // Wortrahmen zurück in die Koordinaten des Eingabebildes rechnen.
-        const QTransform back = toUpright.inverted();
-        std::unique_ptr<tesseract::ResultIterator> it(e.api.GetIterator());
-        int line = -1, para = -1;
-        if (it) {
-            do {
-                if (it->IsAtBeginningOf(tesseract::RIL_PARA))
-                    ++para;
-                if (it->IsAtBeginningOf(tesseract::RIL_TEXTLINE))
-                    ++line;
-                const char *w = it->GetUTF8Text(tesseract::RIL_WORD);
-                if (!w)
-                    continue;
-                Word word;
-                word.line = std::max(0, line);
-                word.para = std::max(0, para);
-                word.text = QString::fromUtf8(w);
-                delete[] w;
-                word.confidence = int(it->Confidence(tesseract::RIL_WORD));
-                int l, t, rr, b;
-                it->BoundingBox(tesseract::RIL_WORD, &l, &t, &rr, &b);
-                const QRectF upright(QPointF(l, t), QPointF(rr, b));
-                const QRectF orig = back.mapRect(upright);
-                word.box = QRectF(orig.x() * backScale, orig.y() * backScale,
-                                  orig.width() * backScale, orig.height() * backScale).toAlignedRect();
-                r.words.append(word);
-            } while (it->Next(tesseract::RIL_WORD));
+    // Wortrahmen zurück in die Koordinaten des Eingabebildes rechnen.
+    const QTransform back = toUpright.inverted();
+    auto toInput = [&](const QRect &upright) {
+        const QRectF orig = back.mapRect(QRectF(upright));
+        return QRectF(orig.x() * backScale, orig.y() * backScale, orig.width() * backScale,
+                      orig.height() * backScale).toAlignedRect();
+    };
+
+    QList<Line> lines;
+    if (invertedOk) {
+        lines = mergeLines(readLines(e.api, 0), readLines(einv.api, 1));
+        QStringList parts;
+        double confSum = 0;
+        int confCount = 0;
+        for (int i = 0; i < lines.size(); ++i) {
+            const Line &ln = lines.at(i);
+            if (i > 0)
+                parts << (ln.paraKey != lines.at(i - 1).paraKey ? QStringLiteral("\n\n") : QStringLiteral("\n"));
+            QStringList words;
+            for (const Word &w : ln.words) {
+                words << w.text;
+                confSum += w.confidence;
+                ++confCount;
+            }
+            parts << words.join(QLatin1Char(' '));
         }
+        r.text = parts.join(QString());
+        r.confidence = confCount ? confSum / confCount : 0;
+    } else {
+        r.text = takeText(e.api.GetUTF8Text()).trimmed();
+        r.confidence = e.api.MeanTextConf();
+        if (options.words)
+            lines = readLines(e.api, 0);
     }
 
+    if (options.words) {
+        int para = -1;
+        for (int i = 0; i < lines.size(); ++i) {
+            if (i == 0 || lines.at(i).paraKey != lines.at(i - 1).paraKey)
+                ++para;
+            for (Word word : lines.at(i).words) {
+                word.line = i;
+                word.para = para;
+                word.box = toInput(word.box);
+                r.words.append(word);
+            }
+        }
+    }
     reportProgress(100);
     if (r.text.isEmpty())
         r.hints << QStringLiteral("no text found");

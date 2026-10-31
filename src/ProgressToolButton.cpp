@@ -5,6 +5,7 @@
 #include "ProgressToolButton.h"
 
 #include <QPainter>
+#include <QPainterPath>
 
 #include <algorithm>
 
@@ -45,9 +46,22 @@ void ProgressToolButton::paintEvent(QPaintEvent *event)
         // damit sofort sichtbar ist, dass etwas läuft
         p.drawArc(ring, 90 * 16, -std::max(5, m_progress) * 360 * 16 / 100);
     } else {
-        QColor done = accent;
-        done.setAlpha(150);
-        p.setPen(QPen(done, 1.5));
+        // Fertig: kräftiger grüner Ring und ein Haken unten rechts – auch
+        // bei kleinem Symbol und hellem wie dunklem Farbschema gut erkennbar.
+        const QColor green(0x2e, 0x9d, 0x4f);
+        p.setPen(QPen(green, 2.5));
         p.drawEllipse(ring);
+        const qreal d = std::max<qreal>(9.0, side * 0.45);
+        const QRectF badge(ring.right() - d + 1.5, ring.bottom() - d + 1.5, d, d);
+        p.setPen(QPen(palette().color(QPalette::Window), 1.5));
+        p.setBrush(green);
+        p.drawEllipse(badge);
+        QPainterPath tick;
+        tick.moveTo(badge.left() + d * 0.27, badge.top() + d * 0.52);
+        tick.lineTo(badge.left() + d * 0.44, badge.top() + d * 0.69);
+        tick.lineTo(badge.left() + d * 0.74, badge.top() + d * 0.33);
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(Qt::white, std::max<qreal>(1.5, d * 0.14), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p.drawPath(tick);
     }
 }
