@@ -27,7 +27,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "kiekan";
-  version = "0.12.0";
+  version = "0.13.0";
   # Quelltext des Repos ohne Build-Ordner
   src = lib.cleanSourceWith {
     src = ../..;

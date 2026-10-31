@@ -110,6 +110,11 @@
   </requires>
 
   <releases>
+    <release version="0.13.0" date="2026-10-31">
+      <description>
+        <p>Select text in images: one button recognizes the text (progress shown in the button), turns scanned pages upright and lets you select and copy the text; text and rotation can be stored in the file. Also: per-extension file associations, number keys to jump through a folder, faster browsing with held arrow keys, seeking in videos with the arrow keys, no save prompt when browsing on (optional), and the AI connection follows the most recently used window.</p>
+      </description>
+    </release>
     <release version="0.12.0" date="2026-10-31">
       <description>
         <p>Security and robustness fixes after an independent code review: safer saving while images load, hardened PSD, JPEG 2000, DjVu and HEIF readers, stricter folder checks for AI assistants, a private socket for the viewer connection, the Flatpak trash portal, and licence texts in the Windows and macOS packages. AI assistants may only access the open window after the user agrees (asked on first start, off by default).</p>

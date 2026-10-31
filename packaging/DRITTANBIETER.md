@@ -3,7 +3,7 @@
 KiekAn! selbst steht unter der GNU General Public License, Version 3 oder
 später (Datei `LICENSE`). Der vollständige Quelltext liegt unter
 https://github.com/Codatus/kiekan – für jede veröffentlichte Version unter dem
-gleichnamigen Tag (z. B. `v0.12.0`).
+gleichnamigen Tag (z. B. `v0.13.0`).
 
 Das Windows-ZIP und das macOS-Programmpaket enthalten zusätzlich fertig
 übersetzte Bibliotheken anderer Projekte. Ihre Lizenztexte liegen im Ordner
