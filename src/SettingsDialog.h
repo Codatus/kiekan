@@ -66,6 +66,7 @@ private:
 
     QWidget *createAssocPage();
     void applyAssoc();
+    void openAssocDetails();
     void refreshAssocStatus();
     QList<QPair<QString, QCheckBox *>> m_assocBoxes;
     QList<QPair<QString, QLabel *>> m_assocCurrent;

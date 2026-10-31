@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QLocale>
 #include <QProcess>
+#include <QMimeDatabase>
 #include <QSaveFile>
 #include <QStringDecoder>
 #include <QStandardPaths>
@@ -279,9 +280,24 @@ QString currentDefault(const QString &mimeType)
 bool isDefault(const Group &group)
 {
     for (const QString &m : group.mimeTypes)
-        if (currentDefaultId(m) != desktopId())
+        if (!isDefault(m))
             return false;
     return true;
+}
+
+bool isDefault(const QString &mimeType)
+{
+    return currentDefaultId(mimeType) == desktopId();
+}
+
+QString typeLabel(const QString &mimeType)
+{
+    const QMimeType t = QMimeDatabase().mimeTypeForName(mimeType);
+    QStringList suffixes;
+    for (const QString &suf : t.suffixes())
+        suffixes << QLatin1Char('.') + suf;
+    const QString name = t.isValid() && !t.comment().isEmpty() ? t.comment() : mimeType;
+    return suffixes.isEmpty() ? name : QStringLiteral("%1 (%2)").arg(name, suffixes.join(QStringLiteral(", ")));
 }
 
 QStringList userListFiles()
@@ -301,6 +317,18 @@ QStringList userListFiles()
 
 QString apply(const QStringList &on, const QStringList &off)
 {
+    QStringList onTypes, offTypes;
+    for (const Group &g : groups()) {
+        if (on.contains(g.key))
+            onTypes << g.mimeTypes;
+        else if (off.contains(g.key))
+            offTypes << g.mimeTypes;
+    }
+    return applyTypes(onTypes, offTypes);
+}
+
+QString applyTypes(const QStringList &onTypes, const QStringList &offTypes)
+{
     if (!supported())
         return QCoreApplication::translate("FileAssoc", "Auf diesem System legt man Standardprogramme in den Systemeinstellungen fest.");
     const QString self = desktopId();
@@ -310,26 +338,22 @@ QString apply(const QStringList &on, const QStringList &off)
         if (!lf.load(file) && QFileInfo::exists(file))
             return QCoreApplication::translate("FileAssoc", "%1 lässt sich nicht lesen (oder ist kein gültiges UTF-8) – "
                                                             "nichts geändert.").arg(file);
-        for (const Group &g : groups()) {
-            const bool set = on.contains(g.key);
-            if (!set && !off.contains(g.key))
-                continue;
-            for (const QString &m : g.mimeTypes) {
-                QStringList defaults = lf.values(kDefaults, m);
-                QStringList added = lf.values(kAdded, m);
-                if (set) {
-                    defaults.removeAll(self);
-                    defaults.prepend(self);
-                    // PDF und Videos stehen nicht in kiekan.desktop; erst die
-                    // „hinzugefügte Zuordnung“ macht KiekAn! dafür wählbar.
-                    if (!added.contains(self))
-                        added.prepend(self);
-                    lf.set(kAdded, m, added);
-                } else if (defaults.value(0) == self) {
-                    defaults.removeFirst();
-                }
-                lf.set(kDefaults, m, defaults);
+        for (const QString &m : onTypes + offTypes) {
+            const bool set = onTypes.contains(m);
+            QStringList defaults = lf.values(kDefaults, m);
+            QStringList added = lf.values(kAdded, m);
+            if (set) {
+                defaults.removeAll(self);
+                defaults.prepend(self);
+                // PDF und Videos stehen nicht in kiekan.desktop; erst die
+                // „hinzugefügte Zuordnung“ macht KiekAn! dafür wählbar.
+                if (!added.contains(self))
+                    added.prepend(self);
+                lf.set(kAdded, m, added);
+            } else if (defaults.value(0) == self) {
+                defaults.removeFirst();
             }
+            lf.set(kDefaults, m, defaults);
         }
         QString error;
         if (!lf.save(file, &error))

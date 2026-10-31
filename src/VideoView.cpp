@@ -459,6 +459,11 @@ VideoView::VideoView(QWidget *parent)
     bar->addWidget(m_mute);
     bar->addWidget(m_volume);
 
+    // Bedienelemente nehmen keinen Tastaturfokus: sonst schluckt nach einem
+    // Klick der Schieberegler die Pfeiltasten, und Spulen per ←/→ ginge nicht.
+    for (QWidget *w : std::initializer_list<QWidget *>{m_play, m_seek, m_mute, m_volume})
+        w->setFocusPolicy(Qt::NoFocus);
+
     m_layout = new QVBoxLayout(this);
     m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(0);

@@ -30,13 +30,20 @@ QString desktopId();
 // Name des Programms, das den Typ derzeit öffnet (leer = unbekannt/keins).
 QString currentDefault(const QString &mimeType);
 
-// Öffnet KiekAn! alle Typen der Gruppe?
+// Öffnet KiekAn! alle Typen der Gruppe bzw. diesen Typ?
 bool isDefault(const Group &group);
+bool isDefault(const QString &mimeType);
+
+// Anzeigename eines Typs mit Dateiendungen, z. B. „JPEG-Bild (.jpg, .jpeg, .jpe)“.
+QString typeLabel(const QString &mimeType);
 
 // Setzt KiekAn! für die Gruppen in `on` als Standard und nimmt es bei den
 // Gruppen in `off` zurück (dort gilt dann wieder die Vorgabe des Systems).
 // Gibt bei Erfolg eine leere Zeichenkette zurück, sonst die Fehlermeldung.
 QString apply(const QStringList &on, const QStringList &off);
+
+// Dasselbe für einzelne MIME-Typen (erweiterte Einstellungen).
+QString applyTypes(const QStringList &onTypes, const QStringList &offTypes);
 
 // Benutzerdateien, die geändert werden (für Anzeige und Tests).
 QStringList userListFiles();

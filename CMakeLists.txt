@@ -386,7 +386,7 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Ab Qt 6.6 (z. B. Debian 13) liegen SVG-Bild- und Symbol-Plugins in qt6-svg-plugins,
 # ab libheif 1.16 die Decoder für HEIC (libde265) und AVIF (dav1d/aom) in eigenen Paketen.
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-qpa-plugins, qt6-image-formats-plugins, libqt6svg6, qt6-svg-plugins | libqt6svg6 (<< 6.6), libheif-plugin-libde265 | libheif1 (<< 1.16), libheif-plugin-dav1d | libheif-plugin-aomdec | libheif1 (<< 1.16)")
-set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-translations-l10n, tesseract-ocr-deu, tesseract-ocr-eng, tesseract-ocr-osd")
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-wayland, qt6-translations-l10n, tesseract-ocr-deu, tesseract-ocr-eng, tesseract-ocr-osd")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
 "KiekAn! ist ein schneller Bildbetrachter im Stil von IrfanView.
  Er zeigt Bilder sofort an, blaettert per Tastatur durch Ordner und bietet
@@ -419,11 +419,11 @@ set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
     /usr/include /usr/lib64 /usr/lib /usr/share/doc)
 if(KIEKAN_RPM_FAMILY STREQUAL "suse")
     set(CPACK_RPM_PACKAGE_REQUIRES "qt6-imageformats, libQt6Svg6, libheif-dav1d")
-    set(KIEKAN_RPM_RECOMMENDS libheif-ffmpeg tesseract-ocr-traineddata-deu tesseract-ocr-traineddata-eng tesseract-ocr-traineddata-osd qt6-translations)
+    set(KIEKAN_RPM_RECOMMENDS qt6-wayland libheif-ffmpeg tesseract-ocr-traineddata-deu tesseract-ocr-traineddata-eng tesseract-ocr-traineddata-osd qt6-translations)
 else()
     # HEIC braucht bei Fedora libheif-freeworld aus RPM Fusion (Patentgründe)
     set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtimageformats, qt6-qtsvg")
-    set(KIEKAN_RPM_RECOMMENDS libheif-freeworld tesseract-langpack-deu tesseract-langpack-eng tesseract-osd qt6-qttranslations)
+    set(KIEKAN_RPM_RECOMMENDS qt6-qtwayland libheif-freeworld tesseract-langpack-deu tesseract-langpack-eng tesseract-osd qt6-qttranslations)
 endif()
 # CPack kennt kein Recommends; die Zeilen landen über den Spec-Kopf im Paket.
 set(_rec "")

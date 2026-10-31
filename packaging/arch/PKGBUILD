@@ -11,7 +11,8 @@ depends=('qt6-base' 'qt6-svg' 'qt6-imageformats' 'qt6-webengine' 'mpv' 'exiv2'
          'tesseract' 'leptonica' 'qpdf' 'libheif' 'libraw' 'openjpeg2' 'djvulibre' 'libjpeg-turbo'
          'hicolor-icon-theme')
 makedepends=('cmake' 'ninja' 'qt6-tools')
-optdepends=('tesseract-data-deu: Texterkennung Deutsch'
+optdepends=('qt6-wayland: direkte Wayland-Darstellung'
+            'tesseract-data-deu: Texterkennung Deutsch'
             'tesseract-data-eng: Texterkennung Englisch'
             'tesseract-data-osd: Erkennen gedrehter Seiten'
             'qt6-translations: deutsche Qt-Dialoge')

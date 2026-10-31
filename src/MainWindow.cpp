@@ -1928,10 +1928,9 @@ void MainWindow::showContextMenu(const QPoint &globalPos)
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
 #ifdef KIEKAN_HAVE_MPV
-    // Video: Umschalt+Pfeil spult 5 s, Strg+Umschalt+Pfeil 60 s.
-    if (m_kind == Kind::Video && (event->modifiers() & Qt::ShiftModifier)
-        && (event->key() == Qt::Key_Right || event->key() == Qt::Key_Left)) {
-        const double amount = (event->modifiers() & Qt::ControlModifier) ? 60 : 5;
+    // Video: ←/→ spult 5 s, mit Umschalt 60 s. Blättern geht mit ↑/↓ und Bild↑/↓.
+    if (m_kind == Kind::Video && (event->key() == Qt::Key_Right || event->key() == Qt::Key_Left)) {
+        const double amount = (event->modifiers() & Qt::ShiftModifier) ? 60 : 5;
         m_video->seekRelative(event->key() == Qt::Key_Right ? amount : -amount);
         return;
     }
@@ -1981,7 +1980,7 @@ void MainWindow::showHelp()
         {QT_TR_NOOP("Pfeiltasten, rechte Maustaste ziehen"), QT_TR_NOOP("Verschieben (wenn gezoomt)")},
         {QT_TR_NOOP("Linke Maustaste ziehen"), QT_TR_NOOP("Bereich auswählen")},
         {QT_TR_NOOP("Doppelklick"), QT_TR_NOOP("Vollbild")},
-        {QT_TR_NOOP("Umschalt+→ / ← (Video)"), QT_TR_NOOP("5 s vor / zurück (mit Strg: 60 s)")},
+        {QT_TR_NOOP("→ / ← (Video)"), QT_TR_NOOP("5 s vor / zurück (mit Umschalt: 60 s); ↑ / ↓ blättern")},
     };
     for (const auto &e : extra)
         entries.append({tr(e[0]), tr(e[1])});

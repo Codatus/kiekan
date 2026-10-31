@@ -8,6 +8,9 @@
 #include "AiLogDialog.h"
 #include "FileAssoc.h"
 
+#include <QHash>
+#include <QLineEdit>
+#include <QTreeWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDesktopServices>
@@ -50,6 +53,15 @@ void setAiViewerAccess(bool on) { QSettings().setValue(QStringLiteral("ai/viewer
 } // namespace Settings
 
 namespace {
+
+// Öffnet KiekAn! wenigstens einen Typ der Gruppe?
+bool partlyDefault(const FileAssoc::Group &g)
+{
+    for (const QString &m : g.mimeTypes)
+        if (FileAssoc::isDefault(m))
+            return true;
+    return false;
+}
 
 // Beschriftung, die beim Anklicken ihr Kästchen umschaltet.
 class CheckCaption : public QLabel
@@ -422,6 +434,11 @@ QWidget *SettingsDialog::createAssocPage()
         QWidget *row = nullptr;
         QCheckBox *box = wrappingCheckBox(g.label, page, &row);
         box->setChecked(anySet ? FileAssoc::isDefault(g) : g.suggested);
+        if (anySet && !FileAssoc::isDefault(g) && partlyDefault(g)) {
+            // In den erweiterten Einstellungen nur teilweise gewählt
+            box->setTristate(true);
+            box->setCheckState(Qt::PartiallyChecked);
+        }
         auto *current = new QLabel(page);
         current->setStyleSheet(QStringLiteral("color: gray"));
         current->setIndent(box->sizeHint().width() + 6);
@@ -439,8 +456,12 @@ QWidget *SettingsDialog::createAssocPage()
 
     auto *apply = new QPushButton(tr("Zuordnung übernehmen"), page);
     connect(apply, &QPushButton::clicked, this, &SettingsDialog::applyAssoc);
+    auto *details = new QPushButton(tr("Erweiterte Einstellungen …"), page);
+    details->setToolTip(tr("Jeden Dateityp (jede Dateiendung) einzeln festlegen"));
+    connect(details, &QPushButton::clicked, this, &SettingsDialog::openAssocDetails);
     auto *row = new QHBoxLayout;
     row->addWidget(apply);
+    row->addWidget(details);
     row->addStretch(1);
     layout->addLayout(row);
 
@@ -474,11 +495,113 @@ void SettingsDialog::refreshAssocStatus()
     }
 }
 
+// Erweiterte Einstellungen: jeder MIME-Typ (mit seinen Dateiendungen) einzeln.
+void SettingsDialog::openAssocDetails()
+{
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Dateizuordnung – erweiterte Einstellungen"));
+    dlg.resize(760, 560);
+    auto *layout = new QVBoxLayout(&dlg);
+    auto *intro = new QLabel(tr("Angekreuzte Dateitypen öffnen per Doppelklick mit KiekAn!. "
+                                "Nicht angekreuzte öffnen mit dem Programm, das das System vorsieht."), &dlg);
+    intro->setWordWrap(true);
+    layout->addWidget(intro);
+
+    auto *filter = new QLineEdit(&dlg);
+    filter->setPlaceholderText(tr("Suchen, z. B. jpg oder heic"));
+    filter->setClearButtonEnabled(true);
+    layout->addWidget(filter);
+
+    auto *tree = new QTreeWidget(&dlg);
+    tree->setHeaderLabels({tr("Dateityp"), tr("Öffnet derzeit")});
+    tree->setRootIsDecorated(true);
+    layout->addWidget(tree, 1);
+
+    QHash<QTreeWidgetItem *, QString> mimeOf;
+    auto fill = [&] {
+        tree->clear();
+        mimeOf.clear();
+        for (const FileAssoc::Group &g : FileAssoc::groups()) {
+            auto *top = new QTreeWidgetItem(tree, {g.label});
+            top->setFlags(top->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate);
+            for (const QString &m : g.mimeTypes) {
+                const QString app = FileAssoc::currentDefault(m);
+                auto *item = new QTreeWidgetItem(top, {FileAssoc::typeLabel(m),
+                                                       app.isEmpty() ? tr("Vorgabe des Systems") : app});
+                item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+                item->setCheckState(0, FileAssoc::isDefault(m) ? Qt::Checked : Qt::Unchecked);
+                item->setToolTip(0, m);
+                mimeOf.insert(item, m);
+            }
+        }
+        tree->expandAll();
+        tree->resizeColumnToContents(0);
+    };
+    fill();
+
+    connect(filter, &QLineEdit::textChanged, &dlg, [&](const QString &text) {
+        for (int i = 0; i < tree->topLevelItemCount(); ++i) {
+            QTreeWidgetItem *top = tree->topLevelItem(i);
+            bool any = false;
+            for (int c = 0; c < top->childCount(); ++c) {
+                QTreeWidgetItem *item = top->child(c);
+                const bool show = text.isEmpty() || item->text(0).contains(text, Qt::CaseInsensitive)
+                                  || mimeOf.value(item).contains(text, Qt::CaseInsensitive);
+                item->setHidden(!show);
+                any = any || show;
+            }
+            top->setHidden(!any);
+        }
+    });
+
+    auto *result = new QLabel(&dlg);
+    result->setWordWrap(true);
+    layout->addWidget(result);
+
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    auto *applyButton = buttons->addButton(tr("Übernehmen"), QDialogButtonBox::ApplyRole);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    connect(applyButton, &QPushButton::clicked, &dlg, [&] {
+        QStringList on, off;
+        for (auto it = mimeOf.constBegin(); it != mimeOf.constEnd(); ++it) {
+            const bool want = it.key()->checkState(0) == Qt::Checked;
+            if (want != FileAssoc::isDefault(it.value()))
+                (want ? on : off) << it.value();
+        }
+        const QString error = (on.isEmpty() && off.isEmpty()) ? QString() : FileAssoc::applyTypes(on, off);
+        result->setStyleSheet(error.isEmpty() ? QString() : QStringLiteral("color: #b00020"));
+        result->setText(error.isEmpty() ? tr("Übernommen: %n Dateityp(en) geändert.", nullptr, int(on.size() + off.size()))
+                                        : tr("Konnte die Zuordnung nicht speichern: %1").arg(error));
+        const QString search = filter->text();
+        fill();
+        filter->setText(QString());
+        filter->setText(search);
+    });
+    layout->addWidget(buttons);
+    dlg.exec();
+
+    // Hauptseite an den neuen Stand anpassen
+    for (const auto &[key, box] : m_assocBoxes) {
+        for (const FileAssoc::Group &g : FileAssoc::groups()) {
+            if (g.key != key)
+                continue;
+            const bool all = FileAssoc::isDefault(g);
+            const bool partial = !all && partlyDefault(g);
+            box->setTristate(partial);
+            box->setCheckState(all ? Qt::Checked : partial ? Qt::PartiallyChecked : Qt::Unchecked);
+        }
+    }
+    refreshAssocStatus();
+}
+
 void SettingsDialog::applyAssoc()
 {
     QStringList on, off;
-    for (const auto &[key, box] : m_assocBoxes)
+    for (const auto &[key, box] : m_assocBoxes) {
+        if (box->checkState() == Qt::PartiallyChecked)
+            continue;   // Einzelauswahl aus den erweiterten Einstellungen beibehalten
         (box->isChecked() ? on : off) << key;
+    }
     const QString error = FileAssoc::apply(on, off);
     m_assocResult->setStyleSheet(error.isEmpty() ? QString() : QStringLiteral("color: #b00020"));
     m_assocResult->setText(error.isEmpty() ? tr("Übernommen. Neu geöffnete Dateien starten jetzt im gewählten Programm.")

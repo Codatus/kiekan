@@ -75,6 +75,21 @@ int main(int argc, char **argv)
     check(lx2.contains(QLatin1String("[Added Associations]")), "PDF als hinzugefügte Zuordnung");
     check(!FileAssoc::isDefault(images), "isDefault(Bilder) jetzt falsch");
 
+    // Einzelne Typen (erweiterte Einstellungen): nur HEIC, PNG bleibt bei Gwenview
+    check(FileAssoc::applyTypes({QStringLiteral("image/heic")}, {}).isEmpty(), "applyTypes ohne Fehler");
+    const QString lx3 = read(cfg + QStringLiteral("/lxqt-mimeapps.list"));
+    check(lx3.contains(QLatin1String("image/heic=kiekan.desktop;")), "HEIC einzeln eingetragen");
+    check(lx3.contains(QLatin1String("image/png=gwenview.desktop;")), "PNG unberührt");
+    check(FileAssoc::isDefault(QStringLiteral("image/heic")) && !FileAssoc::isDefault(QStringLiteral("image/png")),
+          "isDefault je Typ");
+    FileAssoc::applyTypes({}, {QStringLiteral("image/heic")});
+    check(!FileAssoc::isDefault(QStringLiteral("image/heic")), "HEIC einzeln zurückgenommen");
+    // Anzeigename: Endungen nur, wenn die MIME-Datenbank verfügbar ist
+    // (XDG_DATA_DIRS zeigt hier ins Leere; Qt bringt sie nicht überall selbst mit).
+    const QString label = FileAssoc::typeLabel(QStringLiteral("image/jpeg"));
+    check(!label.isEmpty() && (label.contains(QLatin1String(".jpg")) || label == QLatin1String("image/jpeg")),
+          "Anzeigename (mit Endungen, falls bekannt)");
+
     std::printf("\n%s\n", failures ? "Fehler gefunden" : "alle Prüfungen bestanden");
     return failures ? 1 : 0;
 }

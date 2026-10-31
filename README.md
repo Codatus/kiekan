@@ -46,6 +46,59 @@ eigenes Paket:
 `<arch>` ist `amd64`/`x86_64` für übliche PCs und `arm64`/`aarch64` für ARM-Rechner
 wie den Raspberry Pi 4/5 oder ARM-Laptops.
 
+### Mit einem Befehl installieren
+
+Die Befehle laden jeweils die **neueste** Version für das eigene System und den
+eigenen Prozessor herunter und installieren sie. Für ein Update einfach erneut
+ausführen.
+
+Ubuntu 24.04, Linux Mint 22, Pop!_OS 24.04:
+
+```bash
+wget -qO- https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o "https://[^\"]*_ubuntu24\.04_$(dpkg --print-architecture)\.deb" | wget -qi - -O /tmp/kiekan.deb && sudo apt install /tmp/kiekan.deb
+```
+
+Ubuntu 22.04, Linux Mint 21, Pop!_OS 22.04:
+
+```bash
+wget -qO- https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o "https://[^\"]*_ubuntu22\.04_$(dpkg --print-architecture)\.deb" | wget -qi - -O /tmp/kiekan.deb && sudo apt install /tmp/kiekan.deb
+```
+
+Debian 13 (für Debian 12 `debian13` durch `debian12` ersetzen), Raspberry Pi OS:
+
+```bash
+wget -qO- https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o "https://[^\"]*_debian13_$(dpkg --print-architecture)\.deb" | wget -qi - -O /tmp/kiekan.deb && sudo apt install /tmp/kiekan.deb
+```
+
+Fedora 43/44:
+
+```bash
+sudo dnf install "$(curl -s https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o "https://[^\"]*\.fc$(rpm -E %fedora)\.$(uname -m)\.rpm")"
+```
+
+openSUSE Tumbleweed (für Leap 16 `opensuse` durch `leap16` ersetzen):
+
+```bash
+sudo zypper install "$(curl -s https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o "https://[^\"]*\.opensuse\.$(uname -m)\.rpm")"
+```
+
+Arch Linux, Manjaro:
+
+```bash
+git clone --depth 1 https://github.com/Codatus/kiekan /tmp/kiekan && cd /tmp/kiekan/packaging/arch && makepkg -si
+```
+
+macOS (Apple Silicon), danach das Programm in den Programme-Ordner ziehen:
+
+```bash
+curl -L -o /tmp/KiekAn.dmg "$(curl -s https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o 'https://[^"]*\.dmg')" && open /tmp/KiekAn.dmg
+```
+
+**Wayland:** KiekAn! läuft unter X11 und unter Wayland (GNOME, KDE Plasma,
+LXQt mit labwc …). Für die direkte Wayland-Darstellung braucht Qt sein
+Wayland-Modul (`qt6-wayland`); die Pakete schlagen es zur Installation vor.
+Fehlt es, läuft KiekAn! über XWayland.
+
 **macOS:** Das Programm ist nicht bei Apple beglaubigt (dafür wäre ein
 kostenpflichtiges Entwicklerkonto nötig). Beim ersten Start meldet macOS deshalb
 einen „nicht verifizierten Entwickler“: KiekAn! in den Programme-Ordner ziehen,
@@ -77,6 +130,12 @@ Sie sie nicht ausdrücklich wählen. Ein entfernter Haken gibt den Dateityp an
 die Vorgabe des Systems zurück. Geändert wird nur Ihre eigene
 `~/.config/mimeapps.list` (bei LXQt, KDE usw. zusätzlich eine vorhandene
 `<desktop>-mimeapps.list`).
+
+Unter **„Erweiterte Einstellungen …“** lässt sich jeder Dateityp einzeln
+festlegen, etwa nur HEIC und JPEG, aber nicht PNG. Jede Zeile nennt die
+Dateiendungen und das Programm, das den Typ derzeit öffnet; ein Suchfeld hilft
+beim Finden. Ist eine Gruppe nur teilweise gewählt, zeigt der Reiter das mit
+einem halben Haken, und „Zuordnung übernehmen“ lässt diese Gruppe unverändert.
 
 **Von Hand:** Im Dateimanager Rechtsklick auf ein Bild → „Öffnen mit“ →
 KiekAn! wählen und „als Standard“ bzw. „immer verwenden“ ankreuzen – das gilt
@@ -192,7 +251,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 | E | EXIF-Daten |
 | Strg+Bild ab / Strg+Bild auf | Nächste / vorherige Seite (PDF, TIFF) |
 | Leertaste (Video) | Abspielen / Pause |
-| Umschalt+→ / ← (Video) | 5 s vor / zurück, mit Strg 60 s |
+| → / ← (Video) | 5 s vor / zurück, mit Umschalt 60 s (blättern mit ↑ / ↓) |
 | M (Video) | Ton aus / an |
 | Strg+C (Video) | Aktuelles Videobild kopieren |
 | F1 | Tastenkürzel anzeigen |

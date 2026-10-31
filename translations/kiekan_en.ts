@@ -667,7 +667,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>FileAssoc</name>
     <message>
-        <location filename="../src/FileAssoc.cpp" line="+226"/>
+        <location filename="../src/FileAssoc.cpp" line="+227"/>
         <source>Bilder (JPEG, PNG, GIF, WebP, TIFF, HEIC, AVIF, SVG, PSD, JPEG 2000, DjVu …)</source>
         <translation>Images (JPEG, PNG, GIF, WebP, TIFF, HEIC, AVIF, SVG, PSD, JPEG 2000, DjVu …)</translation>
     </message>
@@ -687,7 +687,7 @@ right-click or double-click removes it.</translation>
         <translation>Videos (MP4, MKV, WebM, MOV, AVI …)</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+87"/>
         <source>Auf diesem System legt man Standardprogramme in den Systemeinstellungen fest.</source>
         <translation>On this system, default apps are chosen in the system settings.</translation>
     </message>
@@ -1436,12 +1436,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+845"/>
+        <location line="+844"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-841"/>
+        <location line="-840"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1619,7 +1619,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>This build of KiekAn! has no printing support.</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+57"/>
         <source>Nächstes Bild; bei Videos Abspielen / Pause; in der Diashow Anhalten</source>
         <translation>Next image; play / pause for videos; pause the slideshow</translation>
     </message>
@@ -1627,6 +1627,16 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <location line="+6"/>
         <source>Doppelklick</source>
         <translation>Double-click</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>→ / ← (Video)</source>
+        <translation>→ / ← (video)</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>5 s vor / zurück (mit Umschalt: 60 s); ↑ / ↓ blättern</source>
+        <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
         <location line="-788"/>
@@ -1661,12 +1671,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1704"/>
+        <location line="+1703"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1683"/>
+        <location line="-1682"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1928,7 +1938,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+233"/>
+        <location line="+232"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -1983,17 +1993,15 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Drag with left mouse button</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Umschalt+→ / ← (Video)</source>
-        <translation>Shift+→ / ← (video)</translation>
+        <translation type="vanished">Shift+→ / ← (video)</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>5 s vor / zurück (mit Strg: 60 s)</source>
-        <translation>5 s forward / back (with Ctrl: 60 s)</translation>
+        <translation type="vanished">5 s forward / back (with Ctrl: 60 s)</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+13"/>
         <source>Tastenkürzel</source>
         <translation>Keyboard shortcuts</translation>
     </message>
@@ -2363,7 +2371,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+98"/>
+        <location filename="../src/SettingsDialog.cpp" line="+110"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2528,12 +2536,22 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Open these file types with KiekAn! on double-click:</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+35"/>
         <source>Zuordnung übernehmen</source>
         <translation>Apply associations</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+2"/>
+        <source>Erweiterte Einstellungen …</source>
+        <translation>Advanced settings …</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Jeden Dateityp (jede Dateiendung) einzeln festlegen</source>
+        <translation>Choose each file type (each file extension) separately</translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>Nicht angekreuzte Typen öffnen wieder mit dem Programm, das das System vorsieht. Geändert wird nur Ihre eigene Zuordnung (%1), nicht die anderer Benutzer.</source>
         <translation>Unchecked types open with the system&apos;s default program again. Only your own associations are changed (%1), not those of other users.</translation>
     </message>
@@ -2548,17 +2566,61 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>currently: %1</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+9"/>
+        <source>Dateizuordnung – erweiterte Einstellungen</source>
+        <translation>File associations – advanced settings</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Angekreuzte Dateitypen öffnen per Doppelklick mit KiekAn!. Nicht angekreuzte öffnen mit dem Programm, das das System vorsieht.</source>
+        <translation>Checked file types open with KiekAn! on double-click. Unchecked ones open with the program the system provides.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Suchen, z. B. jpg oder heic</source>
+        <translation>Search, e.g. jpg or heic</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Dateityp</source>
+        <translation>File type</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Öffnet derzeit</source>
+        <translation>Currently opens with</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Vorgabe des Systems</source>
+        <translation>System default</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Übernehmen</source>
+        <translation>Apply</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+11"/>
+        <source>Übernommen: %n Dateityp(en) geändert.</source>
+        <translation>
+            <numerusform>Applied: %n file type changed.</numerusform>
+            <numerusform>Applied: %n file types changed.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+34"/>
         <source>Übernommen. Neu geöffnete Dateien starten jetzt im gewählten Programm.</source>
         <translation>Applied. Files you open from now on start in the chosen program.</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-33"/>
+        <location line="+34"/>
         <source>Konnte die Zuordnung nicht speichern: %1</source>
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-297"/>
+        <location line="-408"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
