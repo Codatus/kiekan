@@ -45,10 +45,14 @@ struct Summary
     // Beschreibende Angaben (XMP, ersatzweise IPTC/EXIF)
     QString title;
     QString description;
+    QString altText;   // Bildbeschreibung für Bildschirmleser (IPTC „Alt Text (Accessibility)“)
     QStringList keywords;
     int rating = -1;   // 0..5, -1 = nicht gesetzt
 
-    bool hasDescriptive() const { return !title.isEmpty() || !description.isEmpty() || !keywords.isEmpty() || rating >= 0; }
+    bool hasDescriptive() const
+    {
+        return !title.isEmpty() || !description.isEmpty() || !altText.isEmpty() || !keywords.isEmpty() || rating >= 0;
+    }
     bool isEmpty() const { return camera.isEmpty() && dateTaken.isEmpty() && exposure.isEmpty() && !hasGps && !hasDescriptive(); }
 };
 
@@ -64,6 +68,7 @@ struct DescriptiveFields
 {
     std::optional<QString> title;
     std::optional<QString> description;
+    std::optional<QString> altText;
     std::optional<QStringList> keywords;   // ersetzt die vorhandenen
     std::optional<int> rating;             // 0..5
 };

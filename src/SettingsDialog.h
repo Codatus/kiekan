@@ -30,6 +30,22 @@ QString saveRecognizedText();  // "ask", "always", "never"
 void setSaveRecognizedText(const QString &mode);
 bool askBeforeDiscard();      // Nachfrage „Änderungen speichern?“ (Standard: nein)
 void setAskBeforeDiscard(bool on);
+// Bildschirmleser: was beim Blättern angesagt wird
+bool announceName();
+bool announcePosition();
+bool announceSize();
+bool announceDescription();
+bool announceOcrProgress();     // Fortschritt der Texterkennung ansagen
+QString caretKeys();            // Pfeiltasten im Textmodus: "auto" (bei Bildschirmleser), "always", "never"
+void setAnnounce(const QString &what, bool on);   // "name", "position", "size", "description", "ocrProgress"
+void setCaretKeys(const QString &mode);
+// KI-Bildbeschreibungen über das Fenster
+QString describeAhead();        // "ask" (beim ersten Mal fragen), "on", "off"
+void setDescribeAhead(const QString &mode);
+int describeAheadCount();       // so viele folgende Bilder vorab beschreiben
+void setDescribeAheadCount(int n);
+bool storeDescriptions();       // Beschreibungen der KI in den Bilddateien speichern
+void setStoreDescriptions(bool on);
 bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern (Standard: nein)
 bool aiViewerAccessDecided(); // Benutzer hat schon entschieden (Erststart-Frage)
 void setAiViewerAccess(bool on);
@@ -57,6 +73,16 @@ private:
     QComboBox *m_saveText = nullptr;
     QCheckBox *m_lossless;
     QComboBox *m_aiWindow = nullptr;
+    QComboBox *m_describeAhead = nullptr;
+    QSpinBox *m_describeCount = nullptr;
+    QCheckBox *m_storeDescriptions = nullptr;
+    QCheckBox *m_srName = nullptr;
+    QCheckBox *m_srPosition = nullptr;
+    QCheckBox *m_srSize = nullptr;
+    QCheckBox *m_srDescription = nullptr;
+    QCheckBox *m_srOcrProgress = nullptr;
+    QComboBox *m_caretKeys = nullptr;
+    QWidget *createScreenReaderPage();
     QCheckBox *m_aiAccess;
     void updateOverlapNote();
 

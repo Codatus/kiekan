@@ -377,6 +377,7 @@ Summary summary(const QString &path)
         }
         if (s.description.isEmpty())
             s.description = printed(exif, "Exif.Image.ImageDescription");
+        s.altText = langAlt(xmp, "Xmp.iptc.AltTextAccessibility");
         const auto subj = xmp.findKey(Exiv2::XmpKey("Xmp.dc.subject"));
         if (subj != xmp.end()) {
             for (long i = 0; i < long(subj->count()); ++i)
@@ -438,6 +439,16 @@ bool writeDescriptive(const QString &path, const DescriptiveFields &f, QString *
         };
         if (f.title)
             setLangAlt("Xmp.dc.title", *f.title);
+        if (f.altText) {
+            // Ältere Exiv2-Fassungen kennen die Eigenschaft (IPTC 2021) nicht
+            // und würden sie als einfachen Text anlegen – Typ ausdrücklich setzen.
+            eraseKey(xmp, "Xmp.iptc.AltTextAccessibility");
+            if (!f.altText->isEmpty()) {
+                auto v = Exiv2::Value::create(Exiv2::langAlt);
+                v->read(std::string("lang=x-default ") + f.altText->toStdString());
+                xmp.add(Exiv2::XmpKey("Xmp.iptc.AltTextAccessibility"), v.get());
+            }
+        }
         if (f.description) {
             setLangAlt("Xmp.dc.description", *f.description);
             if (f.description->isEmpty()) {

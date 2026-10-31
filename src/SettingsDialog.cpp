@@ -33,6 +33,8 @@
 #include <QTabWidget>
 #include <QUrl>
 #include <QThread>
+
+#include <algorithm>
 #include <QVBoxLayout>
 
 namespace Settings {
@@ -55,6 +57,28 @@ QString saveRecognizedText()
 void setSaveRecognizedText(const QString &mode) { QSettings().setValue(QStringLiteral("ocr/saveText"), mode); }
 bool askBeforeDiscard() { return QSettings().value(QStringLiteral("askBeforeDiscard"), false).toBool(); }
 void setAskBeforeDiscard(bool on) { QSettings().setValue(QStringLiteral("askBeforeDiscard"), on); }
+bool announceName() { return QSettings().value(QStringLiteral("a11y/name"), true).toBool(); }
+bool announcePosition() { return QSettings().value(QStringLiteral("a11y/position"), true).toBool(); }
+bool announceSize() { return QSettings().value(QStringLiteral("a11y/size"), false).toBool(); }
+bool announceDescription() { return QSettings().value(QStringLiteral("a11y/description"), true).toBool(); }
+bool announceOcrProgress() { return QSettings().value(QStringLiteral("a11y/ocrProgress"), true).toBool(); }
+void setAnnounce(const QString &what, bool on) { QSettings().setValue(QStringLiteral("a11y/") + what, on); }
+QString caretKeys()
+{
+    const QString v = QSettings().value(QStringLiteral("a11y/caretKeys"), QStringLiteral("auto")).toString();
+    return v == QLatin1String("always") || v == QLatin1String("never") ? v : QStringLiteral("auto");
+}
+void setCaretKeys(const QString &mode) { QSettings().setValue(QStringLiteral("a11y/caretKeys"), mode); }
+QString describeAhead()
+{
+    const QString v = QSettings().value(QStringLiteral("ai/describeAhead"), QStringLiteral("ask")).toString();
+    return v == QLatin1String("on") || v == QLatin1String("off") ? v : QStringLiteral("ask");
+}
+void setDescribeAhead(const QString &mode) { QSettings().setValue(QStringLiteral("ai/describeAhead"), mode); }
+int describeAheadCount() { return std::clamp(QSettings().value(QStringLiteral("ai/describeAheadCount"), 5).toInt(), 1, 20); }
+void setDescribeAheadCount(int n) { QSettings().setValue(QStringLiteral("ai/describeAheadCount"), n); }
+bool storeDescriptions() { return QSettings().value(QStringLiteral("ai/storeDescriptions"), false).toBool(); }
+void setStoreDescriptions(bool on) { QSettings().setValue(QStringLiteral("ai/storeDescriptions"), on); }
 bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), false).toBool(); }
 bool aiViewerAccessDecided() { return QSettings().contains(QStringLiteral("ai/viewerAccess")); }
 void setAiViewerAccess(bool on) { QSettings().setValue(QStringLiteral("ai/viewerAccess"), on); }
@@ -99,6 +123,8 @@ private:
 QCheckBox *wrappingCheckBox(const QString &text, QWidget *parent, QWidget **row)
 {
     auto *box = new QCheckBox(parent);
+    // Der Text steht im Nachbar-Label – Bildschirmleser brauchen ihn am Kästchen.
+    box->setAccessibleName(QString(text).remove(QLatin1Char('&')));
     auto *caption = new CheckCaption(text, box, parent);
     auto *w = new QWidget(parent);
     auto *l = new QHBoxLayout(w);
@@ -220,11 +246,41 @@ SettingsDialog::SettingsDialog(QWidget *parent)
         });
     }
 
+    // Bildbeschreibungen der KI (Bildschirmleser)
+    {
+        auto *box = new QGroupBox(tr("Bildbeschreibungen"), this);
+        auto *form = new QFormLayout(box);
+        m_describeAhead = new QComboBox(this);
+        m_describeAhead->addItem(tr("beim ersten Mal fragen"), QStringLiteral("ask"));
+        m_describeAhead->addItem(tr("ja, die nächsten Bilder vorab beschreiben"), QStringLiteral("on"));
+        m_describeAhead->addItem(tr("nein, nur das gezeigte Bild"), QStringLiteral("off"));
+        m_describeAhead->setCurrentIndex(m_describeAhead->findData(Settings::describeAhead()));
+        m_describeAhead->setToolTip(tr("Fragen Sie die KI, was auf dem gezeigten Bild ist, kann sie auch die folgenden "
+                                       "Bilder schon beschreiben. Beim Weiterblättern liest KiekAn! die Beschreibung dann "
+                                       "sofort vor. Dafür sieht die KI auch diese Bilder."));
+        form->addRow(tr("Folgende Bilder vorab:"), m_describeAhead);
+        m_describeCount = new QSpinBox(this);
+        m_describeCount->setRange(1, 20);
+        m_describeCount->setValue(Settings::describeAheadCount());
+        form->addRow(tr("Anzahl der Bilder vorab:"), m_describeCount);
+        QWidget *storeRow = nullptr;
+        m_storeDescriptions = wrappingCheckBox(tr("Beschreibungen in den Bilddateien speichern (dann sind sie auch ohne KI "
+                                                  "sofort da; geändert werden nur die Metadaten)"), this, &storeRow);
+        m_storeDescriptions->setChecked(Settings::storeDescriptions());
+        form->addRow(storeRow);
+        aiLayout->addWidget(box);
+        auto sync = [this](bool on) { m_describeAhead->setEnabled(on); m_describeCount->setEnabled(on); m_storeDescriptions->setEnabled(on); };
+        sync(m_aiAccess->isChecked());
+        connect(m_aiAccess, &QCheckBox::toggled, this, sync);
+    }
+
     auto dirEditor = [this, aiLayout](const QString &label, const QStringList &dirs, const QString &dialogTitle) {
         auto *caption = new QLabel(label, this);
         caption->setWordWrap(true);
         aiLayout->addWidget(caption);
         auto *edit = new QPlainTextEdit(dirs.join(QLatin1Char('\n')), this);
+        edit->setAccessibleName(dialogTitle);
+        caption->setBuddy(edit);
         edit->setFixedHeight(edit->fontMetrics().lineSpacing() * 3 + 12);
         aiLayout->addWidget(edit);
         auto *add = new QPushButton(tr("Ordner hinzufügen …"), this);
@@ -270,6 +326,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     trustCaption->setWordWrap(true);
     aiLayout->addWidget(trustCaption);
     m_aiTrusted = new QListWidget(this);
+    m_aiTrusted->setAccessibleName(tr("Vertrauenswürdige Leseordner"));
     m_aiTrusted->setFixedHeight(m_aiTrusted->fontMetrics().lineSpacing() * 4 + 12);
     m_aiTrusted->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     aiLayout->addWidget(m_aiTrusted);
@@ -325,6 +382,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     aiScroll->setFrameShape(QFrame::NoFrame);
     aiScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     tabs->addTab(aiScroll, tr("KI-Schnittstelle"));
+    tabs->addTab(createScreenReaderPage(), tr("Bildschirmleser"));
     tabs->addTab(createAssocPage(), tr("Dateizuordnung"));
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -422,12 +480,70 @@ bool SettingsDialog::apply()
     Settings::setLosslessJpeg(m_lossless->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
     QSettings().setValue(QStringLiteral("ai/viewerLastUsed"), m_aiWindow->currentData().toBool());
+    Settings::setDescribeAhead(m_describeAhead->currentData().toString());
+    Settings::setDescribeAheadCount(m_describeCount->value());
+    Settings::setStoreDescriptions(m_storeDescriptions->isChecked());
+    Settings::setAnnounce(QStringLiteral("name"), m_srName->isChecked());
+    Settings::setAnnounce(QStringLiteral("position"), m_srPosition->isChecked());
+    Settings::setAnnounce(QStringLiteral("size"), m_srSize->isChecked());
+    Settings::setAnnounce(QStringLiteral("description"), m_srDescription->isChecked());
+    Settings::setAnnounce(QStringLiteral("ocrProgress"), m_srOcrProgress->isChecked());
+    Settings::setCaretKeys(m_caretKeys->currentData().toString());
     AiGuard::setReadDirs(dirLines(m_aiReadDirs));
     AiGuard::setWriteDirs(dirLines(m_aiWriteDirs));
     AiGuard::setAllowOverwrite(m_aiOverwrite->isChecked());
     AiGuard::setTrustedDirs(checkedTrusted());
     QSettings().setValue(QStringLiteral("ocr/jobs"), m_ocrJobs->value());
     return langChanged;
+}
+
+// --- Bildschirmleser -----------------------------------------------------------
+
+QWidget *SettingsDialog::createScreenReaderPage()
+{
+    auto *page = new QWidget(this);
+    auto *layout = new QVBoxLayout(page);
+
+    auto *intro = new QLabel(tr("KiekAn! arbeitet mit Bildschirmlesern wie Orca, NVDA und VoiceOver. Beim Blättern "
+                                "wird das neue Bild angesagt; mit T wird der Text im Bild erkannt und lässt sich "
+                                "mit den Pfeiltasten lesen."), this);
+    intro->setWordWrap(true);
+    layout->addWidget(intro);
+
+    auto *box = new QGroupBox(tr("Beim Blättern ansagen"), this);
+    auto *form = new QVBoxLayout(box);
+    auto add = [this, form](const QString &text, bool on) {
+        QWidget *row = nullptr;
+        QCheckBox *c = wrappingCheckBox(text, this, &row);
+        c->setChecked(on);
+        form->addWidget(row);
+        return c;
+    };
+    m_srName = add(tr("Dateiname"), Settings::announceName());
+    m_srPosition = add(tr("Position im Ordner (z. B. „Bild 17 von 230“)"), Settings::announcePosition());
+    m_srSize = add(tr("Bildgröße in Pixeln"), Settings::announceSize());
+    m_srDescription = add(tr("Bildbeschreibung aus der Datei bzw. von der KI"), Settings::announceDescription());
+    layout->addWidget(box);
+
+    auto *textBox = new QGroupBox(tr("Texterkennung"), this);
+    auto *textForm = new QFormLayout(textBox);
+    QWidget *progressRow = nullptr;
+    m_srOcrProgress = wrappingCheckBox(tr("Fortschritt der Texterkennung ansagen"), this, &progressRow);
+    m_srOcrProgress->setChecked(Settings::announceOcrProgress());
+    m_srOcrProgress->setToolTip(tr("Aus: Angesagt wird nur das Ergebnis."));
+    textForm->addRow(progressRow);
+    m_caretKeys = new QComboBox(this);
+    m_caretKeys->addItem(tr("automatisch (wenn ein Bildschirmleser läuft)"), QStringLiteral("auto"));
+    m_caretKeys->addItem(tr("immer"), QStringLiteral("always"));
+    m_caretKeys->addItem(tr("nie (Pfeiltasten blättern, Umschalt+Pfeil markiert)"), QStringLiteral("never"));
+    m_caretKeys->setCurrentIndex(m_caretKeys->findData(Settings::caretKeys()));
+    m_caretKeys->setToolTip(tr("Im Textmodus (T) bewegen die Pfeiltasten einen Textcursor durch den erkannten Text: "
+                               "←/→ zeichenweise, Strg+←/→ wortweise, ↑/↓ zeilenweise, Pos1/Ende. Mit Umschalt wird "
+                               "markiert. Geblättert wird dann mit Bild↑/Bild↓ und der Leertaste."));
+    textForm->addRow(tr("Pfeiltasten lesen den Text:"), m_caretKeys);
+    layout->addWidget(textBox);
+    layout->addStretch(1);
+    return page;
 }
 
 // --- Dateizuordnung ----------------------------------------------------------

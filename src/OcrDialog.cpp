@@ -46,6 +46,7 @@ OcrDialog::OcrDialog(const QImage &image, const QString &pdfText, const QString 
     m_info->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     m_text = new QPlainTextEdit(this);
+    m_text->setAccessibleName(tr("Erkannter Text"));
     m_text->setLineWrapMode(QPlainTextEdit::WidgetWidth);
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);

@@ -75,11 +75,13 @@ ExifDialog::ExifDialog(const QString &path, QWidget *parent)
 
     m_search = new QLineEdit(this);
     m_search->setPlaceholderText(tr("Suchen …"));
+    m_search->setAccessibleName(tr("Suchen"));
     m_search->setClearButtonEnabled(true);
     connect(m_search, &QLineEdit::textChanged, this, &ExifDialog::applyFilter);
 
     m_table = new QTableWidget(int(entries.size()), 3, this);
     m_table->setHorizontalHeaderLabels({tr("Bereich"), tr("Eigenschaft"), tr("Wert")});
+    m_table->setAccessibleName(tr("Metadaten"));
     m_table->verticalHeader()->hide();
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);

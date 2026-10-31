@@ -67,6 +67,7 @@ BatchDialog::BatchDialog(const QStringList &files, const QString &current, QWidg
     auto *filesLayout = new QVBoxLayout(filesBox);
     m_list = new QListWidget(this);
     m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_list->setAccessibleName(tr("Dateien"));
     m_list->setMinimumWidth(260);
     filesLayout->addWidget(m_list, 1);
     m_count = new QLabel(this);
@@ -205,6 +206,7 @@ QWidget *BatchDialog::createConvertPage()
     m_maxSize->setRange(16, 100000);
     m_maxSize->setSuffix(tr(" Pixel (längste Seite)"));
     m_maxSize->setValue(settings.value(QStringLiteral("batch/maxSize"), 1920).toInt());
+    m_maxSize->setAccessibleName(tr("Längste Seite in Pixeln"));
     auto *sizeRow = new QHBoxLayout;
     sizeRow->addWidget(m_resize);
     sizeRow->addWidget(m_maxSize, 1);
@@ -232,7 +234,9 @@ QWidget *BatchDialog::createConvertPage()
     form->addRow(tr("Optionen:"), opts);
 
     m_outDir = new QLineEdit(QDir::toNativeSeparators(settings.value(QStringLiteral("batch/outDir")).toString()), page);
+    m_outDir->setAccessibleName(tr("Zielordner"));
     auto *browse = new QPushButton(tr("…"), page);
+    browse->setAccessibleName(tr("Zielordner wählen"));
     browse->setFixedWidth(browse->fontMetrics().horizontalAdvance(QStringLiteral("…")) + 24);
     connect(browse, &QPushButton::clicked, this, [this] {
         const QString dir = QFileDialog::getExistingDirectory(this, tr("Zielordner"), m_outDir->text());
@@ -246,6 +250,7 @@ QWidget *BatchDialog::createConvertPage()
 
     m_log = new QPlainTextEdit(page);
     m_log->setReadOnly(true);
+    m_log->setAccessibleName(tr("Protokoll"));
     m_log->setPlaceholderText(tr("Die Originale bleiben unverändert; die neuen Dateien landen im Zielordner."));
 
     auto *layout = new QVBoxLayout(page);
@@ -298,6 +303,7 @@ QWidget *BatchDialog::createRenamePage()
 
     m_preview = new QTableWidget(0, 2, page);
     m_preview->setHorizontalHeaderLabels({tr("Bisher"), tr("Neu")});
+    m_preview->setAccessibleName(tr("Vorschau der neuen Namen"));
     m_preview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_preview->verticalHeader()->setVisible(false);
     m_preview->setEditTriggers(QAbstractItemView::NoEditTriggers);

@@ -8,7 +8,7 @@ frischen incus-Container (Ubuntu 22.04/24.04, Debian 12/13):
    Braucht libheif-examples, djvulibre-bin, exiftool, ImageMagick, ffmpeg,
    Tesseract mit deutschen Sprachdaten.
 2. `mcptest.py` ruft alle MCP-Werkzeuge auf und prüft Ergebnisse, Freigaben
-   und die Erkennung von Prompt Injection (50 Prüfungen).
+   und die Erkennung von Prompt Injection (51 Prüfungen).
 3. `guitest.sh` startet KiekAn! unter Xvfb, blättert durch alle Dateien,
    öffnet die Dialoge und legt Bildschirmfotos in `/root/gui` ab.
 

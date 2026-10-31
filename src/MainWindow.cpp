@@ -9,6 +9,8 @@
 #include "NaturalSort.h"
 #include "ShortcutDialog.h"
 
+#include "Accessibility.h"
+#include "AiGuard.h"
 #include "AiLogDialog.h"
 #include "CurvesDialog.h"
 #include "EditOps.h"
@@ -53,6 +55,7 @@
 #include <QDoubleSpinBox>
 #include <QTextBrowser>
 #include <QVBoxLayout>
+#include <QProgressDialog>
 #include <QPushButton>
 #include <QFormLayout>
 #include <QTimer>
@@ -73,6 +76,7 @@
 #include <QImageWriter>
 #include <QInputDialog>
 #include <QHash>
+#include <QJsonArray>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -83,6 +87,7 @@
 #include <QMimeData>
 #include <QMovie>
 #include <QPainter>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRunnable>
 #include <QSaveFile>
@@ -302,13 +307,19 @@ void MainWindow::createActions()
     QAction *plugins = make(QStringLiteral("plugins"), tr("&Plugins …"), "", {}, [this] { showPlugins(); });
     QAction *aiLog = make(QStringLiteral("aiLog"), tr("&KI-Protokoll …"), "", {}, [this] { showAiLog(); });
 
+    QAction *describeAct = make(QStringLiteral("describe"), tr("Bild&beschreibung …"), "", {K(Qt::Key_D)},
+                                [this] { editDescription(); });
     QAction *exifAct = make(QStringLiteral("exifAct"), tr("&EXIF-Daten …"), "", {K(Qt::Key_E)}, [this] { showExif(); });
     QAction *developAct = make(QStringLiteral("developAct"), tr("RAW voll &entwickeln"), "", {K(Qt::CTRL | Qt::Key_D)}, [this] { developRaw(); });
     QAction *splitAct = make(QStringLiteral("splitAct"), tr("PDF &teilen …"), "", {}, [this] { splitPdf(); });
-    QAction *ocrAct = make(QStringLiteral("ocrAct"), tr("&Text erkennen (OCR) …"), "", {K(Qt::CTRL | Qt::Key_T)}, [this] { recognizeText(); });
+    QAction *ocrAct = make(QStringLiteral("ocrAct"), tr("&Text erkennen (OCR) …"), "", {K(Qt::CTRL | Qt::SHIFT | Qt::Key_T)}, [this] { recognizeText(); });
     m_textAct = make(QStringLiteral("textSelect"), tr("Text &markieren"), "kiekan-text-select", {K(Qt::Key_T)},
                      [this] { toggleTextMode(m_textAct->isChecked()); });
     m_textAct->setCheckable(true);
+    QAction *folderTextAct = make(QStringLiteral("folderText"), tr("Text im ganzen &Ordner erkennen …"), "", {},
+                                  [this] { recognizeFolder(); });
+    QAction *rereadAct = make(QStringLiteral("rereadText"), tr("Text &neu und gründlich erkennen"), "", {K(Qt::CTRL | Qt::Key_T)},
+                              [this] { rereadText(); });
     m_textAct->setToolTip(tr("Text markieren (T): erkennt den Text im Bild, danach lässt er sich mit der Maus "
                              "markieren und mit Strg+C kopieren"));
 
@@ -365,7 +376,7 @@ void MainWindow::createActions()
     QMenu *file = menuBar()->addMenu(tr("&Datei"));
     file->addActions({open, saveAct, saveAsAct});
     file->addSeparator();
-    file->addActions({rename, del, info, exifAct, ocrAct, splitAct});
+    file->addActions({rename, del, info, describeAct, exifAct, ocrAct, folderTextAct, splitAct});
     file->addSeparator();
     file->addAction(batch);
     file->addAction(printAct);
@@ -378,6 +389,7 @@ void MainWindow::createActions()
     edit->addActions({copyAct, pasteAct, selAll, cropAct});
     edit->addSeparator();
     edit->addAction(m_textAct);
+    edit->addAction(rereadAct);
 
     QMenu *image = menuBar()->addMenu(tr("B&ild"));
     image->addActions({rotL, rotR, flipH, flipV});
@@ -611,6 +623,117 @@ void MainWindow::applyLoadResult(const LoadResult &r)
     m_deepColor = r.deepColor;
     loadStoredText();
     updateStatus();
+    announceCurrent();
+}
+
+// --- Bildschirmleser -----------------------------------------------------------
+
+// Bildbeschreibung für die Ansage: zuerst von der KI in dieser Sitzung, dann
+// der Alternativtext der Datei, sonst ihre Beschreibung.
+QString MainWindow::descriptionFor(const QString &path) const
+{
+    if (path.isEmpty())
+        return {};
+    const QString ai = m_aiDescriptions.value(path);
+    if (!ai.isEmpty())
+        return ai;
+    if (!Metadata::available())
+        return {};
+    const Metadata::Summary s = Metadata::summary(path);
+    return !s.altText.isEmpty() ? s.altText : s.description;
+}
+
+void MainWindow::announceCurrent()
+{
+    if (!Accessibility::screenReaderActive() || m_kind != Kind::Image)
+        return;
+    QStringList name;
+    if (m_path.isEmpty()) {
+        name << tr("Bild aus der Zwischenablage");
+    } else {
+        if (Settings::announceName())
+            name << QFileInfo(m_path).fileName();
+        if (Settings::announcePosition() && m_index >= 0 && m_files.size() > 1)
+            name << tr("Bild %1 von %2").arg(m_index + 1).arg(m_files.size());
+    }
+    if (m_pageCount > 1)
+        name << tr("Seite %1 von %2").arg(m_page + 1).arg(m_pageCount);
+    QStringList desc;
+    if (!m_loadError.isEmpty()) {
+        desc << tr("Kann nicht geöffnet werden: %1").arg(m_loadError);
+    } else {
+        if (Settings::announceSize() && m_view->hasImage())
+            desc << tr("%1 mal %2 Pixel").arg(m_view->image().width()).arg(m_view->image().height());
+        if (Settings::announceDescription()) {
+            const QString d = descriptionFor(m_path);
+            desc << (d.isEmpty() ? tr("Keine Beschreibung.") : d);
+        }
+        if (m_view->hasTextLayer())
+            desc << tr("Erkannter Text vorhanden, T zum Lesen.");
+    }
+    m_view->setAccessibleInfo(name.join(QStringLiteral(", ")), desc.join(QLatin1Char(' ')));
+    if (m_textAct->isChecked() && m_view->hasTextLayer())
+        announceText(tr("%n Wörter.", nullptr, int(m_view->textLayer().words.size())));
+    else
+        Accessibility::present(m_view, Accessibility::Item::Image);
+}
+
+void MainWindow::announceText(const QString &summary)
+{
+    updateCaretKeys();
+    m_view->setAccessibleInfo(m_view->accessibleInfoName(),
+                              summary + QLatin1Char(' ')
+                                  + tr("Pfeiltasten lesen, Umschalt markiert, Strg+C kopiert, Esc beendet den Textmodus."));
+    m_view->setCaretOffset(0);
+    Accessibility::present(m_view, Accessibility::Item::Text);
+}
+
+void MainWindow::updateCaretKeys()
+{
+    const QString mode = Settings::caretKeys();
+    m_view->setCaretKeys(mode == QLatin1String("always")
+                         || (mode == QLatin1String("auto") && Accessibility::screenReaderActive()));
+}
+
+// Die nächsten Dateien in Blätterrichtung (nur Bilder, keine Videos).
+QStringList MainWindow::upcomingFiles(int count) const
+{
+    QStringList out;
+    if (m_index < 0 || m_files.isEmpty())
+        return out;
+    const int dir = m_lastStep < 0 ? -1 : 1;
+    for (int k = 1; k <= int(m_files.size()) && out.size() < count; ++k) {
+        const int i = m_index + dir * k;
+        if (i < 0 || i >= m_files.size())
+            break;
+        if (!Media::isVideo(m_files.at(i)))
+            out << m_files.at(i);
+    }
+    return out;
+}
+
+// Nach der ersten Beschreibung der KI: soll sie künftig vorab beschreiben?
+void MainWindow::askDescribeAheadOnce()
+{
+    if (m_describeQuestionShown || Settings::describeAhead() != QLatin1String("ask"))
+        return;
+    m_describeQuestionShown = true;
+    QMessageBox box(QMessageBox::Question, tr("Bilder vorab beschreiben?"),
+                    tr("Die KI hat das gezeigte Bild beschrieben. Soll sie künftig auch die nächsten %n Bilder "
+                       "gleich mit beschreiben? Dann liest KiekAn! die Beschreibung beim Weiterblättern sofort vor. "
+                       "Die KI sieht dafür auch diese Bilder.", nullptr, Settings::describeAheadCount()),
+                    QMessageBox::NoButton, this);
+    QPushButton *yes = box.addButton(tr("Ja, immer vorab"), QMessageBox::AcceptRole);
+    box.addButton(tr("Nein, nur das gezeigte Bild"), QMessageBox::RejectRole);
+    box.setDefaultButton(yes);
+    auto *store = new QCheckBox(tr("Beschreibungen auch in den Bilddateien speichern"), &box);
+    store->setChecked(Settings::storeDescriptions());
+    box.setCheckBox(store);
+    box.exec();
+    Settings::setDescribeAhead(box.clickedButton() == yes ? QStringLiteral("on") : QStringLiteral("off"));
+    Settings::setStoreDescriptions(store->isChecked());
+    message(box.clickedButton() == yes ? tr("Die KI beschreibt künftig auch die nächsten Bilder (änderbar in den Einstellungen).")
+                                       : tr("Die KI beschreibt nur das gezeigte Bild (änderbar in den Einstellungen)."));
 }
 
 bool MainWindow::hasCurrentImage() const
@@ -821,13 +944,28 @@ void MainWindow::loadStoredText()
     m_view->setTextMode(m_textAct->isChecked());
 }
 
-void MainWindow::toggleTextMode(bool on)
+// Strg+T: gespeicherten oder schon erkannten Text verwerfen und gründlicher
+// lesen (z. B. wenn beim ersten Mal Zeilen fehlten).
+void MainWindow::rereadText()
+{
+    if (m_kind != Kind::Image || !hasCurrentImage()) {
+        message(tr("Text erkennen geht nur bei Bildern und PDF-Seiten."));
+        return;
+    }
+    m_view->clearTextLayer();
+    m_textButton->setDone(false);
+    m_textAct->setChecked(true);
+    toggleTextMode(true, true);
+}
+
+void MainWindow::toggleTextMode(bool on, bool thorough)
 {
     if (!on) {
         if (m_ocrCancel)
             *m_ocrCancel = true;
         m_textButton->setProgress(-1);
         m_view->setTextMode(false);
+        announceCurrent();
         return;
     }
     if (m_kind != Kind::Image || !hasCurrentImage()) {
@@ -838,6 +976,8 @@ void MainWindow::toggleTextMode(bool on)
     if (m_view->hasTextLayer()) {
         m_view->setTextMode(true);
         message(tr("Text mit der Maus markieren, Doppelklick markiert ein Wort; Strg+C kopiert, Strg+A markiert alles."));
+        if (Accessibility::screenReaderActive())
+            announceText(tr("%n Wörter.", nullptr, int(m_view->textLayer().words.size())));
         return;
     }
     if (!Ocr::available()) {
@@ -860,6 +1000,7 @@ void MainWindow::toggleTextMode(bool on)
     job.imageFile = file->fileName();
     job.options.words = true;
     job.options.languages = QStringLiteral("auto");
+    job.options.thorough = thorough;
 
     const quint64 generation = ++m_ocrGeneration;
     const QString path = m_path;
@@ -869,12 +1010,16 @@ void MainWindow::toggleTextMode(bool on)
     m_ocrCancel = cancel;
     auto result = std::make_shared<Ocr::Result>();
     m_textButton->setProgress(0);
+    if (Accessibility::screenReaderActive() && Settings::announceOcrProgress())
+        Accessibility::present(m_view, Accessibility::Item::Progress);
     QPointer<MainWindow> self(this);
     QThread *thread = QThread::create([job, cancel, result, file, self, generation] {
         *result = OcrWorker::run(job, cancel.get(), [self, generation](int percent) {
             QMetaObject::invokeMethod(qApp, [self, generation, percent] {
-                if (self && generation == self->m_ocrGeneration)
+                if (self && generation == self->m_ocrGeneration) {
                     self->m_textButton->setProgress(percent);
+                    Accessibility::progress(self->m_view, percent);
+                }
             }, Qt::QueuedConnection);
         });
     });
@@ -892,7 +1037,12 @@ void MainWindow::toggleTextMode(bool on)
         if (!result->ok || result->words.isEmpty()) {
             m_textAct->setChecked(false);
             m_view->setTextMode(false);
-            message(result->ok ? tr("Kein Text gefunden.") : tr("Texterkennung fehlgeschlagen: %1").arg(result->error));
+            const QString text = result->ok ? tr("Kein Text gefunden.") : tr("Texterkennung fehlgeschlagen: %1").arg(result->error);
+            message(text);
+            if (Accessibility::screenReaderActive()) {
+                m_view->setAccessibleInfo(m_view->accessibleInfoName(), text);
+                Accessibility::present(m_view, Accessibility::Item::Image);
+            }
             return;
         }
         TextLayer layer;
@@ -914,9 +1064,139 @@ void MainWindow::toggleTextMode(bool on)
         m_textAct->setChecked(true);
         m_textButton->setDone(true);
         m_textUnsaved = canStoreText();
+        const QString language = Ocr::languageName(layer.languages.section(QLatin1Char('+'), 0, 0));
+        const QString rotated = result->rotation != 0 ? tr(", Bild aufgerichtet") : QString();
         message(tr("%n Wörter erkannt (%1)%2 – mit der Maus markieren, Strg+C kopiert.", nullptr, int(layer.words.size()))
-                    .arg(Ocr::languageName(layer.languages.section(QLatin1Char('+'), 0, 0)),
-                         result->rotation != 0 ? tr(", Bild aufgerichtet") : QString()));
+                    .arg(language, rotated));
+        if (Accessibility::screenReaderActive())
+            announceText(tr("%n Wörter erkannt (%1)%2.", nullptr, int(layer.words.size())).arg(language, rotated));
+    });
+    thread->start();
+}
+
+// Alle Bilder des Ordners erkennen und den Text in den Dateien speichern –
+// danach ist er beim Blättern sofort markierbar und vorlesbar.
+void MainWindow::recognizeFolder()
+{
+    if (m_files.isEmpty()) {
+        message(tr("Kein Ordner geöffnet."));
+        return;
+    }
+    if (!Ocr::available() || !Metadata::available()) {
+        message(tr("Texterkennung ist nicht verfügbar – Tesseract-Sprachpakete installieren (z. B. %1).")
+                    .arg(Ocr::installCommand(QStringLiteral("deu"))));
+        return;
+    }
+    if (!m_ocrThreads.isEmpty()) {
+        message(tr("Die Texterkennung läuft schon."));
+        return;
+    }
+    QStringList todo;
+    int done = 0;
+    for (const QString &f : std::as_const(m_files)) {
+        if (Media::isVideo(f) || Media::isPdf(f) || !Metadata::canWrite(f))
+            continue;
+        if (!Metadata::readTextLayer(f).isEmpty())
+            ++done;
+        else
+            todo << f;
+    }
+    if (todo.isEmpty()) {
+        message(done > 0 ? tr("Alle Bilder des Ordners haben schon erkannten Text.")
+                         : tr("Im Ordner gibt es keine Bilder, in denen KiekAn! Text speichern kann (JPEG, PNG, TIFF, WebP)."));
+        return;
+    }
+    QMessageBox box(QMessageBox::Question, tr("Text im Ordner erkennen"),
+                    tr("Für %n Bilder Text erkennen und in den Dateien speichern? Danach ist der Text beim Blättern "
+                       "sofort markierbar und vorlesbar. Die Bilddaten bleiben unverändert, nur die Metadaten der "
+                       "Dateien ändern sich.", nullptr, int(todo.size()))
+                        + (done > 0 ? QLatin1Char(' ') + tr("%n Bilder haben schon erkannten Text und werden übersprungen.",
+                                                            nullptr, done)
+                                    : QString()),
+                    QMessageBox::Ok | QMessageBox::Cancel, this);
+    auto *thorough = new QCheckBox(tr("Gründlich lesen (langsamer, findet mehr)"), &box);
+    box.setCheckBox(thorough);
+    if (box.exec() != QMessageBox::Ok)
+        return;
+
+    auto *progress = new QProgressDialog(tr("Text wird erkannt …"), tr("Abbrechen"), 0, int(todo.size()), this);
+    progress->setWindowTitle(tr("Text im Ordner erkennen"));
+    progress->setMinimumDuration(0);
+    progress->setAutoClose(false);
+    progress->setAutoReset(false);
+    progress->setValue(0);
+    auto cancel = std::make_shared<std::atomic<bool>>(false);
+    connect(progress, &QProgressDialog::canceled, this, [cancel] { *cancel = true; });
+    struct Tally { int stored = 0, empty = 0, failed = 0; };
+    auto tally = std::make_shared<Tally>();
+    const bool deep = thorough->isChecked();
+    QPointer<MainWindow> self(this);
+    QPointer<QProgressDialog> dlg(progress);
+    QThread *thread = QThread::create([todo, deep, cancel, tally, dlg] {
+        const int parallel = OcrWorker::defaultParallel();
+        for (int i = 0; i < todo.size() && !*cancel; i += parallel) {
+            QList<OcrWorker::Job> jobs;
+            for (int k = i; k < std::min<int>(i + parallel, int(todo.size())); ++k) {
+                OcrWorker::Job job;
+                job.path = todo.at(k);
+                job.options.words = true;
+                job.options.thorough = deep;
+                jobs << job;
+            }
+            const QList<Ocr::Result> results = OcrWorker::runMany(jobs, parallel);
+            for (int k = 0; k < results.size(); ++k) {
+                const Ocr::Result &r = results.at(k);
+                const QString &path = jobs.at(k).path;
+                if (!r.ok) {
+                    ++tally->failed;
+                    continue;
+                }
+                if (r.words.isEmpty()) {
+                    ++tally->empty;
+                    continue;
+                }
+                // Maße wie in der Anzeige (EXIF-Drehung beachtet)
+                QImageReader reader(path);
+                QSize size = reader.size();
+                if (ImageLoader::autoRotate() && (reader.transformation() & QImageIOHandler::TransformationRotate90))
+                    size.transpose();
+                TextLayer layer;
+                layer.size = size;
+                layer.languages = r.languages;
+                for (const Ocr::Word &w : r.words)
+                    layer.words.append({w.box, w.text, w.line, w.para});
+                if (Metadata::writeTextLayer(path, layer))
+                    ++tally->stored;
+                else
+                    ++tally->failed;
+            }
+            const int value = std::min<int>(i + parallel, int(todo.size()));
+            QMetaObject::invokeMethod(qApp, [dlg, value] {
+                if (dlg)
+                    dlg->setValue(value);
+            }, Qt::QueuedConnection);
+        }
+    });
+    m_ocrThreads.append(thread);
+    connect(thread, &QThread::finished, this, [this, thread, progress, tally, cancel] {
+        m_ocrThreads.removeAll(thread);
+        thread->deleteLater();
+        progress->deleteLater();
+        QString text = tr("Text gespeichert in %n Bildern", nullptr, tally->stored);
+        if (tally->empty)
+            text += QStringLiteral(", ") + tr("%n ohne Text", nullptr, tally->empty);
+        if (tally->failed)
+            text += QStringLiteral(", ") + tr("%n fehlgeschlagen", nullptr, tally->failed);
+        text += *cancel ? tr(" – abgebrochen.") : QStringLiteral(".");
+        message(text);
+        if (m_kind == Kind::Image && hasCurrentImage() && !m_view->hasTextLayer()) {
+            m_loader->remove(m_path);
+            loadStoredText();
+        }
+        if (Accessibility::screenReaderActive()) {
+            m_view->setAccessibleInfo(m_view->accessibleInfoName(), text);
+            Accessibility::present(m_view, Accessibility::Item::Image);
+        }
     });
     thread->start();
 }
@@ -1498,6 +1778,7 @@ void MainWindow::showInfo()
             row(tr("Ort"), QStringLiteral("%1, %2").arg(exif.latitude, 0, 'f', 5).arg(exif.longitude, 0, 'f', 5));
         opt(tr("Titel"), exif.title);
         opt(tr("Beschreibung"), exif.description);
+        opt(tr("Bildbeschreibung (Alternativtext)"), exif.altText);
         opt(tr("Stichwörter"), exif.keywords.join(QStringLiteral(", ")));
         if (exif.rating >= 0)
             row(tr("Bewertung"), QString(exif.rating, QChar(0x2605)) + QString(5 - exif.rating, QChar(0x2606)));
@@ -1514,6 +1795,57 @@ void MainWindow::showInfo()
     box.exec();
     if (exifButton && box.clickedButton() == exifButton)
         showExif();
+}
+
+// Alternativtext für Bildschirmleser selbst schreiben oder ändern (auch den
+// Vorschlag der KI). Ist die Datei nicht beschreibbar, gilt er für diese Sitzung.
+void MainWindow::editDescription()
+{
+    if (m_path.isEmpty() || m_kind != Kind::Image || !hasCurrentImage())
+        return;
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Bildbeschreibung – %1").arg(QFileInfo(m_path).fileName()));
+    auto *layout = new QVBoxLayout(&dlg);
+    auto *label = new QLabel(tr("Kurze Beschreibung des Bildes für Bildschirmleser (Alternativtext). KiekAn! liest sie beim "
+                                "Blättern vor; andere Programme zeigen sie ebenfalls an."), &dlg);
+    label->setWordWrap(true);
+    layout->addWidget(label);
+    auto *edit = new QPlainTextEdit(descriptionFor(m_path), &dlg);
+    edit->setAccessibleName(tr("Bildbeschreibung"));
+    edit->setTabChangesFocus(true);
+    label->setBuddy(edit);
+    layout->addWidget(edit);
+    const bool writable = Metadata::available() && Metadata::canWrite(m_path);
+    if (!writable) {
+        auto *note = new QLabel(tr("In diesem Dateiformat kann KiekAn! keine Beschreibung speichern; sie gilt bis zum Beenden."), &dlg);
+        note->setWordWrap(true);
+        layout->addWidget(note);
+    }
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dlg);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    layout->addWidget(buttons);
+    dlg.resize(480, 220);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    const QString text = edit->toPlainText().trimmed();
+    if (writable && !m_modified) {
+        Metadata::DescriptiveFields f;
+        f.altText = text;
+        QString error;
+        if (!Metadata::writeDescriptive(m_path, f, &error)) {
+            message(tr("Beschreibung konnte nicht gespeichert werden: %1").arg(error));
+            return;
+        }
+        m_aiDescriptions.remove(m_path);   // ab jetzt gilt die Datei
+        message(tr("Beschreibung in „%1“ gespeichert.").arg(QFileInfo(m_path).fileName()));
+    } else {
+        m_aiDescriptions.insert(m_path, text);
+        message(writable ? tr("Beschreibung übernommen, aber nur für diese Sitzung: Das Bild hat ungespeicherte "
+                              "Änderungen. Erst speichern oder verwerfen, dann die Beschreibung erneut speichern.")
+                         : tr("Beschreibung übernommen (nur für diese Sitzung)."));
+    }
+    announceCurrent();
 }
 
 // --- Bearbeiten ------------------------------------------------------------
@@ -1926,7 +2258,86 @@ QJsonObject MainWindow::handleViewerRequest(const QJsonObject &req)
         } else {
             state.insert(QStringLiteral("selection"), QJsonValue::Null);
         }
+        // Bildbeschreibungen (Bildschirmleser)
+        state.insert(QStringLiteral("screen_reader"), Accessibility::screenReaderActive());
+        state.insert(QStringLiteral("description"), descriptionFor(m_path));
+        state.insert(QStringLiteral("describe_ahead"), Settings::describeAhead());
+        if (Settings::describeAhead() == QLatin1String("on")) {
+            QJsonArray upcoming;
+            int offset = 0;
+            for (const QString &f : upcomingFiles(Settings::describeAheadCount())) {
+                ++offset;
+                upcoming.append(QJsonObject{{QStringLiteral("offset"), offset},
+                                            {QStringLiteral("file"), QFileInfo(f).fileName()},
+                                            {QStringLiteral("has_description"), !descriptionFor(f).isEmpty()}});
+            }
+            state.insert(QStringLiteral("upcoming"), upcoming);
+        }
         return state;
+    }
+
+    if (cmd == QLatin1String("image") && req.value(QLatin1String("offset")).toInt() > 0) {
+        // Folgendes Bild zum Vorab-Beschreiben – nur mit Einwilligung.
+        if (Settings::describeAhead() != QLatin1String("on"))
+            return error(QStringLiteral("describing upcoming images is not enabled by the user (describe_ahead is '%1')")
+                             .arg(Settings::describeAhead()));
+        const int offset = req.value(QLatin1String("offset")).toInt();
+        const QStringList upcoming = upcomingFiles(Settings::describeAheadCount());
+        if (offset > upcoming.size())
+            return error(QStringLiteral("no upcoming image at offset %1 (%2 available)").arg(offset).arg(upcoming.size()));
+        const QString path = upcoming.at(offset - 1);
+        QImage img = m_loader->contains(path, 0) ? m_loader->result(path, 0).image : ImageLoader::decode(path, 0).image;
+        if (img.isNull())
+            return error(QStringLiteral("cannot read the upcoming image"));
+        const int maxSize = std::clamp(req.value(QLatin1String("max_size")).toInt(1024), 64, 2048);
+        QJsonObject answer{{QStringLiteral("original_width"), img.width()},
+                           {QStringLiteral("original_height"), img.height()},
+                           {QStringLiteral("file"), path}};
+        if (img.width() > maxSize || img.height() > maxSize)
+            img = img.scaled(maxSize, maxSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QByteArray bytes;
+        QBuffer buffer(&bytes);
+        buffer.open(QIODevice::WriteOnly);
+        img.save(&buffer, "png");
+        answer.insert(QStringLiteral("data"), QString::fromLatin1(bytes.toBase64()));
+        return answer;
+    }
+
+    if (cmd == QLatin1String("describe")) {
+        const QString text = req.value(QLatin1String("text")).toString().trimmed().left(2000);
+        const int offset = req.value(QLatin1String("offset")).toInt();
+        QString path;
+        if (offset <= 0) {
+            if (m_path.isEmpty() || m_kind != Kind::Image)
+                return error(QStringLiteral("no image file is shown"));
+            path = m_path;
+        } else {
+            if (Settings::describeAhead() != QLatin1String("on"))
+                return error(QStringLiteral("describing upcoming images is not enabled by the user"));
+            const QStringList upcoming = upcomingFiles(Settings::describeAheadCount());
+            if (offset > upcoming.size())
+                return error(QStringLiteral("no upcoming image at offset %1").arg(offset));
+            path = upcoming.at(offset - 1);
+        }
+        if (text.isEmpty())
+            return error(QStringLiteral("empty description"));
+        m_aiDescriptions.insert(path, text);
+        bool stored = false;
+        if (Settings::storeDescriptions() && Metadata::available() && Metadata::canWrite(path)
+            && !(path == m_path && m_modified)) {
+            Metadata::DescriptiveFields f;
+            f.altText = text;
+            stored = Metadata::writeDescriptive(path, f);
+            if (stored)
+                AiGuard::markAiMetadata(path);   // von der KI verfasst: für die KI nie vertrauenswürdig
+        }
+        const bool current = path == m_path && hasCurrentImage();
+        if (current)
+            announceCurrent();
+        if (offset <= 0)
+            QTimer::singleShot(0, this, [this] { askDescribeAheadOnce(); });   // erst antworten, dann fragen
+        return {{QStringLiteral("file"), path}, {QStringLiteral("stored"), stored},
+                {QStringLiteral("spoken"), current && Accessibility::screenReaderActive()}};
     }
 
     if (cmd == QLatin1String("image")) {
@@ -2292,6 +2703,9 @@ void MainWindow::showHelp()
         {QT_TR_NOOP("Doppelklick"), QT_TR_NOOP("Vollbild")},
         {QT_TR_NOOP("1 … 9, 0"), QT_TR_NOOP("1 … 9 bzw. 10 Dateien vor; mit Strg zurück")},
         {QT_TR_NOOP("→ / ← (Video)"), QT_TR_NOOP("5 s vor / zurück (mit Umschalt: 60 s); ↑ / ↓ blättern")},
+        {QT_TR_NOOP("Umschalt + Pfeiltasten, Pos1, Ende (Textmodus)"), QT_TR_NOOP("Erkannten Text markieren")},
+        {QT_TR_NOOP("Pfeiltasten (Textmodus mit Bildschirmleser)"),
+         QT_TR_NOOP("Textcursor: ← → Zeichen, Strg+← → Wort, ↑ ↓ Zeile; blättern mit Bild↑ / Bild↓")},
     };
     for (const auto &e : extra)
         entries.append({tr(e[0]), tr(e[1])});

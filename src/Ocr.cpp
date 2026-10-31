@@ -465,7 +465,8 @@ Result recognize(const QImage &input, const Options &options)
     }
 
     // Graustufen; kleine Bilder (Bildschirmfotos) verdoppeln – Tesseract
-    // braucht etwa 20 px Zeichenhöhe.
+    // braucht etwa 20 px Zeichenhöhe. Gründlich: größere Bilder auf 150 %,
+    // das liest kleine und dünne Schrift (Buchumschläge, Fußnoten) besser.
     QImage gray = input.convertToFormat(QImage::Format_Grayscale8);
     int dpi = options.dpi;
     if (dpi <= 0) {
@@ -473,9 +474,13 @@ Result recognize(const QImage &input, const Options &options)
         if (dpi < 70 || dpi > 1200)
             dpi = 300;
     }
-    if (std::max(gray.width(), gray.height()) < 1200) {
+    const int longest = std::max(gray.width(), gray.height());
+    if (longest < 1200) {
         gray = gray.scaled(gray.size() * 2, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         dpi *= 2;
+    } else if (options.thorough && longest < 5000) {
+        gray = gray.scaled(gray.size() * 3 / 2, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        dpi = dpi * 3 / 2;
     }
     const double backScale = double(input.width()) / gray.width();
     g_progressValue = -1;
@@ -624,9 +629,9 @@ Result recognize(const QImage &input, const Options &options)
 
     // Volltext. Tesseract liest hellen Text auf dunklem Grund schlecht (z. B.
     // gelbe Schrift auf einem Buchumschlag). Hat das Bild viele dunkle
-    // Flächen, läuft parallel ein Durchgang auf dem invertierten Bild; je
-    // Zeile gewinnt der sicherere Durchgang.
-    const bool tryInverted = darkShare(gray) > 0.2;
+    // Flächen (oder soll gründlich gelesen werden), läuft parallel ein
+    // Durchgang auf dem invertierten Bild; je Zeile gewinnt der sicherere.
+    const bool tryInverted = options.thorough || darkShare(gray) > 0.2;
     QImage inverted;
     if (tryInverted) {
         inverted = gray;

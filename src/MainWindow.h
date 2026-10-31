@@ -66,7 +66,18 @@ private:
     bool hasCurrentImage() const;
     bool canStoreText() const;
     void loadStoredText();
-    void toggleTextMode(bool on);
+    void toggleTextMode(bool on, bool thorough = false);
+    void rereadText();
+    void recognizeFolder();
+
+    // Bildschirmleser
+    void announceCurrent();
+    void announceText(const QString &summary);
+    void updateCaretKeys();
+    QString descriptionFor(const QString &path) const;
+    QStringList upcomingFiles(int count) const;
+    void askDescribeAheadOnce();
+    void editDescription();
     bool storeTextLayer();
     bool resolveUnsavedText();
     void pageStep(int delta);
@@ -189,6 +200,8 @@ private:
     bool m_textUnsaved = false;   // erkannter Text noch nicht in der Datei
     bool m_ocrRotation = false;   // Bild wurde von der Texterkennung aufgerichtet
     bool m_deepColor = false;
+    QHash<QString, QString> m_aiDescriptions;   // Bildbeschreibungen der KI (Pfad → Text)
+    bool m_describeQuestionShown = false;
     QVector<QImage> m_undo;
     // Seit dem Laden/Speichern: nur Drehungen/Spiegelungen? (für verlustfreies JPEG)
     QVector<int> m_editOps;

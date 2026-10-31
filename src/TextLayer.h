@@ -52,4 +52,21 @@ struct TextLayer
         }
         return out;
     }
+
+    // Anfang jedes Wortes in text() (Zeichenposition), für Textcursor und
+    // Bildschirmleser.
+    QList<int> wordOffsets() const
+    {
+        QList<int> out;
+        int pos = 0;
+        for (int i = 0; i < words.size(); ++i) {
+            if (i > 0) {
+                const TextWord &prev = words.at(i - 1);
+                pos += words.at(i).para != prev.para ? 2 : 1;
+            }
+            out << pos;
+            pos += int(words.at(i).text.size());
+        }
+        return out;
+    }
 };

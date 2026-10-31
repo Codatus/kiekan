@@ -50,6 +50,7 @@ struct Options
     QString languages = QStringLiteral("auto");   // oder z. B. "deu+eng"
     bool words = false;                            // Wortliste mit Rahmen
     int dpi = 0;                                   // 0 = aus dem Bild / 300
+    bool thorough = false;                         // gründlicher, aber langsamer
 };
 
 struct Result

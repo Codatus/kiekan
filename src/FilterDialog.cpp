@@ -131,6 +131,7 @@ FilterDialog::FilterDialog(const QList<const Filter *> &filters, const Filter *i
     auto *main = new QHBoxLayout(this);
     if (filters.size() > 1) {
         m_list = new QListWidget(this);
+        m_list->setAccessibleName(tr("Effekte"));
         m_list->setMaximumWidth(200);
         for (const Filter *f : filters)
             m_list->addItem(f->name());
@@ -214,6 +215,9 @@ void FilterDialog::buildControls()
                     schedulePreview();
                 });
 
+        // Bildschirmleser: Regler und Zahlenfeld stehen ohne eigenes Label
+        slider->setAccessibleName(p.label);
+        spin->setAccessibleName(p.label);
         auto *row = new QWidget(m_controls);
         auto *layout = new QHBoxLayout(row);
         layout->setContentsMargins(0, 0, 0, 0);

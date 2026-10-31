@@ -43,7 +43,7 @@ def check(label, ok, info=""):
 
 rpc("initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "kt", "version": "1"}})
 tools = rpc("tools/list")["result"]["tools"]
-check("tools/list liefert 19 Werkzeuge", len(tools) == 19, str(len(tools)))
+check("tools/list liefert 20 Werkzeuge", len(tools) == 20, str(len(tools)))
 
 err, txt, _ = call("list_media", {"directory": B})
 check("list_media", not err and "foto.jpg" in txt and "video.mp4" in txt, txt)
@@ -115,6 +115,8 @@ check("Kein Fehlalarm bei normaler Datei", not err and "SECURITY NOTICE" not in 
 
 err, txt, _ = call("viewer_state", {})
 check("viewer_state ohne Fenster: sauberer Fehler", err and len(txt) > 10, txt)
+err, txt, _ = call("viewer_describe", {"text": "Ein Testbild."})
+check("viewer_describe ohne Fenster: sauberer Fehler", err and len(txt) > 10, txt)
 
 log = "/root/data/kiekan/kiekan/ki-protokoll.jsonl"
 check("KI-Protokoll geschrieben", os.path.exists(log) and sum(1 for _ in open(log)) >= 30, log)

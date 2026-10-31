@@ -97,6 +97,8 @@ qt_add_executable(kiekan WIN32
     src/main.cpp
     src/MainWindow.cpp
     src/MainWindow.h
+    src/Accessibility.cpp
+    src/Accessibility.h
     src/ImageView.cpp
     src/ImageView.h
     src/ProgressToolButton.cpp
@@ -320,6 +322,12 @@ if(BUILD_TESTING)
         target_link_libraries(renametest PRIVATE Qt6::Core Qt6::Gui PkgConfig::EXIV2)
         target_compile_definitions(renametest PRIVATE KIEKAN_HAVE_EXIV2)
         add_test(NAME umbenennen COMMAND renametest)
+        qt_add_executable(alttexttest tests/alttexttest.cpp src/Metadata.cpp)
+        target_include_directories(alttexttest PRIVATE src)
+        target_link_libraries(alttexttest PRIVATE Qt6::Core Qt6::Gui PkgConfig::EXIV2)
+        target_compile_definitions(alttexttest PRIVATE KIEKAN_HAVE_EXIV2)
+        add_test(NAME bildbeschreibung COMMAND alttexttest)
+        set_tests_properties(bildbeschreibung PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
         set_tests_properties(verlustfrei PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
     endif()
     if(UNIX AND NOT APPLE)

@@ -8,6 +8,8 @@
 #include <QTimer>
 #include <QWidget>
 
+#include <algorithm>
+
 #include "TextLayer.h"
 
 // Zeichnet ein Bild mit Zoom, Verschieben und Rechteckauswahl.
@@ -53,6 +55,7 @@ public:
     // eines Rechtecks. Die Rahmen gelten für das aktuelle Bild; ein neues
     // oder verändertes Bild löscht die Textschicht.
     void setTextLayer(const TextLayer &layer);
+    void clearTextLayer();
     const TextLayer &textLayer() const { return m_text; }
     bool hasTextLayer() const { return !m_text.isEmpty(); }
     void setTextMode(bool on);
@@ -60,6 +63,24 @@ public:
     bool hasTextSelection() const { return m_textFrom >= 0; }
     QString selectedText() const;
     void selectAllText();
+
+    // Bildschirmleser: Name (z. B. Dateiname und Position) und Beschreibung
+    // der Bildfläche. Der erkannte Text ist als Lesetext mit Textcursor
+    // zugänglich; mit `caretKeys` bewegen auch die Pfeiltasten ohne Umschalt
+    // den Cursor (sonst blättern sie).
+    void setAccessibleInfo(const QString &name, const QString &description);
+    QString accessibleInfoName() const { return m_a11yName; }
+    QString accessibleInfoDescription() const { return m_a11yDescription; }
+    void setCaretKeys(bool on) { m_caretKeys = on; }
+    const QString &fullText() const { return m_textFull; }
+    int caretOffset() const { return std::max(0, m_caret); }
+    void setCaretOffset(int offset);
+    // Markierung als Zeichenbereich [start, end) in fullText(); leer = keine
+    void selectionOffsets(int *start, int *end) const;
+    void setSelectionOffsets(int start, int end);
+    int wordAtOffset(int offset) const;
+    QRect characterRect(int offset) const;   // in Widget-Koordinaten
+    int offsetAt(const QPoint &widgetPos) const;
 
 Q_SIGNALS:
     void imageChanged();
@@ -72,6 +93,9 @@ Q_SIGNALS:
     void textSelectionChanged();
 
 protected:
+    bool event(QEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
@@ -91,7 +115,9 @@ private:
     void invalidateScaled(bool immediate);
     void rebuildScaled();
     int wordAt(const QPointF &imagePos, bool nearest) const;
-    void clearTextLayer();
+    bool caretKey(const QKeyEvent *event) const;
+    void moveCaret(int offset, bool extend);
+    void notifyTextSelection();
 
     QImage m_image;
     QImage m_scaled;          // geglättete Kopie für Zoom < 1
@@ -122,4 +148,11 @@ private:
     int m_textAnchor = -1;
     int m_textFrom = -1;      // markierte Wörter from..to, -1 = keine
     int m_textTo = -1;
+
+    QString m_textFull;       // m_text.text(), einmal berechnet
+    QList<int> m_wordStart;   // Anfang jedes Wortes in m_textFull
+    int m_caret = -1;         // Textcursor (Zeichen), -1 = noch nicht benutzt
+    bool m_caretKeys = false;
+    QString m_a11yName;
+    QString m_a11yDescription;
 };

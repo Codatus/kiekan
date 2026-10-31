@@ -168,7 +168,14 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
   Beim Weiterblättern fragt KiekAn!, ob Text und Drehung in der Datei
   gespeichert werden sollen (bei JPEG verlustfrei, der Text in den
   XMP-Metadaten); dann ist der Text beim nächsten Öffnen sofort markierbar.
-  Die Antwort lässt sich merken und in den Einstellungen ändern
+  Die Antwort lässt sich merken und in den Einstellungen ändern.
+  Liest die Erkennung nicht alles, liest **Strg+T** neu und gründlicher
+  (vergrößert, zusätzlich hell auf dunkel). Hellen Text auf dunklem Grund,
+  etwa auf Buchumschlägen, erkennt KiekAn! auch ohne Strg+T
+- **Text im ganzen Ordner erkennen** (Datei-Menü): erkennt den Text aller Bilder
+  des Ordners und speichert ihn in den Dateien – danach ist er beim Blättern
+  sofort markierbar und vorlesbar
+- **Bildschirmleser** (Orca, NVDA, VoiceOver), siehe unten
 - Zuerst Betrachter: Wer ein Bild dreht oder bearbeitet und dann weiterblättert,
   verwirft die Änderung ohne Rückfrage – gespeichert wird nur mit Strg+S. Die
   Nachfrage „Änderungen speichern?“ lässt sich in den Einstellungen einschalten
@@ -200,7 +207,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - EXIF/IPTC/XMP anzeigen (mit Suche und Kartenlink bei GPS); beim Speichern
   bleiben die Metadaten erhalten
 
-- Texterkennung (OCR, Strg+T) mit automatischer Wahl des Sprachpakets und
+- Texterkennung (OCR-Fenster, Strg+Umschalt+T) mit automatischer Wahl des Sprachpakets und
   Aufrichten gedrehter Seiten; PDFs mit Textebene werden direkt gelesen
 - Texterkennung läuft wie bei ocrmypdf in einfädigen Tesseract-Hilfsprozessen,
   mehrere Seiten parallel (Anzahl in den Einstellungen)
@@ -215,6 +222,9 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - EXIF auch dort, wo exiv2 das Format nicht kennt: HEIC/AVIF (EXIF-Block über
   libheif) und z. B. Canon CR3 (Aufnahmedaten über LibRaw)
 - Titel, Beschreibung, Stichwörter und Bewertung anzeigen (Bildinformationen)
+- Bildbeschreibung (Alternativtext für Bildschirmleser, Taste D) schreiben und
+  ändern; gespeichert im IPTC-Feld „Alt Text (Accessibility)“, das auch andere
+  Programme lesen
 - Schnittstelle für KI-Assistenten (MCP), siehe unten
 
 
@@ -258,7 +268,11 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 | F2 | Umbenennen |
 | Entf | In den Papierkorb |
 | I | Bildinformationen |
-| Strg+T | Text erkennen (OCR), mit Auswahl nur im markierten Bereich |
+| T | Text markieren (erkennt den Text im Bild) |
+| Strg+T | Text neu und gründlich erkennen |
+| Strg+Umschalt+T | Text erkennen (OCR-Fenster), mit Auswahl nur im markierten Bereich |
+| D | Bildbeschreibung (Alternativtext) |
+| Umschalt+Pfeile, Umschalt+Pos1/Ende (Textmodus) | Text markieren |
 | Strg+D | Kamera-RAW voll entwickeln |
 | E | EXIF-Daten |
 | Strg+Bild ab / Strg+Bild auf | Nächste / vorherige Seite (PDF, TIFF) |
@@ -272,6 +286,29 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 
 Alle Tasten lassen sich unter Extras → Tastenkürzel anpassen ändern; F1 zeigt
 immer die aktuelle Belegung.
+
+## Bildschirmleser
+
+KiekAn! arbeitet mit Orca (Linux), NVDA (Windows) und VoiceOver (macOS):
+
+- Beim Blättern sagt KiekAn! das neue Bild an: Dateiname, Position („Bild 17
+  von 230“) und die Bildbeschreibung aus der Datei. Was angesagt wird, lässt
+  sich unter Einstellungen → Bildschirmleser wählen.
+- **T** erkennt den Text im Bild. Danach steht der Text als Lesetext bereit:
+  ←/→ zeichenweise, Strg+←/→ wortweise, ↑/↓ zeilenweise, Pos1/Ende; mit Umschalt
+  wird markiert, Strg+C kopiert, Esc beendet den Textmodus. Geblättert wird
+  dann mit Bild↑/Bild↓ und der Leertaste. Den Fortschritt der Erkennung sagt
+  KiekAn! an (abschaltbar).
+- **D** öffnet die Bildbeschreibung zum Schreiben oder Ändern.
+- **Mit Claude:** Wer Claude fragt „Was ist auf dem Bild, das ich gerade offen
+  habe?“, bekommt die Antwort, und KiekAn! liest die Beschreibung sofort vor.
+  Auf Wunsch beschreibt Claude auch die nächsten Bilder gleich mit (Anzahl
+  einstellbar); beim Weiterblättern ist die Beschreibung dann schon da. Beim
+  ersten Mal fragt KiekAn!, ob das immer so geschehen soll und ob die
+  Beschreibungen in den Dateien gespeichert werden sollen. Claude sieht dafür
+  nur die Bilder, die es beschreiben soll; KiekAn! selbst sendet nichts.
+- Getestet mit Orca 42 unter Ubuntu 22.04. Rückmeldungen von Menschen, die
+  täglich mit einem Bildschirmleser arbeiten, sind sehr willkommen.
 
 ## Andere Systeme (Windows, weitere Distributionen)
 
@@ -373,10 +410,11 @@ Das KI-Protokoll liegt dann unter `~/.var/app/io.github.codatus.kiekan/data/kiek
 | `viewer_get_image` | angezeigtes Bild bzw. markierten Bereich, auch mit ungespeicherten Änderungen |
 | `viewer_select` | einen Bereich im Fenster markieren, um darauf zu zeigen |
 | `viewer_apply` | Bearbeitung als **ungespeicherten Vorschlag** im Fenster zeigen (Strg+S / Strg+Z) |
+| `viewer_describe` | Bildbeschreibung ans Fenster geben – KiekAn! liest sie mit dem Bildschirmleser vor (auch vorab für die nächsten Bilder) |
 | `contact_sheet` | viele Bilder nummeriert auf einem Blatt – zum Sichten ganzer Ordner |
 | `extract_text` | Text aus PDF-Textebene oder per OCR, Sprache automatisch, optional mit Wortrahmen |
 | `ocr_languages` | installierte OCR-Sprachpakete und wie man weitere installiert |
-| `write_metadata` | Titel, Beschreibung, Stichwörter, Bewertung in die Datei schreiben (XMP/IPTC/EXIF) |
+| `write_metadata` | Titel, Beschreibung, Alternativtext, Stichwörter, Bewertung in die Datei schreiben (XMP/IPTC/EXIF) |
 | `split_pdf` | große PDFs in dokumentierte Teile zerlegen (z. B. unter 30 MB für Claude) |
 | `pdf_parts` | Teile einer Teilung auflisten, Originalseite → Teil nachschlagen, Teile prüfen |
 

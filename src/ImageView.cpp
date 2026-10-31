@@ -4,6 +4,10 @@
 
 #include "ImageView.h"
 
+#include "Accessibility.h"
+
+#include <QAccessible>
+#include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QWheelEvent>
@@ -282,6 +286,11 @@ void ImageView::paintEvent(QPaintEvent *)
             p.setBrush(sel ? marked : hint);
             p.drawRect(r.adjusted(-1, -1, 1, 1));
         }
+        // Textcursor, sobald mit der Tastatur gelesen wird
+        if (m_caret >= 0 && hasFocus()) {
+            const QRect c = characterRect(m_caret);
+            p.fillRect(QRect(c.left(), c.top(), 2, c.height()), palette().color(QPalette::Highlight));
+        }
     }
 
     if (!m_selection.isEmpty()) {
@@ -356,7 +365,9 @@ void ImageView::mousePressEvent(QMouseEvent *event)
         m_textFrom = m_textTo = hit;   // Klick ins Leere hebt die Markierung auf
         if (hit < 0)
             m_textAnchor = w;
-        Q_EMIT textSelectionChanged();
+        else if (m_caret >= 0 || QAccessible::isActive())
+            setCaretOffset(offsetAt(event->position().toPoint()));
+        notifyTextSelection();
         update();
         return;
     }
@@ -390,7 +401,7 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
         if (w >= 0 && m_textAnchor >= 0) {
             m_textFrom = std::min(m_textAnchor, w);
             m_textTo = std::max(m_textAnchor, w);
-            Q_EMIT textSelectionChanged();
+            notifyTextSelection();
             update();
         }
         return;
@@ -451,7 +462,7 @@ void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
         const int hit = wordAt(toImage(event->position()), false);
         if (hit >= 0) {
             m_textFrom = m_textTo = m_textAnchor = hit;
-            Q_EMIT textSelectionChanged();
+            notifyTextSelection();
             update();
         }
         return;
@@ -463,19 +474,239 @@ void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ImageView::setTextLayer(const TextLayer &layer)
 {
+    const QString old = m_textFull;
     m_text = layer;
     m_textFrom = m_textTo = m_textAnchor = -1;
+    m_textFull = m_text.text();
+    m_wordStart = m_text.wordOffsets();
+    m_caret = -1;
+    Accessibility::textReplaced(this, old, m_textFull);
     update();
 }
 
 void ImageView::clearTextLayer()
 {
     const bool had = !m_text.isEmpty();
+    const QString old = m_textFull;
     m_text = TextLayer();
     m_textFrom = m_textTo = m_textAnchor = -1;
     m_textSelecting = false;
-    if (had)
+    m_textFull.clear();
+    m_wordStart.clear();
+    m_caret = -1;
+    if (had) {
+        Accessibility::textReplaced(this, old, QString());
         Q_EMIT textLayerCleared();
+    }
+}
+
+void ImageView::setAccessibleInfo(const QString &name, const QString &description)
+{
+    // Angesagt wird erst mit Accessibility::present() – der Aufrufer
+    // entscheidet, wann (z. B. erst, wenn das Bild geladen ist).
+    m_a11yName = name;
+    m_a11yDescription = description;
+}
+
+void ImageView::notifyTextSelection()
+{
+    Q_EMIT textSelectionChanged();
+    if (QAccessible::isActive()) {
+        int start, end;
+        selectionOffsets(&start, &end);
+        Accessibility::selectionChanged(this, start, end, caretOffset());
+    }
+}
+
+// --- Textcursor (Tastatur und Bildschirmleser) ------------------------------
+
+int ImageView::wordAtOffset(int offset) const
+{
+    if (m_wordStart.isEmpty())
+        return -1;
+    const auto it = std::upper_bound(m_wordStart.begin(), m_wordStart.end(), offset);
+    return std::max(0, int(it - m_wordStart.begin()) - 1);
+}
+
+void ImageView::selectionOffsets(int *start, int *end) const
+{
+    if (m_textFrom < 0 || m_wordStart.isEmpty()) {
+        *start = *end = caretOffset();
+        return;
+    }
+    *start = m_wordStart.at(m_textFrom);
+    *end = m_wordStart.at(m_textTo) + int(m_text.words.at(m_textTo).text.size());
+}
+
+void ImageView::setSelectionOffsets(int start, int end)
+{
+    if (m_text.isEmpty())
+        return;
+    if (end <= start) {
+        m_textFrom = m_textTo = -1;
+    } else {
+        m_textFrom = wordAtOffset(start);
+        m_textTo = wordAtOffset(end - 1);
+    }
+    notifyTextSelection();
+    update();
+}
+
+void ImageView::setCaretOffset(int offset)
+{
+    if (m_textFull.isEmpty())
+        return;
+    m_caret = std::clamp(offset, 0, int(m_textFull.size()));
+    Accessibility::caretMoved(this, m_caret);
+    update();
+}
+
+QRect ImageView::characterRect(int offset) const
+{
+    const int w = wordAtOffset(offset);
+    if (w < 0)
+        return {};
+    const QRect &b = m_text.words.at(w).box;
+    const QRectF r(toWidget(b.topLeft()), toWidget(b.topLeft() + QPointF(b.width(), b.height())));
+    const int len = std::max(1, int(m_text.words.at(w).text.size()));
+    // Zwischenraum hinter dem Wort: am Wortende
+    const int inWord = std::clamp(offset - m_wordStart.at(w), 0, len);
+    const double cw = r.width() / len;
+    return QRectF(r.left() + inWord * cw, r.top(), inWord == len ? 1.0 : cw, r.height()).toAlignedRect();
+}
+
+int ImageView::offsetAt(const QPoint &widgetPos) const
+{
+    const int w = wordAt(toImage(widgetPos), false);
+    if (w < 0)
+        return -1;
+    const QRect &b = m_text.words.at(w).box;
+    const double x = toImage(widgetPos).x();
+    const int len = int(m_text.words.at(w).text.size());
+    const int inWord = std::clamp(int((x - b.left()) / std::max(1, b.width()) * len), 0, std::max(0, len - 1));
+    return m_wordStart.at(w) + inWord;
+}
+
+bool ImageView::caretKey(const QKeyEvent *event) const
+{
+    if (!m_textMode || m_textFull.isEmpty())
+        return false;
+    switch (event->key()) {
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+    case Qt::Key_Up:
+    case Qt::Key_Down:
+    case Qt::Key_Home:
+    case Qt::Key_End:
+        // Ohne Umschalt nur, wenn die Pfeiltasten den Cursor bewegen sollen
+        // (Bildschirmleser), sonst blättern sie wie gewohnt.
+        return (event->modifiers() & Qt::ShiftModifier) || m_caretKeys;
+    default:
+        return false;
+    }
+}
+
+void ImageView::focusInEvent(QFocusEvent *event)
+{
+    QWidget::focusInEvent(event);
+    // Nach Qts eigenem Fokusereignis: der Bildschirmleser soll beim Element
+    // (Bild bzw. Text) landen, nicht bei der leeren Fläche.
+    QTimer::singleShot(0, this, [this] { Accessibility::focusIn(this); });
+}
+
+bool ImageView::event(QEvent *event)
+{
+    // Pos1/Ende sind sonst Tastenkürzel des Fensters (erstes/letztes Bild).
+    if (event->type() == QEvent::ShortcutOverride && caretKey(static_cast<QKeyEvent *>(event))) {
+        event->accept();
+        return true;
+    }
+    return QWidget::event(event);
+}
+
+void ImageView::moveCaret(int offset, bool extend)
+{
+    const int before = caretOffset();
+    const int anchorWord = m_textAnchor >= 0 ? m_textAnchor : wordAtOffset(before);
+    setCaretOffset(offset);
+    if (extend) {
+        // Markierung wortweise vom Anker bis zum Cursor
+        m_textAnchor = anchorWord;
+        const int w = wordAtOffset(m_caret > 0 && m_caret > before ? m_caret - 1 : m_caret);
+        m_textFrom = std::min(anchorWord, w);
+        m_textTo = std::max(anchorWord, w);
+        notifyTextSelection();
+    } else if (m_textFrom >= 0) {
+        m_textFrom = m_textTo = m_textAnchor = -1;
+        notifyTextSelection();
+    } else {
+        m_textAnchor = -1;
+    }
+    update();
+}
+
+void ImageView::keyPressEvent(QKeyEvent *event)
+{
+    if (!caretKey(event)) {
+        QWidget::keyPressEvent(event);   // weiter ans Fenster (Blättern usw.)
+        return;
+    }
+    const QString &t = m_textFull;
+    const int n = int(t.size());
+    const bool ctrl = event->modifiers() & Qt::ControlModifier;
+    const bool extend = event->modifiers() & Qt::ShiftModifier;
+    int pos = caretOffset();
+    const int lineStart = pos > 0 ? int(t.lastIndexOf(QLatin1Char('\n'), pos - 1)) + 1 : 0;
+    int lineEnd = int(t.indexOf(QLatin1Char('\n'), pos));
+    if (lineEnd < 0)
+        lineEnd = n;
+    switch (event->key()) {
+    case Qt::Key_Left:
+        if (ctrl) {
+            const int w = wordAtOffset(pos);
+            pos = (pos > m_wordStart.at(w) || w == 0) ? m_wordStart.at(w) : m_wordStart.at(w - 1);
+        } else {
+            pos = std::max(0, pos - 1);
+        }
+        break;
+    case Qt::Key_Right:
+        if (ctrl) {
+            const int w = wordAtOffset(pos);
+            pos = w + 1 < m_wordStart.size() ? m_wordStart.at(w + 1) : n;
+        } else {
+            pos = std::min(n, pos + 1);
+        }
+        break;
+    case Qt::Key_Up:
+        if (lineStart > 0) {
+            const int prevStart = lineStart >= 2 ? int(t.lastIndexOf(QLatin1Char('\n'), lineStart - 2)) + 1 : 0;
+            pos = std::min(prevStart + (pos - lineStart), lineStart - 1);
+        } else {
+            pos = 0;
+        }
+        break;
+    case Qt::Key_Down:
+        if (lineEnd < n) {
+            const int nextStart = lineEnd + 1;
+            int nextEnd = int(t.indexOf(QLatin1Char('\n'), nextStart));
+            if (nextEnd < 0)
+                nextEnd = n;
+            pos = std::min(nextStart + (pos - lineStart), nextEnd);
+        } else {
+            pos = n;
+        }
+        break;
+    case Qt::Key_Home:
+        pos = ctrl ? 0 : lineStart;
+        break;
+    case Qt::Key_End:
+        pos = ctrl ? n : lineEnd;
+        break;
+    default:
+        break;
+    }
+    moveCaret(pos, extend);
+    event->accept();
 }
 
 void ImageView::setTextMode(bool on)
@@ -501,7 +732,7 @@ void ImageView::selectAllText()
         return;
     m_textFrom = 0;
     m_textTo = int(m_text.words.size()) - 1;
-    Q_EMIT textSelectionChanged();
+    notifyTextSelection();
     update();
 }
 

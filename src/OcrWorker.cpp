@@ -40,6 +40,7 @@ QJsonObject jobToJson(const Job &j)
         {QStringLiteral("languages"), j.options.languages},
         {QStringLiteral("words"), j.options.words},
         {QStringLiteral("dpi"), j.options.dpi},
+        {QStringLiteral("thorough"), j.options.thorough},
     };
 }
 
@@ -57,6 +58,7 @@ Job jobFromJson(const QJsonObject &o)
     j.options.languages = o.value(QLatin1String("languages")).toString(QStringLiteral("auto"));
     j.options.words = o.value(QLatin1String("words")).toBool();
     j.options.dpi = o.value(QLatin1String("dpi")).toInt();
+    j.options.thorough = o.value(QLatin1String("thorough")).toBool();
     return j;
 }
 

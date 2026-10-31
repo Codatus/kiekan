@@ -4,6 +4,7 @@
 
 #include "FilterRegistry.h"
 #include "ImageLoader.h"
+#include "Accessibility.h"
 #include "MainWindow.h"
 #include "McpServer.h"
 #include "OcrWorker.h"
@@ -202,6 +203,7 @@ int main(int argc, char *argv[])
         || qtTranslator.load(locale, QStringLiteral("qt"), QStringLiteral("_"), appDir))
         QApplication::installTranslator(&qtTranslator);
 
+    Accessibility::install();
     MainWindow window;
     window.show();
     app.installEventFilter(new FileOpenFilter(&window));

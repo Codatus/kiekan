@@ -2,6 +2,19 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en" sourcelanguage="de">
 <context>
+    <name>Accessibility</name>
+    <message>
+        <location filename="../src/Accessibility.cpp" line="+98"/>
+        <source>Texterkennung</source>
+        <translation>Text recognition</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Erkannter Text</source>
+        <translation>Recognized text</translation>
+    </message>
+</context>
+<context>
     <name>AiGuard</name>
     <message numerus="yes">
         <location filename="../src/AiGuard.cpp" line="+394"/>
@@ -151,11 +164,12 @@
     </message>
     <message>
         <location line="+4"/>
+        <location line="+4"/>
         <source>Dateien</source>
         <translation>Files</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+5"/>
         <source>Dateien hinzufügen …</source>
         <translation>Add files …</translation>
     </message>
@@ -191,18 +205,18 @@
     </message>
     <message>
         <location line="+23"/>
-        <location line="+250"/>
+        <location line="+255"/>
         <source>Umwandeln</source>
         <translation>Convert</translation>
     </message>
     <message>
-        <location line="-249"/>
-        <location line="+249"/>
+        <location line="-254"/>
+        <location line="+254"/>
         <source>Umbenennen</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-238"/>
+        <location line="-243"/>
         <source>Schließen</source>
         <translation>Close</translation>
     </message>
@@ -257,7 +271,12 @@
         <translation> pixels (longest side)</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
+        <source>Längste Seite in Pixeln</source>
+        <translation>Longest side in pixels</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Größe:</source>
         <translation>Size:</translation>
     </message>
@@ -297,22 +316,33 @@
         <translation>Options:</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>…</source>
         <translation>…</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1"/>
+        <location line="+5"/>
         <source>Zielordner</source>
         <translation>Output folder</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-3"/>
+        <source>Zielordner wählen</source>
+        <translation>Choose output folder</translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Zielordner:</source>
         <translation>Output folder:</translation>
     </message>
     <message>
         <location line="+4"/>
+        <source>Protokoll</source>
+        <translation>Log</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Die Originale bleiben unverändert; die neuen Dateien landen im Zielordner.</source>
         <translation>The originals stay unchanged; the new files go to the output folder.</translation>
     </message>
@@ -375,6 +405,11 @@
         <location line="+0"/>
         <source>Neu</source>
         <translation>New</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Vorschau der neuen Namen</source>
+        <translation>Preview of the new names</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -634,6 +669,11 @@ right-click or double-click removes it.</translation>
         <translation>Search …</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Suchen</source>
+        <translation>Search</translation>
+    </message>
+    <message>
         <location line="+5"/>
         <source>Bereich</source>
         <translation>Group</translation>
@@ -647,6 +687,11 @@ right-click or double-click removes it.</translation>
         <location line="+0"/>
         <source>Wert</source>
         <translation>Value</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Metadaten</source>
+        <translation>Metadata</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -710,7 +755,12 @@ right-click or double-click removes it.</translation>
         <translation>Reset</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+28"/>
+        <source>Effekte</source>
+        <translation>Effects</translation>
+    </message>
+    <message>
+        <location line="+44"/>
         <source>Keine Einstellungen.</source>
         <translation>No settings.</translation>
     </message>
@@ -925,7 +975,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+250"/>
+        <location filename="../src/MainWindow.cpp" line="+255"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1100,12 +1150,12 @@ right-click or double-click removes it.</translation>
         <translation>&amp;Plugins …</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Text &amp;markieren</source>
         <translation>Select &amp;text</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+7"/>
         <source>Text markieren (T): erkennt den Text im Bild, danach lässt er sich mit der Maus markieren und mit Strg+C kopieren</source>
         <translation>Select text (T): recognizes the text in the image; then it can be selected with the mouse and copied with Ctrl+C</translation>
     </message>
@@ -1190,7 +1240,7 @@ right-click or double-click removes it.</translation>
         <translation>&amp;Edit</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>B&amp;ild</source>
         <translation>&amp;Image</translation>
     </message>
@@ -1225,7 +1275,7 @@ right-click or double-click removes it.</translation>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+499"/>
         <source>Text markieren geht nur bei Bildern und PDF-Seiten.</source>
         <translation>Text selection works only for images and PDF pages.</translation>
     </message>
@@ -1235,17 +1285,18 @@ right-click or double-click removes it.</translation>
         <translation>Select text with the mouse, double-click selects a word; Ctrl+C copies, Ctrl+A selects all.</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
+        <location line="+101"/>
         <source>Texterkennung ist nicht verfügbar – Tesseract-Sprachpakete installieren (z. B. %1).</source>
         <translation>Text recognition is not available – install Tesseract language packs (e.g. %1).</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-91"/>
         <source>Texterkennung nicht möglich: kein Platz für eine Zwischendatei.</source>
         <translation>Text recognition not possible: no space for a temporary file.</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+45"/>
         <source>Kein Text gefunden.</source>
         <translation>No text found.</translation>
     </message>
@@ -1255,7 +1306,7 @@ right-click or double-click removes it.</translation>
         <translation>Text recognition failed: %1</translation>
     </message>
     <message numerus="yes">
-        <location line="+22"/>
+        <location line="+29"/>
         <source>%n Wörter erkannt (%1)%2 – mit der Maus markieren, Strg+C kopiert.</source>
         <translation>
             <numerusform>%n word recognized (%1)%2 – select with the mouse, Ctrl+C copies.</numerusform>
@@ -1263,12 +1314,208 @@ right-click or double-click removes it.</translation>
         </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-1"/>
         <source>, Bild aufgerichtet</source>
         <translation>, image turned upright</translation>
     </message>
     <message>
+        <location line="-758"/>
+        <source>Bild&amp;beschreibung …</source>
+        <translation>Image &amp;description …</translation>
+    </message>
+    <message>
         <location line="+9"/>
+        <source>Text im ganzen &amp;Ordner erkennen …</source>
+        <translation>Recognize text in the whole &amp;folder …</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text &amp;neu und gründlich erkennen</source>
+        <translation>Recognize text &amp;again, thoroughly</translation>
+    </message>
+    <message>
+        <location line="+331"/>
+        <source>Bild aus der Zwischenablage</source>
+        <translation>Image from the clipboard</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Bild %1 von %2</source>
+        <translation>Image %1 of %2</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Seite %1 von %2</source>
+        <translation>Page %1 of %2</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1 mal %2 Pixel</source>
+        <translation>%1 by %2 pixels</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Keine Beschreibung.</source>
+        <translation>No description.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Erkannter Text vorhanden, T zum Lesen.</source>
+        <translation>Recognized text available, press T to read.</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+4"/>
+        <location line="+304"/>
+        <source>%n Wörter.</source>
+        <translation>
+            <numerusform>%n word.</numerusform>
+            <numerusform>%n words.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="-294"/>
+        <source>Pfeiltasten lesen, Umschalt markiert, Strg+C kopiert, Esc beendet den Textmodus.</source>
+        <translation>Arrow keys read, Shift selects, Ctrl+C copies, Esc leaves text mode.</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Bilder vorab beschreiben?</source>
+        <translation>Describe images in advance?</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>Die KI hat das gezeigte Bild beschrieben. Soll sie künftig auch die nächsten %n Bilder gleich mit beschreiben? Dann liest KiekAn! die Beschreibung beim Weiterblättern sofort vor. Die KI sieht dafür auch diese Bilder.</source>
+        <translation>
+            <numerusform>The AI has described the image shown. Should it from now on also describe the next image right away? KiekAn! then reads the description aloud as soon as you browse on. For this the AI also sees that image.</numerusform>
+            <numerusform>The AI has described the image shown. Should it from now on also describe the next %n images right away? KiekAn! then reads the description aloud as soon as you browse on. For this the AI also sees these images.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Ja, immer vorab</source>
+        <translation>Yes, always in advance</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Nein, nur das gezeigte Bild</source>
+        <translation>No, only the image shown</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Beschreibungen auch in den Bilddateien speichern</source>
+        <translation>Also store the descriptions in the image files</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Die KI beschreibt künftig auch die nächsten Bilder (änderbar in den Einstellungen).</source>
+        <translation>The AI will also describe the next images from now on (can be changed in the settings).</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Die KI beschreibt nur das gezeigte Bild (änderbar in den Einstellungen).</source>
+        <translation>The AI describes only the image shown (can be changed in the settings).</translation>
+    </message>
+    <message>
+        <location line="+216"/>
+        <source>Text erkennen geht nur bei Bildern und PDF-Seiten.</source>
+        <translation>Text recognition works only for images and PDF pages.</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+120"/>
+        <source>%n Wörter erkannt (%1)%2.</source>
+        <translation>
+            <numerusform>%n word recognized (%1)%2.</numerusform>
+            <numerusform>%n words recognized (%1)%2.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Kein Ordner geöffnet.</source>
+        <translation>No folder open.</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Die Texterkennung läuft schon.</source>
+        <translation>Text recognition is already running.</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Alle Bilder des Ordners haben schon erkannten Text.</source>
+        <translation>All images in the folder already have recognized text.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Im Ordner gibt es keine Bilder, in denen KiekAn! Text speichern kann (JPEG, PNG, TIFF, WebP).</source>
+        <translation>The folder has no images in which KiekAn! can store text (JPEG, PNG, TIFF, WebP).</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location line="+14"/>
+        <source>Text im Ordner erkennen</source>
+        <translation>Recognize text in folder</translation>
+    </message>
+    <message numerus="yes">
+        <location line="-13"/>
+        <source>Für %n Bilder Text erkennen und in den Dateien speichern? Danach ist der Text beim Blättern sofort markierbar und vorlesbar. Die Bilddaten bleiben unverändert, nur die Metadaten der Dateien ändern sich.</source>
+        <translation>
+            <numerusform>Recognize the text of %n image and store it in the file? Afterwards the text can be selected and read aloud right away while browsing. The image data stay unchanged; only the file metadata change.</numerusform>
+            <numerusform>Recognize the text of %n images and store it in the files? Afterwards the text can be selected and read aloud right away while browsing. The image data stay unchanged; only the file metadata change.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+3"/>
+        <source>%n Bilder haben schon erkannten Text und werden übersprungen.</source>
+        <translation>
+            <numerusform>%n image already has recognized text and is skipped.</numerusform>
+            <numerusform>%n images already have recognized text and are skipped.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Gründlich lesen (langsamer, findet mehr)</source>
+        <translation>Read thoroughly (slower, finds more)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Text wird erkannt …</source>
+        <translation>Recognizing text …</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Abbrechen</source>
+        <translation>Cancel</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+63"/>
+        <source>Text gespeichert in %n Bildern</source>
+        <translation>
+            <numerusform>Text stored in %n image</numerusform>
+            <numerusform>Text stored in %n images</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+2"/>
+        <source>%n ohne Text</source>
+        <translation>
+            <numerusform>%n without text</numerusform>
+            <numerusform>%n without text</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+2"/>
+        <source>%n fehlgeschlagen</source>
+        <translation>
+            <numerusform>%n failed</numerusform>
+            <numerusform>%n failed</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source> – abgebrochen.</source>
+        <translation> – cancelled.</translation>
+    </message>
+    <message>
+        <location line="+18"/>
         <source>Erkannter Text konnte nicht gespeichert werden: %1</source>
         <translation>Recognized text could not be saved: %1</translation>
     </message>
@@ -1524,12 +1771,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+871"/>
+        <location line="+1005"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-867"/>
+        <location line="-1001"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -1594,7 +1841,52 @@ Delete permanently?</translation>
         <translation>Position</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+20"/>
+        <source>Bildbeschreibung (Alternativtext)</source>
+        <translation>Image description (alt text)</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Bildbeschreibung – %1</source>
+        <translation>Image description – %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Kurze Beschreibung des Bildes für Bildschirmleser (Alternativtext). KiekAn! liest sie beim Blättern vor; andere Programme zeigen sie ebenfalls an.</source>
+        <translation>Short description of the image for screen readers (alt text). KiekAn! reads it aloud while browsing; other programs show it too.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Bildbeschreibung</source>
+        <translation>Image description</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>In diesem Dateiformat kann KiekAn! keine Beschreibung speichern; sie gilt bis zum Beenden.</source>
+        <translation>KiekAn! cannot store a description in this file format; it applies until you quit.</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Beschreibung konnte nicht gespeichert werden: %1</source>
+        <translation>Could not store the description: %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Beschreibung in „%1“ gespeichert.</source>
+        <translation>Description stored in “%1”.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Beschreibung übernommen, aber nur für diese Sitzung: Das Bild hat ungespeicherte Änderungen. Erst speichern oder verwerfen, dann die Beschreibung erneut speichern.</source>
+        <translation>Description applied, but only for this session: the image has unsaved changes. Save or discard them first, then store the description again.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Beschreibung übernommen (nur für diese Sitzung).</source>
+        <translation>Description applied (for this session only).</translation>
+    </message>
+    <message>
+        <location line="+72"/>
         <source>Text kopiert.</source>
         <translation>Text copied.</translation>
     </message>
@@ -1632,7 +1924,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>AI connection to the window not possible: %1</translation>
     </message>
     <message>
-        <location line="+243"/>
+        <location line="+322"/>
         <source>Für eine Diashow braucht der Ordner mindestens zwei Bilder.</source>
         <translation>A slideshow needs at least two images in the folder.</translation>
     </message>
@@ -1742,18 +2034,18 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-815"/>
+        <location line="-946"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-1178"/>
+        <location line="-1453"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>&amp;EXIF-Daten …</source>
         <translation>&amp;EXIF data …</translation>
     </message>
@@ -1773,13 +2065,13 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Recognize &amp;text (OCR) …</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <location line="+1970"/>
+        <location line="+12"/>
+        <location line="+2370"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1949"/>
+        <location line="-2349"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1794,12 +2086,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>&amp;Mute/unmute</translation>
     </message>
     <message>
-        <location line="+192"/>
+        <location line="+193"/>
         <source>Keine Bilder oder Videos in diesem Ordner.</source>
         <translation>No images or videos in this folder.</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+212"/>
         <source>Letzte Seite.</source>
         <translation>Last page.</translation>
     </message>
@@ -1826,7 +2118,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Video playback not available (libmpv)</translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+410"/>
         <source>Das Bild wurde bereits bearbeitet – zum Entwickeln erst speichern oder verwerfen.</source>
         <translation>The image has already been edited – save or discard first to develop.</translation>
     </message>
@@ -1906,7 +2198,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Description</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Stichwörter</source>
         <translation>Keywords</translation>
     </message>
@@ -1926,7 +2218,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>All EXIF data …</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+91"/>
         <source>Nichts rückgängig zu machen.</source>
         <translation>Nothing to undo.</translation>
     </message>
@@ -2001,7 +2293,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Plugins</translation>
     </message>
     <message>
-        <location line="+154"/>
+        <location line="+233"/>
         <source>Vorschlag der KI%1 – Strg+S speichert, Strg+Z verwirft</source>
         <translation>AI proposal%1 – Ctrl+S saves, Ctrl+Z discards</translation>
     </message>
@@ -2098,7 +2390,27 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Drag with left mouse button</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+4"/>
+        <source>Umschalt + Pfeiltasten, Pos1, Ende (Textmodus)</source>
+        <translation>Shift + arrow keys, Home, End (text mode)</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Erkannten Text markieren</source>
+        <translation>Select recognized text</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pfeiltasten (Textmodus mit Bildschirmleser)</source>
+        <translation>Arrow keys (text mode with a screen reader)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Textcursor: ← → Zeichen, Strg+← → Wort, ↑ ↓ Zeile; blättern mit Bild↑ / Bild↓</source>
+        <translation>Text cursor: ← → character, Ctrl+← → word, ↑ ↓ line; browse with Page Up / Page Down</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Tastenkürzel</source>
         <translation>Keyboard shortcuts</translation>
     </message>
@@ -2123,7 +2435,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation> – page %1 of %2</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="-2090"/>
+        <location line="+2105"/>
         <source>Kann nicht geöffnet werden: %1</source>
         <translation>Cannot be opened: %1</translation>
     </message>
@@ -2194,7 +2507,12 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Recognize</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+9"/>
+        <source>Erkannter Text</source>
+        <translation>Recognized text</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Kopieren</source>
         <translation>Copy</translation>
     </message>
@@ -2468,7 +2786,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+119"/>
+        <location filename="../src/SettingsDialog.cpp" line="+145"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2504,12 +2822,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+168"/>
+        <location line="+199"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-166"/>
+        <location line="-197"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2599,7 +2917,47 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>On Windows always the window opened first.</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+17"/>
+        <source>Bildbeschreibungen</source>
+        <translation>Image descriptions</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>beim ersten Mal fragen</source>
+        <translation>ask the first time</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>ja, die nächsten Bilder vorab beschreiben</source>
+        <translation>yes, describe the next images in advance</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>nein, nur das gezeigte Bild</source>
+        <translation>no, only the image shown</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fragen Sie die KI, was auf dem gezeigten Bild ist, kann sie auch die folgenden Bilder schon beschreiben. Beim Weiterblättern liest KiekAn! die Beschreibung dann sofort vor. Dafür sieht die KI auch diese Bilder.</source>
+        <translation>When you ask the AI what is in the image shown, it can describe the following images too. KiekAn! then reads the description aloud as soon as you browse on. For this the AI also sees these images.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Folgende Bilder vorab:</source>
+        <translation>Following images in advance:</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Anzahl der Bilder vorab:</source>
+        <translation>Number of images in advance:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Beschreibungen in den Bilddateien speichern (dann sind sie auch ohne KI sofort da; geändert werden nur die Metadaten)</source>
+        <translation>Store descriptions in the image files (then they are there right away, even without the AI; only the metadata change)</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Lesen: Ordner, deren Bilder und Dokumente die KI öffnen darf (ein Ordner pro Zeile; leer = keine):</source>
         <translation>Read: folders whose images and documents the AI may open (one folder per line; empty = none):</translation>
     </message>
@@ -2614,7 +2972,17 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Trusted: tick the read folders that contain only your own files. KiekAn! does not warn about suspicious text there; marking, log and permissions stay. Files the AI puts into write folders only count as trusted if they come from a ticked folder, are unchanged since and the AI has not written its own metadata into them. Not for downloads, mail attachments or incoming post:</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+9"/>
+        <source>Vertrauenswürdige Leseordner</source>
+        <translation>Trusted read folders</translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Bildschirmleser</source>
+        <translation>Screen reader</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Dateizuordnung</source>
         <translation>File associations</translation>
     </message>
@@ -2644,7 +3012,77 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+41"/>
+        <source>KiekAn! arbeitet mit Bildschirmlesern wie Orca, NVDA und VoiceOver. Beim Blättern wird das neue Bild angesagt; mit T wird der Text im Bild erkannt und lässt sich mit den Pfeiltasten lesen.</source>
+        <translation>KiekAn! works with screen readers such as Orca, NVDA and VoiceOver. When you browse, the new image is announced; T recognizes the text in the image, which you can then read with the arrow keys.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Beim Blättern ansagen</source>
+        <translation>Announce when browsing</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Dateiname</source>
+        <translation>File name</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Position im Ordner (z. B. „Bild 17 von 230“)</source>
+        <translation>Position in the folder (e.g. “Image 17 of 230”)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bildgröße in Pixeln</source>
+        <translation>Image size in pixels</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bildbeschreibung aus der Datei bzw. von der KI</source>
+        <translation>Image description from the file or from the AI</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Texterkennung</source>
+        <translation>Text recognition</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Fortschritt der Texterkennung ansagen</source>
+        <translation>Announce text recognition progress</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Aus: Angesagt wird nur das Ergebnis.</source>
+        <translation>Off: only the result is announced.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>automatisch (wenn ein Bildschirmleser läuft)</source>
+        <translation>automatic (when a screen reader is running)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>immer</source>
+        <translation>always</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>nie (Pfeiltasten blättern, Umschalt+Pfeil markiert)</source>
+        <translation>never (arrow keys browse, Shift+arrow selects)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Im Textmodus (T) bewegen die Pfeiltasten einen Textcursor durch den erkannten Text: ←/→ zeichenweise, Strg+←/→ wortweise, ↑/↓ zeilenweise, Pos1/Ende. Mit Umschalt wird markiert. Geblättert wird dann mit Bild↑/Bild↓ und der Leertaste.</source>
+        <translation>In text mode (T) the arrow keys move a text cursor through the recognized text: ←/→ by character, Ctrl+←/→ by word, ↑/↓ by line, Home/End. Shift selects. Browse with Page Up/Page Down and the space bar.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Pfeiltasten lesen den Text:</source>
+        <translation>Arrow keys read the text:</translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>So öffnen Sie Bilder mit KiekAn!:
 
 1. Im Finder ein Bild auswählen und „Informationen“ öffnen (⌘I).
@@ -2772,7 +3210,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-411"/>
+        <location line="-471"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
@@ -2787,7 +3225,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Off: the AI only creates new files and changes nothing that exists.</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Text aus Dateien (Texterkennung, PDF-Text, Metadaten, Dateinamen) wird der KI als fremder Inhalt gekennzeichnet und auf eingeschleuste Anweisungen geprüft. Jeder Zugriff steht im KI-Protokoll.</source>
         <translation>Text from files (OCR, PDF text, metadata, file names) is marked as untrusted content for the AI and checked for injected instructions. Every access is recorded in the AI log.</translation>
     </message>
@@ -2802,7 +3240,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>AI interface</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+61"/>
         <source>Hinweis zu vertrauenswürdigen Ordnern:
 • </source>
         <translation>Note on trusted folders:
@@ -2814,7 +3252,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>. Existing files stay unchanged as long as replacing is not allowed.</translation>
     </message>
     <message>
-        <location line="-207"/>
+        <location line="-239"/>
         <source>KI-Assistenten dürfen das offene Fenster abfragen und steuern</source>
         <translation>AI assistants may query and control the open window</translation>
     </message>
@@ -2824,7 +3262,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Allows a connected assistant such as Claude to read the displayed image and the selection, show files and mark areas.</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+65"/>
         <source>Ordner hinzufügen …</source>
         <translation>Add folder …</translation>
     </message>
@@ -2834,7 +3272,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Write: folders in which the AI may create new files (empty = the AI may not save anything). The AI may also read these folders – usually a separate, empty subfolder of a read folder:</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+52"/>
         <source>Befehl für Claude kopieren</source>
         <translation>Copy command for Claude</translation>
     </message>

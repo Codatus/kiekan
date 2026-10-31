@@ -49,6 +49,7 @@ private:
     QJsonArray viewerState(const QJsonObject &args);
     QJsonArray viewerGetImage(const QJsonObject &args);
     QJsonArray viewerSelect(const QJsonObject &args);
+    QJsonArray viewerDescribe(const QJsonObject &args);
     QJsonArray viewerApply(const QJsonObject &args);
     QJsonArray contactSheet(const QJsonObject &args);
     QJsonArray writeMetadata(const QJsonObject &args);
