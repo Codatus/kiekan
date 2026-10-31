@@ -26,6 +26,8 @@ bool losslessJpeg();          // JPEG nur gedreht/gespiegelt: ohne Neukodierung 
 void setLosslessJpeg(bool on);
 bool escapeQuits();
 void setEscapeQuits(bool on);
+bool askBeforeDiscard();      // Nachfrage „Änderungen speichern?“ (Standard: nein)
+void setAskBeforeDiscard(bool on);
 bool aiViewerAccess();        // KI-Schnittstelle darf das offene Fenster abfragen/steuern (Standard: nein)
 bool aiViewerAccessDecided(); // Benutzer hat schon entschieden (Erststart-Frage)
 void setAiViewerAccess(bool on);
@@ -49,6 +51,7 @@ private:
     QCheckBox *m_autoRotate;
     QSpinBox *m_quality;
     QCheckBox *m_escape;
+    QCheckBox *m_askDiscard;
     QCheckBox *m_lossless;
     QComboBox *m_aiWindow = nullptr;
     QCheckBox *m_aiAccess;

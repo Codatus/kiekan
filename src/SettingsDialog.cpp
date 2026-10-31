@@ -47,6 +47,8 @@ bool losslessJpeg() { return QSettings().value(QStringLiteral("losslessJpeg"), t
 void setLosslessJpeg(bool on) { QSettings().setValue(QStringLiteral("losslessJpeg"), on); }
 bool escapeQuits() { return QSettings().value(QStringLiteral("escapeQuits"), true).toBool(); }
 void setEscapeQuits(bool on) { QSettings().setValue(QStringLiteral("escapeQuits"), on); }
+bool askBeforeDiscard() { return QSettings().value(QStringLiteral("askBeforeDiscard"), false).toBool(); }
+void setAskBeforeDiscard(bool on) { QSettings().setValue(QStringLiteral("askBeforeDiscard"), on); }
 bool aiViewerAccess() { return QSettings().value(QStringLiteral("ai/viewerAccess"), false).toBool(); }
 bool aiViewerAccessDecided() { return QSettings().contains(QStringLiteral("ai/viewerAccess")); }
 void setAiViewerAccess(bool on) { QSettings().setValue(QStringLiteral("ai/viewerAccess"), on); }
@@ -135,6 +137,13 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_escape = wrappingCheckBox(tr("Esc beendet das Programm (wie IrfanView)"), this, &escapeRow);
     m_escape->setChecked(Settings::escapeQuits());
 
+    QWidget *askRow = nullptr;
+    m_askDiscard = wrappingCheckBox(tr("Vor dem Verwerfen ungespeicherter Änderungen nachfragen"), this, &askRow);
+    m_askDiscard->setChecked(Settings::askBeforeDiscard());
+    m_askDiscard->setToolTip(tr("Aus: Wer ein Bild dreht oder bearbeitet und dann weiterblättert, verwirft die "
+                                "Änderung ohne Rückfrage – KiekAn! ist zuerst ein Bildbetrachter. Gespeichert "
+                                "wird nur mit Strg+S. An: KiekAn! fragt vorher, ob gespeichert werden soll."));
+
     auto *general = new QGroupBox(tr("Allgemein"), this);
     auto *gForm = new QFormLayout(general);
     gForm->addRow(tr("Sprache:"), m_language);
@@ -142,6 +151,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     note->setStyleSheet(QStringLiteral("color: gray"));
     gForm->addRow(QString(), note);
     gForm->addRow(escapeRow);
+    gForm->addRow(askRow);
 
     auto *images = new QGroupBox(tr("Bilder"), this);
     auto *iForm = new QFormLayout(images);
@@ -393,6 +403,7 @@ bool SettingsDialog::apply()
     Settings::setAutoRotate(m_autoRotate->isChecked());
     Settings::setJpegQuality(m_quality->value());
     Settings::setEscapeQuits(m_escape->isChecked());
+    Settings::setAskBeforeDiscard(m_askDiscard->isChecked());
     Settings::setLosslessJpeg(m_lossless->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
     QSettings().setValue(QStringLiteral("ai/viewerLastUsed"), m_aiWindow->currentData().toBool());

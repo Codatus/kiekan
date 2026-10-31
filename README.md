@@ -161,6 +161,10 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - JPEGs werden **verlustfrei** gedreht und gespiegelt: Beim Speichern ordnet
   KiekAn! die komprimierten Bildblöcke um (libjpeg-turbo), statt neu zu kodieren;
   passen die Maße nicht dazu, ändert es nur die EXIF-Ausrichtung
+- Zuerst Betrachter: Wer ein Bild dreht oder bearbeitet und dann weiterblättert,
+  verwirft die Änderung ohne Rückfrage – gespeichert wird nur mit Strg+S. Die
+  Nachfrage „Änderungen speichern?“ lässt sich in den Einstellungen einschalten
+  (ein eingefügtes Bild aus der Zwischenablage fragt immer nach)
 - **Stapelverarbeitung** (Taste B): viele Bilder umwandeln (Format, Qualität,
   Verkleinern, Farbkorrektur, Graustufen, Metadaten) und **umbenennen** nach
   Muster mit Vorschau, Konfliktprüfung und Rücknahme

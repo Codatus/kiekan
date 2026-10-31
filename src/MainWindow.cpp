@@ -858,6 +858,15 @@ bool MainWindow::confirmDiscard()
 {
     if (!m_modified)
         return true;
+    // KiekAn! ist zuerst Betrachter: Änderungen an einer Datei werden beim
+    // Weiterblättern ohne Rückfrage verworfen, außer der Benutzer möchte die
+    // Nachfrage. Ein eingefügtes Bild gibt es dagegen noch nirgends als Datei –
+    // dort wird immer gefragt.
+    if (!m_path.isEmpty() && !Settings::askBeforeDiscard()) {
+        m_modified = false;
+        message(tr("Änderung an „%1“ verworfen – zum Behalten vorher Strg+S drücken.").arg(QFileInfo(m_path).fileName()));
+        return true;
+    }
     const auto answer = QMessageBox::question(
         this, tr("Änderungen speichern?"),
         m_path.isEmpty() ? tr("Das eingefügte Bild wurde noch nicht gespeichert. Jetzt speichern?")

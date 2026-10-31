@@ -1220,7 +1220,12 @@ right-click or double-click removes it.</translation>
         <translation>Open image</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+17"/>
+        <source>Änderung an „%1“ verworfen – zum Behalten vorher Strg+S drücken.</source>
+        <translation>Change to “%1” discarded – press Ctrl+S first to keep it.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Änderungen speichern?</source>
         <translation>Save changes?</translation>
     </message>
@@ -1655,7 +1660,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-962"/>
+        <location line="-971"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -1681,12 +1686,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+3"/>
-        <location line="+1749"/>
+        <location line="+1758"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-1728"/>
+        <location line="-1737"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -1763,7 +1768,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Images and videos (%1);;All files (*)</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+128"/>
         <source>%1_Bild_%2s.png</source>
         <translation>%1_frame_%2s.png</translation>
     </message>
@@ -2375,7 +2380,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+111"/>
+        <location filename="../src/SettingsDialog.cpp" line="+113"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2400,13 +2405,23 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Esc quits the program (like IrfanView)</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+159"/>
+        <location line="+4"/>
+        <source>Vor dem Verwerfen ungespeicherter Änderungen nachfragen</source>
+        <translation>Ask before discarding unsaved changes</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Aus: Wer ein Bild dreht oder bearbeitet und dann weiterblättert, verwirft die Änderung ohne Rückfrage – KiekAn! ist zuerst ein Bildbetrachter. Gespeichert wird nur mit Strg+S. An: KiekAn! fragt vorher, ob gespeichert werden soll.</source>
+        <translation>Off: rotating or editing an image and then moving on discards the change without asking – KiekAn! is a viewer first. Changes are only saved with Ctrl+S. On: KiekAn! asks first whether to save.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+160"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-157"/>
+        <location line="-158"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2416,7 +2431,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>A changed language takes effect after a restart.</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Bilder</source>
         <translation>Images</translation>
     </message>
@@ -2516,7 +2531,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+34"/>
         <source>So öffnen Sie Bilder mit KiekAn!:
 
 1. Im Finder ein Bild auswählen und „Informationen“ öffnen (⌘I).
@@ -2644,7 +2659,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-409"/>
+        <location line="-410"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
