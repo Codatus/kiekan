@@ -180,5 +180,16 @@ echo "Lizenzen von $(ls "$LIC" | wc -l) Formeln: $(ls "$LIC" | tr '\n' ' ')"
 # Apple Silicon verlangt Signaturen; ohne Entwicklerkonto ad hoc
 codesign --force --deep --sign - "$APP"
 
-hdiutil create -volname "KiekAn!" -srcfolder "$APP" -ov -format UDZO "$OUT/KiekAn-$VERSION-macos-arm64.dmg"
+# hdiutil scheitert auf den GitHub-Rechnern ab und zu mit „Resource busy“
+# (ein Prozess hält das frische Abbild noch) – dann kurz warten und neu versuchen.
+DMG="$OUT/KiekAn-$VERSION-macos-arm64.dmg"
+for attempt in 1 2 3 4 5; do
+    if hdiutil create -volname "KiekAn!" -srcfolder "$APP" -ov -format UDZO "$DMG"; then
+        break
+    fi
+    [ "$attempt" -lt 5 ] || { echo "hdiutil: nach $attempt Versuchen aufgegeben" >&2; exit 1; }
+    echo "hdiutil fehlgeschlagen (Versuch $attempt), neuer Versuch in $((attempt * 10)) s" >&2
+    rm -f "$DMG"
+    sleep $((attempt * 10))
+done
 du -sh "$APP"
