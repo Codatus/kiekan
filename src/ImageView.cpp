@@ -319,6 +319,19 @@ void ImageView::paintEvent(QPaintEvent *)
         p.drawText(box, Qt::AlignCenter, label);
     }
 
+    if (!m_infoLine.isEmpty()) {
+        QFont small = font();
+        small.setPointSizeF(small.pointSizeF() * 0.9);
+        p.setFont(small);
+        const QString line = QFontMetrics(small).elidedText(m_infoLine, Qt::ElideMiddle, std::max(50, width() - 16));
+        const QPoint at(8, 6 + QFontMetrics(small).ascent());
+        p.setPen(QColor(0, 0, 0, 200));   // Schatten: lesbar auch auf hellem Bild
+        p.drawText(at + QPoint(1, 1), line);
+        p.setPen(QColor(80, 220, 80));
+        p.drawText(at, line);
+        p.setFont(font());
+    }
+
     if (!m_noticeTitle.isEmpty()) {
         p.setRenderHint(QPainter::Antialiasing, true);
         QFont big = font();
@@ -343,6 +356,14 @@ void ImageView::paintEvent(QPaintEvent *)
             p.drawText(box.adjusted(20, 12 + bigFm.height() + 4, -20, 0), Qt::AlignHCenter | Qt::AlignTop, detail);
         }
     }
+}
+
+void ImageView::setInfoLine(const QString &text)
+{
+    if (text == m_infoLine)
+        return;
+    m_infoLine = text;
+    update();
 }
 
 void ImageView::showNotice(const QString &title, const QString &detail, int ms)

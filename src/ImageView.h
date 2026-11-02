@@ -66,6 +66,8 @@ public:
 
     // Kurzer Hinweis oben im Bild (z. B. „Ordner gewechselt“), verschwindet von selbst
     void showNotice(const QString &title, const QString &detail, int ms = 3000);
+    // Zeile oben links (Vollbild: Pfad und Position wie in IrfanView); leer = keine
+    void setInfoLine(const QString &text);
 
     // Bildschirmleser: Name (z. B. Dateiname und Position) und Beschreibung
     // der Bildfläche. Der erkannte Text ist als Lesetext mit Textcursor
@@ -130,6 +132,7 @@ private:
     QString m_noticeTitle;
     QString m_noticeDetail;
     QTimer m_noticeTimer;
+    QString m_infoLine;
 
     double m_zoom = 1.0;
     bool m_fit = true;

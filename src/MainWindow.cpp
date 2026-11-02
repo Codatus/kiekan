@@ -2737,6 +2737,7 @@ void MainWindow::toggleFullScreen()
 #endif
         showFullScreen();
     }
+    updateStatus();
 }
 
 void MainWindow::escape()
@@ -3008,6 +3009,17 @@ void MainWindow::updateTitle()
 
 void MainWindow::updateStatus()
 {
+    // Vollbild: Pfad und Position klein oben links, wie in IrfanView
+    QString info;
+    if (isFullScreen() && !m_path.isEmpty()) {
+        info = QDir::toNativeSeparators(m_path);
+        if (!m_files.isEmpty() && m_index >= 0)
+            info += QStringLiteral("   %1/%2").arg(m_index + 1).arg(m_files.size());
+        if (m_pageCount > 1)
+            info += QStringLiteral("   ") + tr("Seite %1/%2").arg(m_page + 1).arg(m_pageCount);
+    }
+    m_view->setInfoLine(info);
+
     QStringList parts;
     if (!m_files.isEmpty() && m_index >= 0 && !m_path.isEmpty())
         parts << QStringLiteral("%1 / %2").arg(m_index + 1).arg(m_files.size());
