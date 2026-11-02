@@ -110,6 +110,11 @@
   </requires>
 
   <releases>
+    <release version="0.15.0" date="2026-11-02">
+      <description>
+        <p>Save as PDF – searchable when the text was recognized, and several images combined into one PDF in batch processing – as well as AVIF and HEIC; PNG and TIFF keep 16 bits per channel after rotating. Documents can be turned upright automatically from their text (optional). Browsing can continue into the next or previous folder at the end of a folder, with a notice on the image and a screen reader announcement. Full screen shows path, file name and position at the top left (optional). Text recognition takes a second look at uncertain words.</p>
+      </description>
+    </release>
     <release version="0.14.0" date="2026-10-31">
       <description>
         <p>Screen reader support (Orca, NVDA, VoiceOver): browsing announces the file name, position and image description; recognized text can be read with the arrow keys and selected with Shift. Image descriptions (alt text) can be written with the D key, and AI assistants can describe the image shown and the next images in advance so the description is read aloud right away. Also: text recognition reads light text on dark backgrounds, Ctrl+T recognizes again more thoroughly, and the text of a whole folder can be recognized and stored at once.</p>
