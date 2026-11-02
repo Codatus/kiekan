@@ -25,6 +25,9 @@ QStringList subdirs(const QString &dir)
 {
     QStringList names = QDir(dir).entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Readable
                                             | QDir::Executable);
+    // Punkt-Ordner gelten überall als versteckt (Windows kennt nur das Attribut)
+    names.erase(std::remove_if(names.begin(), names.end(), [](const QString &n) { return n.startsWith(QLatin1Char('.')); }),
+                names.end());
     sortNatural(names);
     return names;
 }
