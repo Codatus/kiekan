@@ -17,6 +17,7 @@
 #include "ExifDialog.h"
 #include "FilterDialog.h"
 #include "FilterRegistry.h"
+#include "FolderWalk.h"
 #include "HistogramDialog.h"
 #include "ImageLoader.h"
 #include "ImageOps.h"
@@ -506,15 +507,7 @@ void MainWindow::scanDirectory(const QString &dir, const QString &select)
     const quint64 generation = ++m_scanGeneration;
     const QStringList filters = Media::allNameFilters();
     m_scanPool.start(QRunnable::create([this, generation, dir, select, filters] {
-        QDir d(dir);
-        QStringList names = d.entryList(filters, QDir::Files | QDir::Readable);
-        std::sort(names.begin(), names.end(), [&](const QString &a, const QString &b) {
-            return naturalCompare(a, b) < 0;
-        });
-        QStringList files;
-        files.reserve(names.size());
-        for (const QString &n : names)
-            files << d.absoluteFilePath(n);
+        const QStringList files = FolderWalk::files(dir, filters);
         QMetaObject::invokeMethod(this, [this, generation, files, select] {
             onScanned(generation, files, select);
         }, Qt::QueuedConnection);
@@ -743,6 +736,9 @@ void MainWindow::announceCurrent()
     if (m_path.isEmpty()) {
         name << tr("Bild aus der Zwischenablage");
     } else {
+        if (!m_folderAnnounce.isEmpty())
+            name << m_folderAnnounce;
+        m_folderAnnounce.clear();
         if (Settings::announceName())
             name << QFileInfo(m_path).fileName();
         if (Settings::announcePosition() && m_index >= 0 && m_files.size() > 1)
@@ -872,7 +868,9 @@ void MainWindow::keyStep(int delta, bool autoRepeat)
             return;
     }
     m_holdTimer.start();
+    m_stepHeld = autoRepeat;
     step(delta);
+    m_stepHeld = false;
 }
 
 // Sprung um mehrere Dateien; am Ende des Ordners wird bei der ersten bzw.
@@ -883,7 +881,7 @@ void MainWindow::jump(int delta)
         return;
     const int target = std::clamp(m_index + delta, 0, int(m_files.size()) - 1);
     if (target == m_index) {
-        message(delta > 0 ? tr("Letzte Datei im Ordner.") : tr("Erste Datei im Ordner."));
+        notice(delta > 0 ? tr("Letzte Datei im Ordner.") : tr("Erste Datei im Ordner."));
         return;
     }
     step(target - m_index);
@@ -896,12 +894,102 @@ void MainWindow::step(int delta)
     m_lastStep = delta >= 0 ? 1 : -1;
     const int target = m_index + delta;
     if (target < 0 || target >= m_files.size()) {
-        message(delta > 0 ? tr("Letzte Datei im Ordner.") : tr("Erste Datei im Ordner."));
+        // Gehaltene Taste hält am Ordnerende an, erst ein neuer Druck wechselt.
+        if (std::abs(delta) == 1 && !m_stepHeld && crossFolder(delta, true))
+            return;
+        notice(delta > 0 ? tr("Letzte Datei im Ordner.") : tr("Erste Datei im Ordner."));
         return;
     }
+    m_folderAnnounce.clear();
     showIndex(target);
     if (m_slideshow && m_slideTimer->isActive())
         m_slideTimer->start();   // nach Blättern von Hand die volle Zeit zeigen
+}
+
+// Am Ende des Ordners im nächsten (bzw. vor dem Anfang im vorigen) Ordner
+// weiterblättern. Gesucht wird im Hintergrund, große Ordnerbäume oder ein
+// langsames Netzlaufwerk halten das Fenster nicht auf.
+bool MainWindow::crossFolder(int delta, bool interactive)
+{
+    if (m_path.isEmpty())
+        return false;
+    QString mode = Settings::acrossFolders();
+    if (mode == QLatin1String("ask")) {
+        if (!interactive)
+            return false;
+        mode = askAcrossFoldersOnce() ? QStringLiteral("on") : QStringLiteral("off");
+    }
+    if (mode != QLatin1String("on"))
+        return false;
+    if (m_crossPending)
+        return true;   // Suche läuft schon
+    const bool forward = delta > 0;
+    const QString dir = QFileInfo(m_path).absolutePath();
+    const QString from = m_path;
+    const quint64 generation = ++m_crossGeneration;
+    m_crossPending = true;
+    message(tr("Suche den nächsten Ordner …"));
+    const QStringList filters = Media::allNameFilters();
+    m_scanPool.start(QRunnable::create([this, generation, dir, forward, from, filters] {
+        const FolderWalk::Result r = FolderWalk::neighbour(dir, forward, filters, FolderWalk::topFor(dir));
+        QMetaObject::invokeMethod(this, [this, generation, r, forward, from, dir] {
+            if (generation != m_crossGeneration)
+                return;
+            m_crossPending = false;
+            if (m_path != from)
+                return;   // inzwischen anders geblättert
+            if (r.dir.isEmpty()) {
+                notice(r.gaveUp ? tr("Kein weiterer Ordner mit Bildern in der Nähe gefunden.")
+                                : forward ? tr("Letztes Bild. Danach kommen keine Ordner mit Bildern mehr.")
+                                          : tr("Erstes Bild. Davor kommen keine Ordner mit Bildern mehr."));
+                return;
+            }
+            if (!confirmDiscard())
+                return;
+            m_lastStep = forward ? 1 : -1;
+            // Was sich geändert hat: der Weg vom gemeinsamen Ordner aus
+            const QStringList a = QDir::cleanPath(dir).split(QLatin1Char('/'));
+            const QStringList b = QDir::cleanPath(r.dir).split(QLatin1Char('/'));
+            qsizetype common = 0;
+            while (common < a.size() && common < b.size() && a.at(common) == b.at(common))
+                ++common;
+            QString shown = b.mid(std::max<qsizetype>(common - 1, 0)).join(QStringLiteral(" › "));
+            if (shown.isEmpty())
+                shown = r.dir;
+            m_files = r.files;
+            const QStringList changed = b.mid(common);
+            m_folderAnnounce = tr("Neuer Ordner %1")
+                                   .arg(changed.isEmpty() ? QFileInfo(r.dir).fileName() : changed.join(QStringLiteral(", ")));
+            showIndex(r.index);
+            m_view->showNotice(forward ? tr("▶ Nächster Ordner") : tr("◀ Voriger Ordner"), shown);
+            message(tr("Ordner gewechselt: %1").arg(QDir::toNativeSeparators(r.dir)));
+            if (m_slideshow && m_slideTimer->isActive())
+                m_slideTimer->start();
+        }, Qt::QueuedConnection);
+    }));
+    return true;
+}
+
+// Beim ersten Mal am Ordnerende: immer weiterblättern oder anhalten?
+bool MainWindow::askAcrossFoldersOnce()
+{
+    QMessageBox box(QMessageBox::Question, tr("Im nächsten Ordner weiterblättern?"),
+                    (m_lastStep < 0 ? tr("Das ist das erste Bild in diesem Ordner.")
+                                    : tr("Das ist das letzte Bild in diesem Ordner."))
+                        + QLatin1Char(' ')
+                        + tr("Soll KiekAn! am Ende eines Ordners künftig im nächsten Ordner weiterblättern "
+                             "(rückwärts im vorigen)? Gesucht wird wie im Dateimanager sortiert, auch in den "
+                             "höheren Ordnern. Ein Hinweis im Bild zeigt jeden Ordnerwechsel."),
+                    QMessageBox::NoButton, this);
+    QPushButton *yes = box.addButton(tr("Ja, weiterblättern"), QMessageBox::AcceptRole);
+    box.addButton(tr("Nein, am Ordnerende anhalten"), QMessageBox::RejectRole);
+    box.setDefaultButton(yes);
+    box.exec();
+    const bool on = box.clickedButton() == yes;
+    Settings::setAcrossFolders(on ? QStringLiteral("on") : QStringLiteral("off"));
+    if (!on)
+        message(tr("KiekAn! hält am Ordnerende an (änderbar in den Einstellungen)."));
+    return on;
 }
 
 void MainWindow::first()
@@ -2966,6 +3054,20 @@ void MainWindow::updateStatus()
 void MainWindow::message(const QString &text)
 {
     statusBar()->showMessage(text, 3000);
+}
+
+// Hinweis, der auch mit Bildschirmleser ankommt (Orca liest nur bei einem
+// Fokuswechsel vor): vor den Namen des Bildes gestellt und neu angesagt.
+void MainWindow::notice(const QString &text)
+{
+    message(text);
+    if (!Accessibility::screenReaderActive() || m_kind != Kind::Image || !m_view->hasFocus())
+        return;
+    const QString name = m_view->accessibleInfoName();
+    const QString description = m_view->accessibleInfoDescription();
+    m_view->setAccessibleInfo(text, name);
+    Accessibility::present(m_view, Accessibility::Item::Image);   // übernimmt Name und Beschreibung
+    m_view->setAccessibleInfo(name, description);
 }
 
 // --- Fenster ---------------------------------------------------------------

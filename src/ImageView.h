@@ -64,6 +64,9 @@ public:
     QString selectedText() const;
     void selectAllText();
 
+    // Kurzer Hinweis oben im Bild (z. B. „Ordner gewechselt“), verschwindet von selbst
+    void showNotice(const QString &title, const QString &detail, int ms = 3000);
+
     // Bildschirmleser: Name (z. B. Dateiname und Position) und Beschreibung
     // der Bildfläche. Der erkannte Text ist als Lesetext mit Textcursor
     // zugänglich; mit `caretKeys` bewegen auch die Pfeiltasten ohne Umschalt
@@ -124,6 +127,9 @@ private:
     double m_scaledZoom = 0;
     qint64 m_scaledKey = 0;   // cacheKey des Bildes, aus dem m_scaled entstand
     QTimer m_smoothTimer;
+    QString m_noticeTitle;
+    QString m_noticeDetail;
+    QTimer m_noticeTimer;
 
     double m_zoom = 1.0;
     bool m_fit = true;

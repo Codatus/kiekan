@@ -29,6 +29,12 @@ ImageView::ImageView(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(false);
 
+    m_noticeTimer.setSingleShot(true);
+    connect(&m_noticeTimer, &QTimer::timeout, this, [this] {
+        m_noticeTitle.clear();
+        m_noticeDetail.clear();
+        update();
+    });
     m_smoothTimer.setSingleShot(true);
     m_smoothTimer.setInterval(150);
     connect(&m_smoothTimer, &QTimer::timeout, this, [this] {
@@ -312,6 +318,39 @@ void ImageView::paintEvent(QPaintEvent *)
         p.setPen(Qt::white);
         p.drawText(box, Qt::AlignCenter, label);
     }
+
+    if (!m_noticeTitle.isEmpty()) {
+        p.setRenderHint(QPainter::Antialiasing, true);
+        QFont big = font();
+        big.setPointSizeF(big.pointSizeF() * 1.6);
+        big.setBold(true);
+        const QFontMetrics bigFm(big), fm(font());
+        const int maxW = std::max(100, width() - 40);
+        const QString title = bigFm.elidedText(m_noticeTitle, Qt::ElideMiddle, maxW - 40);
+        const QString detail = fm.elidedText(m_noticeDetail, Qt::ElideLeft, maxW - 40);
+        const int w = std::min(maxW, std::max(bigFm.horizontalAdvance(title), fm.horizontalAdvance(detail)) + 40);
+        const int h = bigFm.height() + (detail.isEmpty() ? 0 : fm.height() + 4) + 24;
+        const QRect box((width() - w) / 2, 24, w, h);
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(0, 0, 0, 190));
+        p.drawRoundedRect(box, 10, 10);
+        p.setPen(Qt::white);
+        p.setFont(big);
+        p.drawText(box.adjusted(20, 12, -20, 0), Qt::AlignHCenter | Qt::AlignTop, title);
+        if (!detail.isEmpty()) {
+            p.setFont(font());
+            p.setPen(QColor(220, 220, 220));
+            p.drawText(box.adjusted(20, 12 + bigFm.height() + 4, -20, 0), Qt::AlignHCenter | Qt::AlignTop, detail);
+        }
+    }
+}
+
+void ImageView::showNotice(const QString &title, const QString &detail, int ms)
+{
+    m_noticeTitle = title;
+    m_noticeDetail = detail;
+    m_noticeTimer.start(ms);
+    update();
 }
 
 void ImageView::resizeEvent(QResizeEvent *)

@@ -73,6 +73,7 @@ private:
     // Bildschirmleser
     void announceCurrent();
     void announceText(const QString &summary);
+    void notice(const QString &text);   // Statuszeile und Bildschirmleser
     void updateCaretKeys();
     QString descriptionFor(const QString &path) const;
     QStringList upcomingFiles(int count) const;
@@ -89,6 +90,8 @@ private:
     void step(int delta);
     void jump(int delta);
     void keyStep(int delta, bool autoRepeat);
+    bool crossFolder(int delta, bool interactive);   // am Ordnerende in den nächsten/vorigen Ordner
+    bool askAcrossFoldersOnce();
     void first();
     void last();
     void prefetch(int nextPage = -1);   // nextPage: zusätzlich vorzuladende Seite
@@ -218,6 +221,10 @@ private:
     QVector<int> m_editOps;
     bool m_editOpsValid = true;
     quint64 m_scanGeneration = 0;
+    quint64 m_crossGeneration = 0;   // Suche nach dem Nachbarordner
+    bool m_crossPending = false;
+    bool m_stepHeld = false;         // Blättern per gehaltener Taste: am Ordnerende anhalten
+    QString m_folderAnnounce;        // Ordnerwechsel, beim nächsten Ansagen mit vorlesen
     bool m_wasMaximized = false;
     QList<QAction *> m_actions;                                  // alle Aktionen mit Kennung
     QHash<QString, QList<QKeySequence>> m_defaultShortcuts;

@@ -97,6 +97,8 @@ qt_add_executable(kiekan WIN32
     src/main.cpp
     src/MainWindow.cpp
     src/MainWindow.h
+    src/FolderWalk.cpp
+    src/FolderWalk.h
     src/PdfExport.cpp
     src/PdfExport.h
     src/Accessibility.cpp
@@ -338,6 +340,11 @@ if(BUILD_TESTING)
         target_link_libraries(assoctest PRIVATE Qt6::Core)
         add_test(NAME dateizuordnung COMMAND assoctest)
     endif()
+
+    qt_add_executable(folderwalktest tests/folderwalktest.cpp src/FolderWalk.cpp)
+    target_include_directories(folderwalktest PRIVATE src)
+    target_link_libraries(folderwalktest PRIVATE Qt6::Core)
+    add_test(NAME ordnerwechsel COMMAND folderwalktest)
 
     qt_add_executable(formattest tests/formattest.cpp)
     target_link_libraries(formattest PRIVATE Qt6::Core Qt6::Gui)

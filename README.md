@@ -156,6 +156,13 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 
 - Bilder sofort anzeigen, Ordner per Tastatur oder Mausrad durchblättern
 - Vorladen der Nachbarbilder im Hintergrund, damit das Blättern ohne Wartezeit läuft
+- Auf Wunsch über Ordnergrenzen blättern: Nach dem letzten Bild geht es im nächsten
+  Ordner weiter, vor dem ersten im vorigen – sortiert wie im Dateimanager (Unterordner
+  vor Dateien), leere Ordner werden übersprungen, auch über höhere Ordner hinweg.
+  Ein Hinweis im Bild (und beim Bildschirmleser die Ansage „Neuer Ordner …“) zeigt
+  jeden Wechsel. Im persönlichen Ordner bleibt die Suche in dessen Unterordner
+  (z. B. „Bilder“). Beim ersten Mal am Ordnerende fragt KiekAn!; änderbar unter
+  Extras → Einstellungen → „Am Ende eines Ordners“
 - Zoom, Originalgröße, An-Fenster-Anpassen, Vollbild
 - Drehen, Spiegeln, Zuschneiden, Größe ändern, Rückgängig
 - JPEGs werden **verlustfrei** gedreht und gespiegelt: Beim Speichern ordnet

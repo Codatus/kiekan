@@ -30,6 +30,8 @@ bool escapeQuits();
 void setEscapeQuits(bool on);
 QString saveRecognizedText();  // "ask", "always", "never"
 void setSaveRecognizedText(const QString &mode);
+QString acrossFolders();       // am Ordnerende weiterblättern: "ask" (beim ersten Mal fragen), "on", "off"
+void setAcrossFolders(const QString &mode);
 bool askBeforeDiscard();      // Nachfrage „Änderungen speichern?“ (Standard: nein)
 void setAskBeforeDiscard(bool on);
 // Bildschirmleser: was beim Blättern angesagt wird
@@ -74,6 +76,7 @@ private:
     QCheckBox *m_escape;
     QCheckBox *m_askDiscard;
     QComboBox *m_saveText = nullptr;
+    QComboBox *m_acrossFolders = nullptr;
     QCheckBox *m_lossless;
     QComboBox *m_aiWindow = nullptr;
     QComboBox *m_describeAhead = nullptr;

@@ -58,6 +58,12 @@ QString saveRecognizedText()
     return v == QLatin1String("always") || v == QLatin1String("never") ? v : QStringLiteral("ask");
 }
 void setSaveRecognizedText(const QString &mode) { QSettings().setValue(QStringLiteral("ocr/saveText"), mode); }
+QString acrossFolders()
+{
+    const QString v = QSettings().value(QStringLiteral("acrossFolders"), QStringLiteral("ask")).toString();
+    return v == QLatin1String("on") || v == QLatin1String("off") ? v : QStringLiteral("ask");
+}
+void setAcrossFolders(const QString &mode) { QSettings().setValue(QStringLiteral("acrossFolders"), mode); }
 bool askBeforeDiscard() { return QSettings().value(QStringLiteral("askBeforeDiscard"), false).toBool(); }
 void setAskBeforeDiscard(bool on) { QSettings().setValue(QStringLiteral("askBeforeDiscard"), on); }
 bool announceName() { return QSettings().value(QStringLiteral("a11y/name"), true).toBool(); }
@@ -195,6 +201,15 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     m_saveText->setToolTip(tr("Nach „Text markieren“ (T): beim Weiterblättern den erkannten Text – und eine "
                               "dabei nötige Drehung – in der Datei speichern?"));
     gForm->addRow(tr("Erkannten Text speichern:"), m_saveText);
+    m_acrossFolders = new QComboBox(this);
+    m_acrossFolders->addItem(tr("beim ersten Mal fragen"), QStringLiteral("ask"));
+    m_acrossFolders->addItem(tr("in den nächsten Ordner wechseln"), QStringLiteral("on"));
+    m_acrossFolders->addItem(tr("anhalten"), QStringLiteral("off"));
+    m_acrossFolders->setCurrentIndex(m_acrossFolders->findData(Settings::acrossFolders()));
+    m_acrossFolders->setToolTip(tr("Nach dem letzten Bild eines Ordners geht es im nächsten Ordner weiter, vor dem "
+                                   "ersten im vorigen – wie im Dateimanager sortiert, auch über höhere Ordner hinweg "
+                                   "(im persönlichen Ordner nur innerhalb von z. B. „Bilder“). Ein Hinweis im Bild zeigt den Wechsel."));
+    gForm->addRow(tr("Am Ende eines Ordners:"), m_acrossFolders);
 
     auto *images = new QGroupBox(tr("Bilder"), this);
     auto *iForm = new QFormLayout(images);
@@ -490,6 +505,7 @@ bool SettingsDialog::apply()
     Settings::setEscapeQuits(m_escape->isChecked());
     Settings::setAskBeforeDiscard(m_askDiscard->isChecked());
     Settings::setSaveRecognizedText(m_saveText->currentData().toString());
+    Settings::setAcrossFolders(m_acrossFolders->currentData().toString());
     Settings::setLosslessJpeg(m_lossless->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
     QSettings().setValue(QStringLiteral("ai/viewerLastUsed"), m_aiWindow->currentData().toBool());

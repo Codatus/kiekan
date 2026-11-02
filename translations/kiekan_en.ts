@@ -1029,7 +1029,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+260"/>
+        <location filename="../src/MainWindow.cpp" line="+261"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1329,7 +1329,7 @@ right-click or double-click removes it.</translation>
         <translation>Not found: %1</translation>
     </message>
     <message>
-        <location line="+588"/>
+        <location line="+675"/>
         <source>Text markieren geht nur bei Bildern und PDF-Seiten.</source>
         <translation>Text selection works only for images and PDF pages.</translation>
     </message>
@@ -1373,7 +1373,7 @@ right-click or double-click removes it.</translation>
         <translation>, image turned upright</translation>
     </message>
     <message>
-        <location line="-847"/>
+        <location line="-934"/>
         <source>Bild&amp;beschreibung …</source>
         <translation>Image &amp;description …</translation>
     </message>
@@ -1388,7 +1388,7 @@ right-click or double-click removes it.</translation>
         <translation>Recognize text &amp;again, thoroughly</translation>
     </message>
     <message>
-        <location line="+391"/>
+        <location line="+383"/>
         <source>Seite automatisch aufgerichtet – Strg+Z nimmt es zurück, Strg+S speichert die Drehung.</source>
         <translation>Page turned upright automatically – Ctrl+Z undoes it, Ctrl+S saves the rotation.</translation>
     </message>
@@ -1398,7 +1398,7 @@ right-click or double-click removes it.</translation>
         <translation>Image from the clipboard</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+8"/>
         <source>Bild %1 von %2</source>
         <translation>Image %1 of %2</translation>
     </message>
@@ -1424,7 +1424,7 @@ right-click or double-click removes it.</translation>
     </message>
     <message numerus="yes">
         <location line="+4"/>
-        <location line="+306"/>
+        <location line="+398"/>
         <source>%n Wörter.</source>
         <translation>
             <numerusform>%n word.</numerusform>
@@ -1432,7 +1432,7 @@ right-click or double-click removes it.</translation>
         </translation>
     </message>
     <message>
-        <location line="-296"/>
+        <location line="-388"/>
         <source>Pfeiltasten lesen, Umschalt markiert, Strg+C kopiert, Esc beendet den Textmodus.</source>
         <translation>Arrow keys read, Shift selects, Ctrl+C copies, Esc leaves text mode.</translation>
     </message>
@@ -1475,7 +1475,82 @@ right-click or double-click removes it.</translation>
         <translation>The AI describes only the image shown (can be changed in the settings).</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+107"/>
+        <source>Suche den nächsten Ordner …</source>
+        <translation>Looking for the next folder …</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Kein weiterer Ordner mit Bildern in der Nähe gefunden.</source>
+        <translation>No further folder with images found nearby.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Letztes Bild. Danach kommen keine Ordner mit Bildern mehr.</source>
+        <translation>Last image. No more folders with images after this one.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Erstes Bild. Davor kommen keine Ordner mit Bildern mehr.</source>
+        <translation>First image. No more folders with images before this one.</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Neuer Ordner %1</source>
+        <translation>New folder %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>▶ Nächster Ordner</source>
+        <translation>▶ Next folder</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>◀ Voriger Ordner</source>
+        <translation>◀ Previous folder</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ordner gewechselt: %1</source>
+        <translation>Changed folder: %1</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Im nächsten Ordner weiterblättern?</source>
+        <translation>Continue in the next folder?</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Das ist das erste Bild in diesem Ordner.</source>
+        <translation>This is the first image in this folder.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Das ist das letzte Bild in diesem Ordner.</source>
+        <translation>This is the last image in this folder.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Soll KiekAn! am Ende eines Ordners künftig im nächsten Ordner weiterblättern (rückwärts im vorigen)? Gesucht wird wie im Dateimanager sortiert, auch in den höheren Ordnern. Ein Hinweis im Bild zeigt jeden Ordnerwechsel.</source>
+        <translation>Should KiekAn! continue in the next folder (or the previous one when going back) at the end of a folder from now on? Folders are searched in file manager order, including the parent folders. A notice on the image shows every folder change.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Ja, weiterblättern</source>
+        <translation>Yes, continue</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Nein, am Ordnerende anhalten</source>
+        <translation>No, stop at the end of the folder</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>KiekAn! hält am Ordnerende an (änderbar in den Einstellungen).</source>
+        <translation>KiekAn! stops at the end of a folder (can be changed in the settings).</translation>
+    </message>
+    <message>
+        <location line="+143"/>
         <source>Text erkennen geht nur bei Bildern und PDF-Seiten.</source>
         <translation>Text recognition works only for images and PDF pages.</translation>
     </message>
@@ -2121,7 +2196,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-1606"/>
+        <location line="-1693"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -2147,12 +2222,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+12"/>
-        <location line="+2525"/>
+        <location line="+2612"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-2504"/>
+        <location line="-2591"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -2167,12 +2242,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>&amp;Mute/unmute</translation>
     </message>
     <message>
-        <location line="+193"/>
+        <location line="+185"/>
         <source>Keine Bilder oder Videos in diesem Ordner.</source>
         <translation>No images or videos in this folder.</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+302"/>
         <source>Letzte Seite.</source>
         <translation>Last page.</translation>
     </message>
@@ -2182,19 +2257,19 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>First page.</translation>
     </message>
     <message>
-        <location line="+39"/>
-        <location line="+13"/>
+        <location line="+41"/>
+        <location line="+16"/>
         <source>Letzte Datei im Ordner.</source>
         <translation>Last file in folder.</translation>
     </message>
     <message>
-        <location line="-13"/>
-        <location line="+13"/>
+        <location line="-16"/>
+        <location line="+16"/>
         <source>Erste Datei im Ordner.</source>
         <translation>First file in folder.</translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+160"/>
         <source>Videowiedergabe nicht verfügbar (libmpv)</source>
         <translation>Video playback not available (libmpv)</translation>
     </message>
@@ -2516,8 +2591,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation> – page %1 of %2</translation>
     </message>
     <message>
-        <location line="-2158"/>
-        <location line="+2173"/>
+        <location line="-2250"/>
+        <location line="+2265"/>
         <source>Kann nicht geöffnet werden: %1</source>
         <translation>Cannot be opened: %1</translation>
     </message>
@@ -2795,24 +2870,20 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>RahmenPlugin</name>
     <message>
-        <location filename="../plugins/rahmen/RahmenPlugin.cpp" line="+25"/>
         <source>Rahmen (Plugin)</source>
-        <translation>Frame (plugin)</translation>
+        <translation type="vanished">Frame (plugin)</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Breite</source>
-        <translation>Width</translation>
+        <translation type="vanished">Width</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Sofortbild (unten breiter)</source>
-        <translation>Instant photo (wider at the bottom)</translation>
+        <translation type="vanished">Instant photo (wider at the bottom)</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Schwarzer Rahmen</source>
-        <translation>Black frame</translation>
+        <translation type="vanished">Black frame</translation>
     </message>
 </context>
 <context>
@@ -2867,7 +2938,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+148"/>
+        <location filename="../src/SettingsDialog.cpp" line="+154"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2903,12 +2974,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+208"/>
+        <location line="+217"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-206"/>
+        <location line="-215"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -2943,7 +3014,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Save recognized text:</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+11"/>
         <source>Bilder</source>
         <translation>Images</translation>
     </message>
@@ -3013,12 +3084,33 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Image descriptions</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-73"/>
+        <location line="+76"/>
         <source>beim ersten Mal fragen</source>
         <translation>ask the first time</translation>
     </message>
     <message>
+        <location line="-75"/>
+        <source>in den nächsten Ordner wechseln</source>
+        <translation>continue in the next folder</translation>
+    </message>
+    <message>
         <location line="+1"/>
+        <source>anhalten</source>
+        <translation>stop</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Nach dem letzten Bild eines Ordners geht es im nächsten Ordner weiter, vor dem ersten im vorigen – wie im Dateimanager sortiert, auch über höhere Ordner hinweg (im persönlichen Ordner nur innerhalb von z. B. „Bilder“). Ein Hinweis im Bild zeigt den Wechsel.</source>
+        <translation>After the last image of a folder, browsing continues in the next folder, before the first image in the previous one – in file manager order, also across parent folders (inside the home folder only within e.g. “Pictures”). A notice on the image shows the change.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Am Ende eines Ordners:</source>
+        <translation>At the end of a folder:</translation>
+    </message>
+    <message>
+        <location line="+70"/>
         <source>ja, die nächsten Bilder vorab beschreiben</source>
         <translation>yes, describe the next images in advance</translation>
     </message>
@@ -3103,7 +3195,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>KiekAn! arbeitet mit Bildschirmlesern wie Orca, NVDA und VoiceOver. Beim Blättern wird das neue Bild angesagt; mit T wird der Text im Bild erkannt und lässt sich mit den Pfeiltasten lesen.</source>
         <translation>KiekAn! works with screen readers such as Orca, NVDA and VoiceOver. When you browse, the new image is announced; T recognizes the text in the image, which you can then read with the arrow keys.</translation>
     </message>
@@ -3301,7 +3393,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-472"/>
+        <location line="-473"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>
