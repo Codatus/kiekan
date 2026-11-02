@@ -156,7 +156,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 
 - Bilder sofort anzeigen, Ordner per Tastatur oder Mausrad durchblättern
 - Vorladen der Nachbarbilder im Hintergrund, damit das Blättern ohne Wartezeit läuft
-- Im Vollbild oben links klein in Grün Pfad, Dateiname und Position im Ordner (wie in IrfanView)
+- Im Vollbild oben links klein in Grün Pfad, Dateiname und Position im Ordner (wie in IrfanView; abschaltbar in den Einstellungen)
 - Auf Wunsch über Ordnergrenzen blättern: Nach dem letzten Bild geht es im nächsten
   Ordner weiter, vor dem ersten im vorigen – sortiert wie im Dateimanager (Unterordner
   vor Dateien), leere Ordner werden übersprungen, auch über höhere Ordner hinweg.

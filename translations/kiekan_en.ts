@@ -1927,12 +1927,12 @@ Delete permanently?</translation>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+1007"/>
+        <location line="+1009"/>
         <source>Zwischenablage</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-1003"/>
+        <location line="-1005"/>
         <source>Datei</source>
         <translation>File</translation>
     </message>
@@ -2047,7 +2047,7 @@ Delete permanently?</translation>
         <translation>Text copied.</translation>
     </message>
     <message>
-        <location line="+246"/>
+        <location line="+247"/>
         <source>KI-Zugriff auf das Fenster</source>
         <translation>AI access to the window</translation>
     </message>
@@ -2080,7 +2080,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>AI connection to the window not possible: %1</translation>
     </message>
     <message>
-        <location line="+322"/>
+        <location line="+323"/>
         <source>Für eine Diashow braucht der Ordner mindestens zwei Bilder.</source>
         <translation>A slideshow needs at least two images in the folder.</translation>
     </message>
@@ -2190,7 +2190,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>5 s forward / back (with Shift: 60 s); ↑ / ↓ browse</translation>
     </message>
     <message>
-        <location line="-948"/>
+        <location line="-950"/>
         <location line="+2"/>
         <source>%1 von %2</source>
         <translation>%1 of %2</translation>
@@ -2222,12 +2222,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+12"/>
-        <location line="+2612"/>
+        <location line="+2614"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-2591"/>
+        <location line="-2593"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -2414,7 +2414,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>First select an area with the left mouse button.</translation>
     </message>
     <message>
-        <location line="+155"/>
+        <location line="+156"/>
         <source>Sprache</source>
         <translation>Language</translation>
     </message>
@@ -2491,7 +2491,7 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Show AI log</translation>
     </message>
     <message>
-        <location line="+244"/>
+        <location line="+245"/>
         <source>Blättern</source>
         <translation>Browse</translation>
     </message>
@@ -2591,8 +2591,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation> – page %1 of %2</translation>
     </message>
     <message>
-        <location line="-2250"/>
-        <location line="+2265"/>
+        <location line="-2252"/>
+        <location line="+2278"/>
         <source>Kann nicht geöffnet werden: %1</source>
         <translation>Cannot be opened: %1</translation>
     </message>
@@ -2602,7 +2602,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation>Video</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-12"/>
+        <location line="+20"/>
         <source>Seite %1/%2</source>
         <translation>Page %1/%2</translation>
     </message>
@@ -2938,7 +2939,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="+154"/>
+        <location filename="../src/SettingsDialog.cpp" line="+156"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -2974,12 +2975,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+217"/>
+        <location line="+221"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="-215"/>
+        <location line="-219"/>
         <source>Sprache:</source>
         <translation>Language:</translation>
     </message>
@@ -3039,7 +3040,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>If a JPEG was only rotated or flipped, KiekAn! rearranges the compressed image blocks when saving instead of re-encoding. If the image size does not fit the blocks, only the EXIF orientation is changed – which is lossless as well.</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+8"/>
         <source>JPEG-/WebP-Qualität beim Speichern:</source>
         <translation>JPEG/WebP quality when saving:</translation>
     </message>
@@ -3084,13 +3085,13 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Image descriptions</translation>
     </message>
     <message>
-        <location line="-73"/>
-        <location line="+76"/>
+        <location line="-77"/>
+        <location line="+80"/>
         <source>beim ersten Mal fragen</source>
         <translation>ask the first time</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-79"/>
         <source>in den nächsten Ordner wechseln</source>
         <translation>continue in the next folder</translation>
     </message>
@@ -3110,7 +3111,12 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>At the end of a folder:</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+22"/>
+        <source>Im Vollbild Pfad, Dateiname und Position oben links zeigen</source>
+        <translation>Show path, file name and position at the top left in full screen</translation>
+    </message>
+    <message>
+        <location line="+52"/>
         <source>ja, die nächsten Bilder vorab beschreiben</source>
         <translation>yes, describe the next images in advance</translation>
     </message>
@@ -3195,7 +3201,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Note: </translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+44"/>
         <source>KiekAn! arbeitet mit Bildschirmlesern wie Orca, NVDA und VoiceOver. Beim Blättern wird das neue Bild angesagt; mit T wird der Text im Bild erkannt und lässt sich mit den Pfeiltasten lesen.</source>
         <translation>KiekAn! works with screen readers such as Orca, NVDA and VoiceOver. When you browse, the new image is announced; T recognizes the text in the image, which you can then read with the arrow keys.</translation>
     </message>
@@ -3393,7 +3399,7 @@ This applies to one file type at a time (e.g. .jpg). PDFs and videos keep their 
         <translation>Could not save the associations: %1</translation>
     </message>
     <message>
-        <location line="-473"/>
+        <location line="-474"/>
         <source>Ordner für Dateien der KI</source>
         <translation>Folder for files created by the AI</translation>
     </message>

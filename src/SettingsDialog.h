@@ -26,6 +26,8 @@ int jpegQuality();
 void setJpegQuality(int q);
 bool losslessJpeg();          // JPEG nur gedreht/gespiegelt: ohne Neukodierung speichern
 void setLosslessJpeg(bool on);
+bool fullScreenInfo();        // Vollbild: Pfad und Position oben links (Standard: an)
+void setFullScreenInfo(bool on);
 bool escapeQuits();
 void setEscapeQuits(bool on);
 QString saveRecognizedText();  // "ask", "always", "never"
@@ -78,6 +80,7 @@ private:
     QComboBox *m_saveText = nullptr;
     QComboBox *m_acrossFolders = nullptr;
     QCheckBox *m_lossless;
+    QCheckBox *m_fullScreenInfo = nullptr;
     QComboBox *m_aiWindow = nullptr;
     QComboBox *m_describeAhead = nullptr;
     QSpinBox *m_describeCount = nullptr;

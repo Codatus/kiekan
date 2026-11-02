@@ -2362,6 +2362,7 @@ void MainWindow::showSettings()
         return;
     const bool rotateChanged = dlg.autoRotateChanged();
     const bool languageChanged = dlg.apply();
+    updateStatus();   // z. B. Vollbild-Infozeile an/aus
 
     if (rotateChanged) {
         ImageLoader::setAutoRotate(Settings::autoRotate());
@@ -3011,7 +3012,7 @@ void MainWindow::updateStatus()
 {
     // Vollbild: Pfad und Position klein oben links, wie in IrfanView
     QString info;
-    if (isFullScreen() && !m_path.isEmpty()) {
+    if (isFullScreen() && !m_path.isEmpty() && Settings::fullScreenInfo()) {
         info = QDir::toNativeSeparators(m_path);
         if (!m_files.isEmpty() && m_index >= 0)
             info += QStringLiteral("   %1/%2").arg(m_index + 1).arg(m_files.size());

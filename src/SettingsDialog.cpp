@@ -50,6 +50,8 @@ int jpegQuality() { return QSettings().value(QStringLiteral("jpegQuality"), 90).
 void setJpegQuality(int q) { QSettings().setValue(QStringLiteral("jpegQuality"), q); }
 bool losslessJpeg() { return QSettings().value(QStringLiteral("losslessJpeg"), true).toBool(); }
 void setLosslessJpeg(bool on) { QSettings().setValue(QStringLiteral("losslessJpeg"), on); }
+bool fullScreenInfo() { return QSettings().value(QStringLiteral("fullScreenInfo"), true).toBool(); }
+void setFullScreenInfo(bool on) { QSettings().setValue(QStringLiteral("fullScreenInfo"), on); }
 bool escapeQuits() { return QSettings().value(QStringLiteral("escapeQuits"), true).toBool(); }
 void setEscapeQuits(bool on) { QSettings().setValue(QStringLiteral("escapeQuits"), on); }
 QString saveRecognizedText()
@@ -230,6 +232,10 @@ SettingsDialog::SettingsDialog(QWidget *parent)
                               "komprimierten Bildblöcke um, statt neu zu kodieren. Passen die Bildmaße nicht "
                               "zu den Blöcken, wird nur die EXIF-Ausrichtung geändert – auch das ist verlustfrei."));
     iForm->addRow(losslessRow);
+    QWidget *infoRow = nullptr;
+    m_fullScreenInfo = wrappingCheckBox(tr("Im Vollbild Pfad, Dateiname und Position oben links zeigen"), this, &infoRow);
+    m_fullScreenInfo->setChecked(Settings::fullScreenInfo());
+    iForm->addRow(infoRow);
     iForm->addRow(tr("JPEG-/WebP-Qualität beim Speichern:"), m_quality);
     m_ocrJobs = new QSpinBox(this);
     m_ocrJobs->setRange(0, 64);
@@ -507,6 +513,7 @@ bool SettingsDialog::apply()
     Settings::setSaveRecognizedText(m_saveText->currentData().toString());
     Settings::setAcrossFolders(m_acrossFolders->currentData().toString());
     Settings::setLosslessJpeg(m_lossless->isChecked());
+    Settings::setFullScreenInfo(m_fullScreenInfo->isChecked());
     Settings::setAiViewerAccess(m_aiAccess->isChecked());
     QSettings().setValue(QStringLiteral("ai/viewerLastUsed"), m_aiWindow->currentData().toBool());
     Settings::setDescribeAhead(m_describeAhead->currentData().toString());
