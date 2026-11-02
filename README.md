@@ -193,7 +193,16 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 - **Drucken** (Strg+P) mit Druckvorschau, an die Seite angepasst
 - **Tastenkürzel frei belegen** (Extras → Tastenkürzel anpassen)
 - Bilder aus der Zwischenablage einfügen und als Datei speichern
-- Speichern als PNG, JPEG, WebP, BMP, TIFF
+- Speichern als PNG, JPEG, WebP, BMP, TIFF, AVIF, HEIC und PDF:
+  - **PDF** mit unsichtbarem Text, wenn er erkannt ist (T): die PDF ist dann
+    durchsuchbar und der Text kopierbar. In der Stapelverarbeitung auch alle
+    Bilder in **eine** PDF (z. B. fotografierte Briefseiten), auf Wunsch mit
+    Texterkennung für Bilder ohne gespeicherten Text
+  - **AVIF/HEIC** (deutlich kleiner als JPEG), sofern libheif einen Encoder hat
+    (unter Debian/Ubuntu ab 24.04 die Pakete libheif-plugin-aomenc bzw.
+    libheif-plugin-x265); EXIF und XMP werden übernommen
+  - **16 Bit je Farbkanal** bleiben bei PNG und TIFF erhalten, wenn das Bild
+    nur gedreht oder gespiegelt wurde
 - Umbenennen, in den Papierkorb verschieben, Bildinformationen
 - Histogramm (RGB, Helligkeit, logarithmisch, Kennwerte)
 - Gradationskurven mit Histogramm im Hintergrund, Histogrammausgleich als

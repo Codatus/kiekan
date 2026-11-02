@@ -91,6 +91,20 @@ void ImageLoader::setAutoRotate(bool on)
     s_autoRotate = on;
 }
 
+QImage ImageLoader::readFullDepth(const QString &path)
+{
+    if (Media::isPdf(path))
+        return {};
+    QImageReader reader(path);
+    reader.setAutoTransform(s_autoRotate);
+    if (reader.imageCount() > 1)
+        return {};
+    QImage img = reader.read();
+    if (img.isNull() || !(img.depth() > 32 || img.format() == QImage::Format_Grayscale16))
+        return {};
+    return img;
+}
+
 bool ImageLoader::autoRotate()
 {
     return s_autoRotate;

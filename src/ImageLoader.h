@@ -57,6 +57,9 @@ public:
     // EXIF-Ausrichtung anwenden (Standard: ja). Gilt für künftige Ladevorgänge.
     static void setAutoRotate(bool on);
     static bool autoRotate();
+    // Original in voller Farbtiefe (16 Bit je Kanal), EXIF-Drehung wie in der
+    // Anzeige; ein leeres Bild, wenn die Datei nur 8 Bit hat oder unlesbar ist.
+    static QImage readFullDepth(const QString &path);
     // Pixelgröße, in der decode() eine PDF-Seite bei `dpi` liefert.
     static QSize pdfPageSize(const QString &path, int page, double dpi);
 

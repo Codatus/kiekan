@@ -23,6 +23,7 @@
 #include "Icons.h"
 #include "ImageView.h"
 #include "OcrDialog.h"
+#include "PdfExport.h"
 #include "PdfSplit.h"
 #include "PdfSplitDialog.h"
 #include "Media.h"
@@ -113,12 +114,15 @@ QByteArray formatForSuffix(const QString &suffix)
         return "jpeg";
     if (s == QLatin1String("tif") || s == QLatin1String("tiff"))
         return "tiff";
+    if (s == QLatin1String("heif") || s == QLatin1String("hif"))
+        return "heic";
     return s.toLatin1();
 }
 
 bool formatHasAlpha(const QByteArray &format)
 {
-    return format == "png" || format == "webp" || format == "tiff" || format == "ico";
+    return format == "png" || format == "webp" || format == "tiff" || format == "ico" || format == "heic"
+        || format == "avif" || format == "pdf";
 }
 
 QString humanSize(qint64 bytes)
@@ -1500,6 +1504,8 @@ bool MainWindow::save()
     const QByteArray format = formatForSuffix(QFileInfo(m_path).suffix());
     if (!QImageWriter::supportedImageFormats().contains(format))
         return saveAs();   // z. B. GIF: Qt kann es lesen, aber nicht schreiben
+    if (format == "heic" || format == "avif")
+        return saveAs();   // nicht stillschweigend verlustbehaftet neu kodieren
 
     const Lossless lossless = saveLossless(m_path);
     if (lossless == Lossless::Cancelled)
@@ -1517,7 +1523,7 @@ bool MainWindow::save()
         updateStatus();
         return true;
     }
-    if (m_deepColor) {
+    if (m_deepColor && fullDepthImage(format).isNull()) {
         const auto answer = QMessageBox::question(
             this, tr("Farbtiefe geht verloren"),
             tr("Das Original hat mehr als 8 Bit je Farbkanal. KiekAn! speichert nur 8 Bit, "
@@ -1567,6 +1573,11 @@ bool MainWindow::saveAs()
     choices.append({tr("BMP (*.bmp)"), QStringLiteral("bmp"), "bmp"});
     if (writable.contains("tiff"))
         choices.append({tr("TIFF (*.tif *.tiff)"), QStringLiteral("tif"), "tiff"});
+    if (writable.contains("avif"))
+        choices.append({tr("AVIF (*.avif)"), QStringLiteral("avif"), "avif"});
+    if (writable.contains("heic"))
+        choices.append({tr("HEIC (*.heic *.heif)"), QStringLiteral("heic"), "heic"});
+    choices.append({tr("PDF (*.pdf)"), QStringLiteral("pdf"), "pdf"});
 
     QString suggested;
     QString selectedFilter = choices.first().filter;
@@ -1605,7 +1616,7 @@ bool MainWindow::saveAs()
 
     QFileInfo fi(file);
     QByteArray format = formatForSuffix(fi.suffix());
-    if (fi.suffix().isEmpty() || !writable.contains(format)) {
+    if (fi.suffix().isEmpty() || (!writable.contains(format) && format != "pdf")) {
         // Keine oder unbekannte Endung: die des gewählten Filters anhängen.
         for (const Choice &c : choices) {
             if (c.filter == selectedFilter) {
@@ -1621,7 +1632,7 @@ bool MainWindow::saveAs()
         return false;
     const bool lossless = losslessResult == Lossless::Saved;
     int quality = settings.value(QStringLiteral("jpegQuality"), 90).toInt();
-    if (!lossless && (format == "jpeg" || format == "webp")) {
+    if (!lossless && (format == "jpeg" || format == "webp" || format == "heic" || format == "avif")) {
         bool ok = false;
         quality = QInputDialog::getInt(this, tr("Qualität"), tr("Qualität (1–100):"),
                                        quality, 1, 100, 1, &ok);
@@ -1693,9 +1704,33 @@ MainWindow::Lossless MainWindow::saveLossless(const QString &target)
     return answer == QMessageBox::Yes ? Lossless::NotApplicable : Lossless::Cancelled;
 }
 
+// Lässt sich beim Speichern die volle Farbtiefe (16 Bit) erhalten? Nur bei
+// PNG/TIFF und wenn seit dem Laden höchstens gedreht/gespiegelt wurde – dann
+// wird das Original neu gelesen und genauso gedreht.
+QImage MainWindow::fullDepthImage(const QByteArray &format) const
+{
+    if (!m_deepColor || (format != "png" && format != "tiff") || m_path.isEmpty() || m_kind != Kind::Image
+        || m_pageCount != 1 || !m_editOpsValid)
+        return {};
+    for (int op : m_editOps)
+        if (op == 0)
+            return {};   // Filter o. Ä. arbeiten mit 8 Bit
+    QImage deep = ImageLoader::readFullDepth(m_path);
+    for (int op : m_editOps) {
+        if (deep.isNull())
+            break;
+        deep = ImageOps::applyOrientation(deep, op);
+    }
+    return deep.size() == m_view->image().size() ? deep : QImage();
+}
+
 bool MainWindow::writeImage(const QString &path, const QByteArray &format, int quality, const QImage &image)
 {
     QImage img = image;
+    if (format == "pdf")
+        return writePdf(path, img);
+    if (const QImage deep = fullDepthImage(format); !deep.isNull())
+        img = deep;
     if (img.hasAlphaChannel() && !formatHasAlpha(format)) {
         // Formate ohne Transparenz: auf weißen Grund legen statt schwarz.
         QImage flat(img.size(), QImage::Format_RGB32);
@@ -1712,6 +1747,10 @@ bool MainWindow::writeImage(const QString &path, const QByteArray &format, int q
                           && (format == "jpeg" || format == "png" || format == "webp" || format == "tiff");
     if (fromFile)
         meta = Metadata::Snapshot::capture(m_path);
+    // HEIC/AVIF: exiv2 schreibt dort nicht – das Plugin legt EXIF/XMP selbst ab.
+    const bool heif = format == "heic" || format == "avif";
+    if (heif && !m_path.isEmpty() && m_kind == Kind::Image && !Media::isPdf(m_path))
+        Metadata::attachForEncoder(img, m_path, Settings::autoRotate());
 
     QSaveFile file(path);
     if (!file.open(QIODevice::WriteOnly)) {
@@ -1720,7 +1759,7 @@ bool MainWindow::writeImage(const QString &path, const QByteArray &format, int q
         return false;
     }
     QImageWriter writer(&file, format);
-    if (format == "jpeg" || format == "webp")
+    if (format == "jpeg" || format == "webp" || heif)
         writer.setQuality(quality);
     if (format == "png")
         writer.setCompression(1);   // schnell, trotzdem verlustfrei
@@ -1732,6 +1771,25 @@ bool MainWindow::writeImage(const QString &path, const QByteArray &format, int q
     QString metaError;
     if (!meta.applyTo(path, img.size(), Settings::autoRotate(), &metaError))
         message(tr("Gespeichert, aber EXIF-Daten konnten nicht übernommen werden: %1").arg(metaError));
+    return true;
+}
+
+// Als PDF: eine Seite; erkannter Text (T) kommt unsichtbar dazu, die PDF ist
+// dann durchsuchbar.
+bool MainWindow::writePdf(const QString &path, const QImage &image)
+{
+    PdfExport::Page page;
+    page.image = image;
+    if (m_kind == Kind::Image && m_view->hasTextLayer())
+        page.text = PdfExport::scaled(m_view->textLayer(), image.size());
+    const QString title = m_path.isEmpty() ? QFileInfo(path).completeBaseName() : QFileInfo(m_path).completeBaseName();
+    const QString error = PdfExport::write(path, {page}, title);
+    if (!error.isEmpty()) {
+        QMessageBox::warning(this, tr("Speichern fehlgeschlagen"), tr("Fehler beim Speichern von\n%1\n\n%2").arg(path, error));
+        return false;
+    }
+    if (page.text.isEmpty() && m_kind == Kind::Image)
+        message(tr("Als PDF gespeichert. Tipp: Vorher T drücken, dann ist die PDF durchsuchbar."));
     return true;
 }
 

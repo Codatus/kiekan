@@ -67,6 +67,8 @@ private:
     QCheckBox *m_keepMeta;
     QCheckBox *m_overwrite;
     QCheckBox *m_useRenamePattern;
+    QCheckBox *m_combinePdf = nullptr;
+    QCheckBox *m_searchable = nullptr;
     QLineEdit *m_outDir;
     QPlainTextEdit *m_log;
 

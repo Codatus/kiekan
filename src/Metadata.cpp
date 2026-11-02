@@ -619,6 +619,33 @@ struct Snapshot::Data
     Exiv2::XmpData xmp;
 };
 
+void attachForEncoder(QImage &image, const QString &source, bool resetOrientation)
+{
+    try {
+        Loaded l = load(source);
+        if (l.exif && !l.exif->empty()) {
+            Exiv2::ExifData exif = *l.exif;
+            Exiv2::ExifThumb(exif).erase();   // altes Vorschaubild passt nicht mehr
+            exif["Exif.Photo.PixelXDimension"] = uint32_t(image.width());
+            exif["Exif.Photo.PixelYDimension"] = uint32_t(image.height());
+            if (resetOrientation)
+                exif["Exif.Image.Orientation"] = uint16_t(1);
+            Exiv2::Blob blob;
+            Exiv2::ExifParser::encode(blob, Exiv2::littleEndian, exif);
+            if (!blob.empty())
+                image.setText(QStringLiteral("kiekan-exif"),
+                              QString::fromLatin1(QByteArray(reinterpret_cast<const char *>(blob.data()), int(blob.size())).toBase64()));
+        }
+        if (l.opened && !l.opened->image->xmpData().empty()) {
+            std::string packet;
+            if (Exiv2::XmpParser::encode(packet, l.opened->image->xmpData()) == 0 && !packet.empty())
+                image.setText(QStringLiteral("kiekan-xmp"), QString::fromLatin1(QByteArray::fromStdString(packet).toBase64()));
+        }
+    } catch (const std::exception &) {
+        // ohne Metadaten speichern
+    }
+}
+
 Snapshot Snapshot::capture(const QString &path)
 {
     Snapshot snap;
@@ -711,6 +738,7 @@ bool writeDescriptive(const QString &, const DescriptiveFields &, QString *error
 }
 QList<Entry> read(const QString &, QString *) { return {}; }
 Summary summary(const QString &) { return {}; }
+void attachForEncoder(QImage &, const QString &, bool) {}
 Snapshot Snapshot::capture(const QString &) { return {}; }
 bool Snapshot::isEmpty() const { return true; }
 bool Snapshot::applyTo(const QString &, const QSize &, bool, QString *) const { return true; }

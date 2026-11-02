@@ -111,6 +111,8 @@ private:
     bool save();
     bool saveAs();
     bool writeImage(const QString &path, const QByteArray &format, int quality, const QImage &image);
+    bool writePdf(const QString &path, const QImage &image);
+    QImage fullDepthImage(const QByteArray &format) const;
     void deleteFile();
     void renameFile();
     void batchDialog();

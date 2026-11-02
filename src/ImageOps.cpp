@@ -4,6 +4,8 @@
 
 #include "ImageOps.h"
 
+#include <QTransform>
+
 #include <cmath>
 
 namespace ImageOps {
@@ -133,6 +135,22 @@ QImage forProcessing(const QImage &image)
 {
     const QImage::Format f = image.hasAlphaChannel() ? QImage::Format_ARGB32 : QImage::Format_RGB32;
     return image.format() == f ? image : image.convertToFormat(f);
+}
+
+QImage applyOrientation(const QImage &image, int op)
+{
+    auto rot = [](const QImage &img, int deg) { return img.transformed(QTransform().rotate(deg)); };
+    switch (op) {
+    case 1: return image;
+    case 2: return image.mirrored(true, false);
+    case 3: return rot(image, 180);
+    case 4: return image.mirrored(false, true);
+    case 5: return rot(image, 90).mirrored(true, false);    // an der Hauptdiagonale gespiegelt
+    case 6: return rot(image, 90);
+    case 7: return rot(image, 270).mirrored(true, false);   // an der Nebendiagonale gespiegelt
+    case 8: return rot(image, 270);
+    default: return {};
+    }
 }
 
 QImage forDisplay(const QImage &image)

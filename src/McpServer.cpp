@@ -115,7 +115,7 @@ const char *kToolsJson = R"JSON([
   "required":["path"]}},
 {"name":"list_filters","description":"Filters available for the `filter` operation of edit_image (built-in and plugins), with their parameters, ranges and defaults.",
  "inputSchema":{"type":"object","properties":{}}},
-{"name":"edit_image","description":"Apply operations in order and save the result to a new file (format from the output extension: jpg, png, webp, tif, bmp). Operations: {op:'rotate',degrees:90|180|270} {op:'flip',direction:'horizontal'|'vertical'} {op:'crop',x,y,width,height} {op:'resize',width?,height?,percent?,max_size?} {op:'grayscale'} {op:'invert'} {op:'auto_levels'} {op:'equalize'} {op:'curves',points:[[in,out],...],channel:'all'|'red'|'green'|'blue'} {op:'filter',id,params:{...}}. Coordinates refer to the image as it is at that step. EXIF is kept.",
+{"name":"edit_image","description":"Apply operations in order and save the result to a new file (format from the output extension: jpg, png, webp, tif, bmp, avif, heic if the system has the encoder, pdf - a PDF page, searchable when the source has KiekAn! recognized text). Operations: {op:'rotate',degrees:90|180|270} {op:'flip',direction:'horizontal'|'vertical'} {op:'crop',x,y,width,height} {op:'resize',width?,height?,percent?,max_size?} {op:'grayscale'} {op:'invert'} {op:'auto_levels'} {op:'equalize'} {op:'curves',points:[[in,out],...],channel:'all'|'red'|'green'|'blue'} {op:'filter',id,params:{...}}. Coordinates refer to the image as it is at that step. EXIF is kept.",
  "inputSchema":{"type":"object","properties":{
    "input":{"type":"string"},"page":{"type":"integer","default":0},
    "output":{"type":"string","description":"Absolute path of the new file"},
@@ -130,7 +130,7 @@ const char *kToolsJson = R"JSON([
    "directory":{"type":"string","description":"Alternatively: convert all images in this folder"},
    "recursive":{"type":"boolean","default":false},
    "output_dir":{"type":"string"},
-   "format":{"type":"string","enum":["jpg","png","webp","tif","bmp"]},
+   "format":{"type":"string","enum":["jpg","png","webp","tif","bmp","avif","heic","pdf"],"description":"avif/heic only if the system has the encoder; pdf: one PDF per input (searchable where KiekAn! stored recognized text)"},
    "quality":{"type":"integer","default":90},
    "max_size":{"type":"integer","description":"Longest side in pixels; larger images are scaled down"},
    "operations":{"type":"array","items":{"type":"object"}},
@@ -451,7 +451,7 @@ QByteArray writerFormat(const QString &path)
 void writeImage(const QImage &input, const QString &output, int quality, const QString &metadataSource)
 {
     if (writerFormat(output).isEmpty())
-        fail(QStringLiteral("unsupported output format: %1 (use jpg, png, webp, tif or bmp)").arg(QFileInfo(output).suffix()));
+        fail(QStringLiteral("unsupported output format: %1 (use %2)").arg(QFileInfo(output).suffix(), BatchConvert::writableFormats().join(QStringLiteral(", "))));
     const QString error = BatchConvert::writeImage(input, output, quality, metadataSource);
     if (!error.isEmpty())
         fail(error);

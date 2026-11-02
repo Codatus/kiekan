@@ -97,6 +97,8 @@ qt_add_executable(kiekan WIN32
     src/main.cpp
     src/MainWindow.cpp
     src/MainWindow.h
+    src/PdfExport.cpp
+    src/PdfExport.h
     src/Accessibility.cpp
     src/Accessibility.h
     src/ImageView.cpp
@@ -397,7 +399,7 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Ab Qt 6.6 (z. B. Debian 13) liegen SVG-Bild- und Symbol-Plugins in qt6-svg-plugins,
 # ab libheif 1.16 die Decoder für HEIC (libde265) und AVIF (dav1d/aom) in eigenen Paketen.
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-qpa-plugins, qt6-image-formats-plugins, libqt6svg6, qt6-svg-plugins | libqt6svg6 (<< 6.6), libheif-plugin-libde265 | libheif1 (<< 1.16), libheif-plugin-dav1d | libheif-plugin-aomdec | libheif1 (<< 1.16)")
-set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-wayland, qt6-translations-l10n, tesseract-ocr-deu, tesseract-ocr-eng, tesseract-ocr-osd")
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-wayland, qt6-translations-l10n, tesseract-ocr-deu, tesseract-ocr-eng, tesseract-ocr-osd, libheif-plugin-aomenc | libheif1 (<< 1.16), libheif-plugin-x265 | libheif1 (<< 1.16)")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
 "KiekAn! ist ein schneller Bildbetrachter im Stil von IrfanView.
  Er zeigt Bilder sofort an, blaettert per Tastatur durch Ordner und bietet

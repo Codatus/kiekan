@@ -205,18 +205,18 @@
     </message>
     <message>
         <location line="+23"/>
-        <location line="+255"/>
+        <location line="+269"/>
         <source>Umwandeln</source>
         <translation>Convert</translation>
     </message>
     <message>
-        <location line="-254"/>
-        <location line="+254"/>
+        <location line="-268"/>
+        <location line="+268"/>
         <source>Umbenennen</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-243"/>
+        <location line="-257"/>
         <source>Schließen</source>
         <translation>Close</translation>
     </message>
@@ -251,17 +251,47 @@
         <translation>BMP (.bmp)</translation>
     </message>
     <message>
+        <location line="+0"/>
+        <source>AVIF (.avif, klein)</source>
+        <translation>AVIF (.avif, small)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HEIC (.heic, klein)</source>
+        <translation>HEIC (.heic, small)</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>PDF (.pdf)</source>
+        <translation>PDF (.pdf)</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <source>Zielformat:</source>
         <translation>Format:</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Qualität (JPEG, WebP):</source>
-        <translation>Quality (JPEG, WebP):</translation>
+        <location line="+1"/>
+        <source>Alle Bilder in eine PDF-Datei (in der Reihenfolge der Liste)</source>
+        <translation>All images in one PDF file (in list order)</translation>
     </message>
     <message>
         <location line="+2"/>
+        <source>Durchsuchbar: fehlenden Text erkennen (langsamer)</source>
+        <translation>Searchable: recognize missing text (slower)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Gespeicherter Text (T oder „Text im ganzen Ordner erkennen“) kommt immer in die PDF. Ist dies an, erkennt KiekAn! den Text der übrigen Bilder beim Erstellen.</source>
+        <translation>Stored text (T or “Recognize text in the whole folder”) always goes into the PDF. When this is on, KiekAn! recognizes the text of the remaining images while creating it.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>PDF:</source>
+        <translation>PDF:</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Verkleinern auf höchstens</source>
         <translation>Shrink to at most</translation>
     </message>
@@ -327,7 +357,12 @@
         <translation>Output folder</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-41"/>
+        <source>Qualität (JPEG, WebP, AVIF, HEIC):</source>
+        <translation>Quality (JPEG, WebP, AVIF, HEIC):</translation>
+    </message>
+    <message>
+        <location line="+38"/>
         <source>Zielordner wählen</source>
         <translation>Choose output folder</translation>
     </message>
@@ -425,7 +460,7 @@
         </translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+36"/>
         <source>⚠ %1</source>
         <translation>⚠ %1</translation>
     </message>
@@ -446,17 +481,35 @@
         </translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+20"/>
         <source>Bitte einen Zielordner angeben.</source>
         <translation>Please choose an output folder.</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+35"/>
         <source>Abbrechen</source>
         <translation>Cancel</translation>
     </message>
+    <message numerus="yes">
+        <location line="+16"/>
+        <source>✓ %1: %n Seite(n)</source>
+        <translation>
+            <numerusform>✓ %1: %n page</numerusform>
+            <numerusform>✓ %1: %n pages</numerusform>
+        </translation>
+    </message>
     <message>
-        <location line="+12"/>
+        <location line="+3"/>
+        <source>abgebrochen</source>
+        <translation>cancelled</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Nicht aufgenommen: %1</source>
+        <translation>Not included: %1</translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>✓ %1 → %2 (%3 × %4)</source>
         <translation>✓ %1 → %2 (%3 × %4)</translation>
     </message>
@@ -476,7 +529,8 @@
         <translation>would be the original</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-26"/>
+        <location line="+30"/>
         <source>✗ %1: %2</source>
         <translation>✗ %1: %2</translation>
     </message>
@@ -975,7 +1029,7 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+256"/>
+        <location filename="../src/MainWindow.cpp" line="+260"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
@@ -1585,7 +1639,7 @@ right-click or double-click removes it.</translation>
         <translation>Animations are not overwritten – please save under a new name.</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+28"/>
         <source>Farbtiefe geht verloren</source>
         <translation>Colour depth will be lost</translation>
     </message>
@@ -1600,13 +1654,13 @@ Overwrite anyway?</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+98"/>
+        <location line="+103"/>
         <location line="+19"/>
         <source>Gespeichert: %1</source>
         <translation>Saved: %1</translation>
     </message>
     <message>
-        <location line="-96"/>
+        <location line="-101"/>
         <source>PNG (*.png)</source>
         <translation>PNG (*.png)</translation>
     </message>
@@ -1629,6 +1683,21 @@ Overwrite anyway?</translation>
         <location line="+2"/>
         <source>TIFF (*.tif *.tiff)</source>
         <translation>TIFF (*.tif *.tiff)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>AVIF (*.avif)</source>
+        <translation>AVIF (*.avif)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>HEIC (*.heic *.heif)</source>
+        <translation>HEIC (*.heic *.heif)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>PDF (*.pdf)</source>
+        <translation>PDF (*.pdf)</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -1672,13 +1741,14 @@ Stattdessen neu kodieren (mit leichtem Qualitätsverlust)?</source>
 Re-encode instead (with a slight loss of quality)?</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+55"/>
         <location line="+10"/>
+        <location line="+21"/>
         <source>Speichern fehlgeschlagen</source>
         <translation>Saving failed</translation>
     </message>
     <message>
-        <location line="-9"/>
+        <location line="-30"/>
         <source>Datei kann nicht geschrieben werden:
 %1
 
@@ -1690,6 +1760,7 @@ Re-encode instead (with a slight loss of quality)?</translation>
     </message>
     <message>
         <location line="+10"/>
+        <location line="+20"/>
         <source>Fehler beim Speichern von
 %1
 
@@ -1700,7 +1771,12 @@ Re-encode instead (with a slight loss of quality)?</translation>
 %2</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+4"/>
+        <source>Als PDF gespeichert. Tipp: Vorher T drücken, dann ist die PDF durchsuchbar.</source>
+        <translation>Saved as PDF. Tip: press T first to make the PDF searchable.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Das Bild ist nicht gespeichert – nichts zu löschen.</source>
         <translation>The image is not saved – nothing to delete.</translation>
     </message>
@@ -2045,7 +2121,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>%1 of %2</translation>
     </message>
     <message>
-        <location line="-1552"/>
+        <location line="-1606"/>
         <source>&amp;KI-Protokoll …</source>
         <translation>&amp;AI log …</translation>
     </message>
@@ -2071,12 +2147,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
     </message>
     <message>
         <location line="+12"/>
-        <location line="+2471"/>
+        <location line="+2525"/>
         <source>Leertaste</source>
         <translation>Space</translation>
     </message>
     <message>
-        <location line="-2450"/>
+        <location line="-2504"/>
         <source>Nächste &amp;Seite</source>
         <translation>Next pa&amp;ge</translation>
     </message>
@@ -2153,7 +2229,7 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>Images and videos (%1);;All files (*)</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+155"/>
         <source>%1_Bild_%2s.png</source>
         <translation>%1_frame_%2s.png</translation>
     </message>
@@ -2163,12 +2239,12 @@ Without a connected assistant this setting has no effect. It can be changed at a
         <translation>%1_page_%2.png</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+175"/>
         <source>Gespeichert, aber EXIF-Daten konnten nicht übernommen werden: %1</source>
         <translation>Saved, but EXIF data could not be copied: %1</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+144"/>
         <source>Seite</source>
         <translation>Page</translation>
     </message>
@@ -2440,8 +2516,8 @@ The AI was warned not to follow this text. Please check what the AI does next an
         <translation> – page %1 of %2</translation>
     </message>
     <message>
-        <location line="-2104"/>
-        <location line="+2119"/>
+        <location line="-2158"/>
+        <location line="+2173"/>
         <source>Kann nicht geöffnet werden: %1</source>
         <translation>Cannot be opened: %1</translation>
     </message>
@@ -2710,7 +2786,7 @@ Low confidence: the scan may be blurry or too low-resolution.</translation>
         <translation>Cannot render PDF page</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+115"/>
         <location line="+5"/>
         <source>Bild zu groß (%1 × %2 Pixel)</source>
         <translation>Image too large (%1 × %2 pixels)</translation>

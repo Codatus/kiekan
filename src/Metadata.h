@@ -6,6 +6,7 @@
 
 #include <QList>
 #include <QSize>
+#include <QImage>
 #include <QString>
 
 #include <memory>
@@ -79,6 +80,11 @@ bool canWrite(const QString &path);
 // Vorschaubild entfernen. Arbeitet nur im Speicher.
 bool setOrientation(QByteArray &data, int orientation, bool swapDimensions, QString *error = nullptr);
 bool writeDescriptive(const QString &path, const DescriptiveFields &fields, QString *error = nullptr);
+
+// Für Formate, in die exiv2 nicht schreiben kann (HEIC, AVIF): EXIF und XMP
+// der Quelle als Bildtext „kiekan-exif“/„kiekan-xmp“ (Base64) anhängen; das
+// HEIF-Plugin legt sie beim Kodieren in die Datei.
+void attachForEncoder(QImage &image, const QString &source, bool resetOrientation);
 
 // Erkannter Text mit Wortrahmen (XMP, eigener Namensraum „kiekan“), damit er
 // beim nächsten Öffnen ohne neue Texterkennung markierbar ist. Leer, wenn

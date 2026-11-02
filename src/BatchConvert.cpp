@@ -8,6 +8,9 @@
 #include "ImageLoader.h"
 #include "Media.h"
 #include "Metadata.h"
+#include "Ocr.h"
+#include "OcrWorker.h"
+#include "PdfExport.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -16,6 +19,7 @@
 #include <QPainter>
 #include <QSaveFile>
 #include <QSet>
+#include <QTemporaryFile>
 
 #include <algorithm>
 
@@ -30,8 +34,11 @@ QByteArray writerFormat(const QString &pathOrSuffix)
         return "jpeg";
     if (s == QLatin1String("tif") || s == QLatin1String("tiff"))
         return "tiff";
-    if (s == QLatin1String("png") || s == QLatin1String("webp") || s == QLatin1String("bmp"))
+    if (s == QLatin1String("png") || s == QLatin1String("webp") || s == QLatin1String("bmp")
+        || s == QLatin1String("avif") || s == QLatin1String("pdf"))
         return s.toLatin1();
+    if (s == QLatin1String("heic") || s == QLatin1String("heif") || s == QLatin1String("hif"))
+        return "heic";
     return {};
 }
 
@@ -39,11 +46,81 @@ QStringList writableFormats()
 {
     const auto supported = QImageWriter::supportedImageFormats();
     QStringList out;
-    for (const QString &s : {QStringLiteral("jpg"), QStringLiteral("png"), QStringLiteral("webp"),
-                             QStringLiteral("tif"), QStringLiteral("bmp")})
+    for (const QString &s : {QStringLiteral("jpg"), QStringLiteral("png"), QStringLiteral("webp"), QStringLiteral("tif"),
+                             QStringLiteral("bmp"), QStringLiteral("avif"), QStringLiteral("heic")})
         if (supported.contains(writerFormat(s)))
             out << s;
+    out << QStringLiteral("pdf");   // eigener Schreiber (PdfExport)
     return out;
+}
+
+namespace {
+
+// Seite für eine PDF: Bild wie bei der Umwandlung, dazu der in der Datei
+// gespeicherte Text – oder, mit `searchable`, frisch erkannter.
+PdfExport::Page pdfPage(const Item &item, const Options &options, QString *error)
+{
+    PdfExport::Page page;
+    const LoadResult r = ImageLoader::decode(item.input, item.page, 200, true);
+    if (r.image.isNull()) {
+        *error = QStringLiteral("cannot read: %1").arg(r.error);
+        return page;
+    }
+    try {
+        page.image = EditOps::apply(r.image, options.operations, nullptr);
+    } catch (const EditOps::Error &e) {
+        *error = e.message;
+        return page;
+    }
+    if (options.maxSize > 0)
+        page.image = EditOps::scaledToMax(page.image, options.maxSize);
+    if (!Media::isPdf(item.input))
+        page.text = PdfExport::scaled(Metadata::readTextLayer(item.input), page.image.size());
+    if (page.text.isEmpty() && options.searchable && Ocr::available()) {
+        QTemporaryFile tmp(QDir::tempPath() + QStringLiteral("/kiekan-pdf-XXXXXX.png"));
+        if (tmp.open() && page.image.save(&tmp, "png")) {
+            tmp.close();
+            OcrWorker::Job job;
+            job.imageFile = tmp.fileName();
+            job.options.words = true;
+            const Ocr::Result ocr = OcrWorker::run(job);
+            page.text.size = page.image.size();
+            page.text.languages = ocr.languages;
+            for (const Ocr::Word &w : ocr.words)
+                page.text.words.append({w.box, w.text, w.line, w.para});
+        }
+    }
+    return page;
+}
+
+} // namespace
+
+Outcome combinePdf(const QList<Item> &items, const Options &options, const QString &output,
+                   const std::function<bool(int)> &progress)
+{
+    if (QFileInfo(output).isSymLink())
+        return {Outcome::Skipped, QStringLiteral("target is a symbolic link"), {}};
+    if (QFileInfo::exists(output) && !options.overwrite)
+        return {Outcome::Skipped, QStringLiteral("exists"), {}};
+    if (!QDir().mkpath(QFileInfo(output).absolutePath()))
+        return {Outcome::Failed, QStringLiteral("cannot create %1").arg(QFileInfo(output).absolutePath()), {}};
+    int pages = 0;
+    QStringList problems;
+    const QString error = PdfExport::write(
+        output, int(items.size()),
+        [&](int i) {
+            QString err;
+            PdfExport::Page page = pdfPage(items.at(i), options, &err);
+            if (!err.isEmpty())
+                problems << QStringLiteral("%1: %2").arg(QFileInfo(items.at(i).input).fileName(), err);
+            else
+                ++pages;
+            return page;
+        },
+        QFileInfo(output).completeBaseName(), progress);
+    if (!error.isEmpty())
+        return {Outcome::Failed, error, {}};
+    return {Outcome::Converted, problems.join(QStringLiteral("; ")), QSize(pages, 0)};
 }
 
 namespace {
@@ -101,6 +178,13 @@ QList<Item> plan(const QStringList &inputs, const Options &options, const QStrin
 QString writeImage(const QImage &input, const QString &output, int quality, const QString &metadataSource)
 {
     const QByteArray format = writerFormat(output);
+    if (format == "pdf") {
+        PdfExport::Page page;
+        page.image = input;
+        if (!metadataSource.isEmpty() && !Media::isPdf(metadataSource))
+            page.text = PdfExport::scaled(Metadata::readTextLayer(metadataSource), input.size());
+        return PdfExport::write(output, {page}, QFileInfo(output).completeBaseName());
+    }
     if (format.isEmpty() || !QImageWriter::supportedImageFormats().contains(format))
         return QStringLiteral("unsupported output format: %1").arg(QFileInfo(output).suffix());
 
@@ -116,14 +200,19 @@ QString writeImage(const QImage &input, const QString &output, int quality, cons
     }
 
     Metadata::Snapshot meta;
-    if (!metadataSource.isEmpty() && !Media::isPdf(metadataSource) && format != "bmp")
-        meta = Metadata::Snapshot::capture(metadataSource);
+    const bool heif = format == "heic" || format == "avif";
+    if (!metadataSource.isEmpty() && !Media::isPdf(metadataSource) && format != "bmp") {
+        if (heif)
+            Metadata::attachForEncoder(img, metadataSource, ImageLoader::autoRotate());   // exiv2 schreibt kein HEIF
+        else
+            meta = Metadata::Snapshot::capture(metadataSource);
+    }
 
     QSaveFile file(output);
     if (!file.open(QIODevice::WriteOnly))
         return QStringLiteral("cannot write %1: %2").arg(output, file.errorString());
     QImageWriter writer(&file, format);
-    if (format == "jpeg" || format == "webp")
+    if (format == "jpeg" || format == "webp" || heif)
         writer.setQuality(std::clamp(quality, 1, 100));
     if (format == "png")
         writer.setCompression(1);
@@ -146,9 +235,30 @@ Outcome convert(const Item &item, const Options &options)
     if (!QDir().mkpath(QFileInfo(item.output).absolutePath()))
         return {Outcome::Failed, QStringLiteral("cannot create %1").arg(QFileInfo(item.output).absolutePath()), {}};
 
+    if (writerFormat(item.output) == "pdf") {
+        QString error;
+        PdfExport::Page page = pdfPage(item, options, &error);
+        if (error.isEmpty())
+            error = PdfExport::write(item.output, {page}, QFileInfo(item.output).completeBaseName());
+        if (!error.isEmpty())
+            return {Outcome::Failed, error, {}};
+        return {Outcome::Converted, {}, page.image.size()};
+    }
     const LoadResult r = ImageLoader::decode(item.input, item.page, 200, true);
     if (r.image.isNull())
         return {Outcome::Failed, QStringLiteral("cannot read: %1").arg(r.error), {}};
+    // PNG/TIFF ohne Bearbeitung: 16 Bit je Kanal erhalten, wenn das Original sie hat
+    const QByteArray outFormat = writerFormat(item.output);
+    if (r.deepColor && (outFormat == "png" || outFormat == "tiff") && options.operations.isEmpty()
+        && options.maxSize <= 0 && item.page == 0) {
+        const QImage deep = ImageLoader::readFullDepth(item.input);
+        if (!deep.isNull()) {
+            const QString error = writeImage(deep, item.output, options.quality, options.keepMetadata ? item.input : QString());
+            if (!error.isEmpty())
+                return {Outcome::Failed, error, {}};
+            return {Outcome::Converted, {}, deep.size()};
+        }
+    }
     QImage img;
     try {
         img = EditOps::apply(r.image, options.operations, nullptr);

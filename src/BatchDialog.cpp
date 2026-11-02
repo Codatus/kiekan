@@ -189,16 +189,27 @@ QWidget *BatchDialog::createConvertPage()
     const QHash<QString, QString> names{
         {QStringLiteral("jpg"), tr("JPEG (.jpg)")}, {QStringLiteral("png"), tr("PNG (.png, verlustfrei)")},
         {QStringLiteral("webp"), tr("WebP (.webp)")}, {QStringLiteral("tif"), tr("TIFF (.tif, verlustfrei)")},
-        {QStringLiteral("bmp"), tr("BMP (.bmp)")}};
+        {QStringLiteral("bmp"), tr("BMP (.bmp)")}, {QStringLiteral("avif"), tr("AVIF (.avif, klein)")},
+        {QStringLiteral("heic"), tr("HEIC (.heic, klein)")}, {QStringLiteral("pdf"), tr("PDF (.pdf)")}};
     for (const QString &f : BatchConvert::writableFormats())
         m_format->addItem(names.value(f, f), f);
     m_format->setCurrentIndex(std::max(0, m_format->findData(settings.value(QStringLiteral("batch/format"), QStringLiteral("jpg")))));
     form->addRow(tr("Zielformat:"), m_format);
+    m_combinePdf = new QCheckBox(tr("Alle Bilder in eine PDF-Datei (in der Reihenfolge der Liste)"), page);
+    m_combinePdf->setChecked(settings.value(QStringLiteral("batch/combinePdf"), true).toBool());
+    m_searchable = new QCheckBox(tr("Durchsuchbar: fehlenden Text erkennen (langsamer)"), page);
+    m_searchable->setChecked(settings.value(QStringLiteral("batch/searchable"), false).toBool());
+    m_searchable->setToolTip(tr("Gespeicherter Text (T oder „Text im ganzen Ordner erkennen“) kommt immer in die PDF. "
+                                "Ist dies an, erkennt KiekAn! den Text der übrigen Bilder beim Erstellen."));
+    auto *pdfOpts = new QVBoxLayout;
+    pdfOpts->addWidget(m_combinePdf);
+    pdfOpts->addWidget(m_searchable);
+    form->addRow(tr("PDF:"), pdfOpts);
 
     m_quality = new QSpinBox(page);
     m_quality->setRange(1, 100);
     m_quality->setValue(settings.value(QStringLiteral("batch/quality"), settings.value(QStringLiteral("jpegQuality"), 90)).toInt());
-    form->addRow(tr("Qualität (JPEG, WebP):"), m_quality);
+    form->addRow(tr("Qualität (JPEG, WebP, AVIF, HEIC):"), m_quality);
 
     m_resize = new QCheckBox(tr("Verkleinern auf höchstens"), page);
     m_resize->setChecked(settings.value(QStringLiteral("batch/resize"), false).toBool());
@@ -366,7 +377,10 @@ void BatchDialog::updateConvertState()
 {
     m_count->setText(tr("%n Datei(en)", nullptr, m_list->count()));
     const QString f = m_format->currentData().toString();
-    m_quality->setEnabled(f == QLatin1String("jpg") || f == QLatin1String("webp"));
+    m_quality->setEnabled(f == QLatin1String("jpg") || f == QLatin1String("webp") || f == QLatin1String("avif")
+                          || f == QLatin1String("heic"));
+    m_combinePdf->setEnabled(f == QLatin1String("pdf"));
+    m_searchable->setEnabled(f == QLatin1String("pdf"));
     m_maxSize->setEnabled(m_resize->isChecked());
     if (!m_worker)
         m_run->setText(m_tabs->currentIndex() == 0 ? tr("Umwandeln") : tr("Umbenennen"));
@@ -425,6 +439,8 @@ void BatchDialog::startConvert()
     options.maxSize = m_resize->isChecked() ? m_maxSize->value() : 0;
     options.overwrite = m_overwrite->isChecked();
     options.keepMetadata = m_keepMeta->isChecked();
+    options.searchable = m_searchable->isChecked();
+    const bool combine = options.format == QLatin1String("pdf") && m_combinePdf->isChecked();
     if (m_autoLevels->isChecked())
         options.operations.append(QJsonObject{{QStringLiteral("op"), QStringLiteral("auto_levels")}});
     if (m_grayscale->isChecked())
@@ -444,6 +460,8 @@ void BatchDialog::startConvert()
     s.setValue(QStringLiteral("batch/keepMeta"), m_keepMeta->isChecked());
     s.setValue(QStringLiteral("batch/usePattern"), m_useRenamePattern->isChecked());
     s.setValue(QStringLiteral("batch/outDir"), options.outputDir);
+    s.setValue(QStringLiteral("batch/combinePdf"), m_combinePdf->isChecked());
+    s.setValue(QStringLiteral("batch/searchable"), m_searchable->isChecked());
 
     // Optional neue Namen nach dem Umbenennen-Muster (ohne Endung)
     QStringList inputs = files();
@@ -465,6 +483,32 @@ void BatchDialog::startConvert()
     m_cancel = false;
     m_run->setText(tr("Abbrechen"));
     m_tabs->setEnabled(false);
+
+    if (combine) {
+        // Eine PDF: Name nach dem Ordner der ersten Datei
+        const QString base = QFileInfo(QFileInfo(inputs.value(0)).absolutePath()).fileName();
+        QString output = QDir(options.outputDir).filePath((base.isEmpty() ? QStringLiteral("KiekAn") : base) + QStringLiteral(".pdf"));
+        for (int n = 2; QFileInfo::exists(output) && !options.overwrite; ++n)
+            output = QDir(options.outputDir).filePath(QStringLiteral("%1 (%2).pdf").arg(base).arg(n));
+        m_worker = QThread::create([this, items, options, output] {
+            const BatchConvert::Outcome o = BatchConvert::combinePdf(items, options, output, [this](int i) {
+                QMetaObject::invokeMethod(this, [this, i] { m_progress->setValue(i + 1); }, Qt::QueuedConnection);
+                return !m_cancel;
+            });
+            QString text;
+            if (o.status == BatchConvert::Outcome::Converted)
+                text = tr("✓ %1: %n Seite(n)", nullptr, o.size.width()).arg(QFileInfo(output).fileName());
+            else
+                text = tr("✗ %1: %2").arg(QFileInfo(output).fileName(),
+                                          m_cancel ? tr("abgebrochen") : o.message);
+            if (o.status == BatchConvert::Outcome::Converted && !o.message.isEmpty())
+                text += QLatin1Char('\n') + tr("Nicht aufgenommen: %1").arg(o.message);
+            QMetaObject::invokeMethod(this, [this, text] { m_log->appendPlainText(text); }, Qt::QueuedConnection);
+        });
+        connect(m_worker, &QThread::finished, this, &BatchDialog::finishConvert);
+        m_worker->start();
+        return;
+    }
 
     m_worker = QThread::create([this, items, options] {
         int done = 0, skipped = 0, failed = 0;

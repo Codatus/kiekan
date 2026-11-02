@@ -6,6 +6,11 @@
 // libheif bringt die Decoder mit (libde265, dav1d/aom). Drehung und
 // Spiegelung aus dem Container (irot/imir) wendet libheif selbst an, das
 // Bild kommt also aufrecht an.
+//
+// Schreiben geht, wenn libheif einen Encoder hat (x265 für HEIC, aom/rav1e/
+// svt für AVIF) – sonst meldet das Plugin das Format nicht als schreibbar.
+// EXIF und XMP der Quelle kommen als Bildtext „kiekan-exif“/„kiekan-xmp“
+// (Base64) herein, weil exiv2 in HEIF-Dateien nicht schreiben kann.
 
 #include <QColorSpace>
 #include <QImage>
@@ -45,6 +50,25 @@ bool isHeif(const QByteArray &head)
 struct ContextDeleter { void operator()(heif_context *c) const { heif_context_free(c); } };
 struct HandleDeleter { void operator()(heif_image_handle *h) const { heif_image_handle_release(h); } };
 struct ImageDeleter { void operator()(heif_image *i) const { heif_image_release(i); } };
+struct EncoderDeleter { void operator()(heif_encoder *e) const { heif_encoder_release(e); } };
+
+heif_compression_format compressionFor(const QByteArray &format)
+{
+    return format == "avif" ? heif_compression_AV1 : heif_compression_HEVC;
+}
+
+bool canEncode(const QByteArray &format)
+{
+    return heif_have_encoder_for_format(compressionFor(format)) != 0;
+}
+
+heif_error writeToDevice(heif_context *, const void *data, size_t size, void *userdata)
+{
+    auto *device = static_cast<QIODevice *>(userdata);
+    if (device->write(static_cast<const char *>(data), qint64(size)) != qint64(size))
+        return {heif_error_Encoding_error, heif_suberror_Cannot_write_output_data, "write failed"};
+    return {heif_error_Ok, heif_suberror_Unspecified, "ok"};
+}
 
 class HeifHandler : public QImageIOHandler
 {
@@ -125,7 +149,65 @@ public:
         return {};
     }
 
-    bool supportsOption(ImageOption option) const override { return option == Size; }
+    bool supportsOption(ImageOption option) const override { return option == Size || option == Quality; }
+
+    void setOption(ImageOption option, const QVariant &value) override
+    {
+        if (option == Quality)
+            m_quality = value.toInt();
+    }
+
+    bool write(const QImage &source) override
+    {
+        if (source.isNull() || !canEncode(format()))
+            return false;
+        const bool alpha = source.hasAlphaChannel();
+        const QImage img = source.convertToFormat(alpha ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
+
+        std::unique_ptr<heif_context, ContextDeleter> ctx(heif_context_alloc());
+        heif_encoder *rawEncoder = nullptr;
+        if (heif_context_get_encoder_for_format(ctx.get(), compressionFor(format()), &rawEncoder).code != heif_error_Ok)
+            return false;
+        std::unique_ptr<heif_encoder, EncoderDeleter> encoder(rawEncoder);
+        // Qt-Qualität −1 = Standard; 1..100 wie bei JPEG
+        heif_encoder_set_lossy_quality(encoder.get(), m_quality >= 1 ? std::min(m_quality, 100) : 80);
+
+        heif_image *rawImg = nullptr;
+        if (heif_image_create(img.width(), img.height(), heif_colorspace_RGB,
+                              alpha ? heif_chroma_interleaved_RGBA : heif_chroma_interleaved_RGB, &rawImg).code
+            != heif_error_Ok)
+            return false;
+        std::unique_ptr<heif_image, ImageDeleter> himg(rawImg);
+        if (heif_image_add_plane(himg.get(), heif_channel_interleaved, img.width(), img.height(), 8).code != heif_error_Ok)
+            return false;
+        int stride = 0;
+        uint8_t *plane = heif_image_get_plane(himg.get(), heif_channel_interleaved, &stride);
+        const int rowBytes = img.width() * (alpha ? 4 : 3);
+        for (int y = 0; y < img.height(); ++y)
+            std::copy_n(img.constScanLine(y), rowBytes, plane + qsizetype(y) * stride);
+        if (img.colorSpace().isValid()) {
+            const QByteArray icc = img.colorSpace().iccProfile();
+            if (!icc.isEmpty())
+                heif_image_set_raw_color_profile(himg.get(), "prof", icc.constData(), size_t(icc.size()));
+        }
+
+        heif_image_handle *rawHandle = nullptr;
+        if (heif_context_encode_image(ctx.get(), himg.get(), encoder.get(), nullptr, &rawHandle).code != heif_error_Ok)
+            return false;
+        std::unique_ptr<heif_image_handle, HandleDeleter> handle(rawHandle);
+        const QByteArray exif = QByteArray::fromBase64(source.text(QStringLiteral("kiekan-exif")).toLatin1());
+        if (!exif.isEmpty())
+            heif_context_add_exif_metadata(ctx.get(), handle.get(), exif.constData(), int(exif.size()));
+        const QByteArray xmp = QByteArray::fromBase64(source.text(QStringLiteral("kiekan-xmp")).toLatin1());
+        if (!xmp.isEmpty())
+            heif_context_add_XMP_metadata(ctx.get(), handle.get(), xmp.constData(), int(xmp.size()));
+
+        heif_writer writer{1, writeToDevice};
+        return heif_context_write(ctx.get(), &writer, device()).code == heif_error_Ok;
+    }
+
+private:
+    int m_quality = -1;
 };
 
 } // namespace
@@ -139,7 +221,7 @@ public:
     Capabilities capabilities(QIODevice *device, const QByteArray &format) const override
     {
         if (format == "heic" || format == "heif" || format == "hif" || format == "avif")
-            return CanRead;
+            return canEncode(format) ? Capabilities(CanRead | CanWrite) : Capabilities(CanRead);
         if (!format.isEmpty())
             return {};
         return device && isHeif(device->peek(64)) ? CanRead : Capabilities();

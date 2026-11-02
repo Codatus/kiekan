@@ -32,6 +32,9 @@ struct Histogram
 QImage forProcessing(const QImage &image);
 // Ergebnis in das schnell zeichenbare Anzeigeformat bringen.
 QImage forDisplay(const QImage &image);
+// Drehung/Spiegelung als EXIF-Lage 1..8 (wie LosslessJpeg::Op) anwenden; ein
+// leeres Bild bei unbekannter Lage.
+QImage applyOrientation(const QImage &image, int op);
 
 // Ruft fn(y0, y1) für Zeilenblöcke parallel auf.
 template<typename Fn>
