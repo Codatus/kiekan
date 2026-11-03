@@ -346,6 +346,11 @@ if(BUILD_TESTING)
     target_link_libraries(folderwalktest PRIVATE Qt6::Core)
     add_test(NAME ordnerwechsel COMMAND folderwalktest)
 
+    qt_add_executable(textlayertest tests/textlayertest.cpp)
+    target_include_directories(textlayertest PRIVATE src)
+    target_link_libraries(textlayertest PRIVATE Qt6::Core)
+    add_test(NAME lesetext COMMAND textlayertest)
+
     qt_add_executable(formattest tests/formattest.cpp)
     target_link_libraries(formattest PRIVATE Qt6::Core Qt6::Gui)
     set_tests_properties(filter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

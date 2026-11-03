@@ -537,7 +537,7 @@ void ImageView::setTextLayer(const TextLayer &layer)
     const QString old = m_textFull;
     m_text = layer;
     m_textFrom = m_textTo = m_textAnchor = -1;
-    m_textFull = m_text.text();
+    m_textFull = m_text.readingText();   // Überschriften als eine Zeile
     m_wordStart = m_text.wordOffsets();
     m_caret = -1;
     Accessibility::textReplaced(this, old, m_textFull);

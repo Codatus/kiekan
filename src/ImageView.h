@@ -158,7 +158,7 @@ private:
     int m_textFrom = -1;      // markierte Wörter from..to, -1 = keine
     int m_textTo = -1;
 
-    QString m_textFull;       // m_text.text(), einmal berechnet
+    QString m_textFull;       // m_text.readingText(), einmal berechnet
     QList<int> m_wordStart;   // Anfang jedes Wortes in m_textFull
     int m_caret = -1;         // Textcursor (Zeichen), -1 = noch nicht benutzt
     bool m_caretKeys = false;
