@@ -1029,12 +1029,12 @@ right-click or double-click removes it.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="+261"/>
+        <location filename="../src/MainWindow.cpp" line="+262"/>
         <source>&amp;Öffnen …</source>
         <translation>&amp;Open …</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+7"/>
         <source>&amp;Speichern</source>
         <translation>&amp;Save</translation>
     </message>
@@ -1373,7 +1373,17 @@ right-click or double-click removes it.</translation>
         <translation>, image turned upright</translation>
     </message>
     <message>
-        <location line="-934"/>
+        <location line="-992"/>
+        <source>&amp;Neues Fenster</source>
+        <translation>&amp;New Window</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Neues Fenster konnte nicht geöffnet werden.</source>
+        <translation>Could not open a new window.</translation>
+    </message>
+    <message>
+        <location line="+56"/>
         <source>Bild&amp;beschreibung …</source>
         <translation>Image &amp;description …</translation>
     </message>

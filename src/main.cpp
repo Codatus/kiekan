@@ -205,10 +205,13 @@ int main(int argc, char *argv[])
 
     Accessibility::install();
     MainWindow window;
+    QStringList args = QApplication::arguments();
+    // Strg+N: neues Fenster leicht versetzt, damit es nicht genau über dem alten liegt
+    if (args.removeAll(QStringLiteral("--new-window")) > 0 && !window.isMaximized() && !window.isFullScreen())
+        window.setGeometry(window.geometry().translated(40, 40));
     window.show();
     app.installEventFilter(new FileOpenFilter(&window));
 
-    const QStringList args = QApplication::arguments();
     if (args.size() > 1)
         window.openPath(args.at(1));
     QTimer::singleShot(0, &window, [&window] { window.askAiViewerAccessOnce(); });

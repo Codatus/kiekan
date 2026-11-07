@@ -268,6 +268,7 @@ Programme diese Einstellung nicht selbst ändern; der Reiter „Dateizuordnung�
 | Rechte Maustaste ziehen | Verschieben (wenn gezoomt) |
 | Strg+Y | Auf Auswahl zuschneiden |
 | Strg+C / Strg+V | Kopieren / Einfügen |
+| Strg+N | Neues leeres Fenster – z. B. Bereich markieren, Strg+C, Strg+N, Strg+V |
 | R / L | Rechts / links drehen |
 | H / V | Horizontal / vertikal spiegeln |
 | Strg+R | Größe ändern |

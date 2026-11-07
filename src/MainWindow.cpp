@@ -62,6 +62,7 @@
 #include <QFormLayout>
 #include <QTimer>
 #include <QPointer>
+#include <QProcess>
 #include <QTemporaryFile>
 #ifdef KIEKAN_HAVE_PRINT
 #include <QPageLayout>
@@ -259,6 +260,12 @@ void MainWindow::createActions()
     using K = QKeySequence;
 
     QAction *open = make(QStringLiteral("open"), tr("&Öffnen …"), "document-open", {K(Qt::Key_O), K::Open}, [this] { openDialog(); });
+    // Neues leeres Fenster als eigener Prozess: z. B. Bereich markieren,
+    // Strg+C, Strg+N, Strg+V – der Ausschnitt steht dann für sich im neuen Fenster.
+    QAction *newWindow = make(QStringLiteral("newWindow"), tr("&Neues Fenster"), "window-new", {K(Qt::CTRL | Qt::Key_N)}, [this] {
+        if (!QProcess::startDetached(QCoreApplication::applicationFilePath(), {QStringLiteral("--new-window")}))
+            message(tr("Neues Fenster konnte nicht geöffnet werden."));
+    });
     QAction *saveAct = make(QStringLiteral("saveAct"), tr("&Speichern"), "document-save", {K::Save}, [this] { save(); });
     QAction *saveAsAct = make(QStringLiteral("saveAsAct"), tr("Speichern &unter …"), "document-save-as", {K(Qt::Key_S)}, [this] { saveAs(); });
     QAction *rename = make(QStringLiteral("rename"), tr("&Umbenennen …"), "edit-rename", {K(Qt::Key_F2)}, [this] { renameFile(); });
@@ -380,7 +387,7 @@ void MainWindow::createActions()
     QAction *about = make(QStringLiteral("about"), tr("Über &KiekAn!"), "help-about", {}, [this] { showAbout(); });
 
     QMenu *file = menuBar()->addMenu(tr("&Datei"));
-    file->addActions({open, saveAct, saveAsAct});
+    file->addActions({newWindow, open, saveAct, saveAsAct});
     file->addSeparator();
     file->addActions({rename, del, info, describeAct, exifAct, ocrAct, folderTextAct, splitAct});
     file->addSeparator();
