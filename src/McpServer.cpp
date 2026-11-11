@@ -171,7 +171,7 @@ const char *kToolsJson = R"JSON([
 {"name":"split_pdf","description":"Split a large PDF into parts, e.g. to stay below upload limits (Claude: 30 MB). By default each part is at most max_megabytes (measured, not estimated) and cuts are placed at bookmarks (sections) where possible; alternatively pages_per_part or explicit ranges. Each part is named <name>_Teil-NN-von-MM_Sxxxx-yyyy.pdf, shows the ORIGINAL page numbers in PDF viewers and names source and page range in its document properties. A manifest (<name>_Teilung.json + .md) records source checksum, parts, page ranges, sizes, checksums and bookmarks. Original pages are never modified.",
  "inputSchema":{"type":"object","properties":{
    "path":{"type":"string"},
-   "output_dir":{"type":"string","description":"Default: <folder>/<name>_Teile"},
+   "output_dir":{"type":"string","description":"Default: <folder>/<name>_Teile, or <released output folder>/<name>_Teile if the source folder is not released for writing"},
    "max_megabytes":{"type":"number","default":25},
    "pages_per_part":{"type":"integer"},
    "ranges":{"type":"array","items":{"type":"array","items":{"type":"integer"}},"description":"1-based inclusive [[1,120],[121,300]]"},
@@ -1553,10 +1553,24 @@ QJsonArray McpServer::splitPdf(const QJsonObject &args)
     if (opt.overwrite)
         requireOverwriteAllowed();
     const QString outDir = str(args, "output_dir");
-    if (!outDir.isEmpty())
+    const QString partsName = QFileInfo(path).completeBaseName() + QStringLiteral("_Teile");
+    QString note;
+    if (!outDir.isEmpty()) {
         opt.outputDir = checkedWritePath(outDir);
-    else
-        checkedWritePath(QFileInfo(path).dir().filePath(QFileInfo(path).completeBaseName() + QStringLiteral("_Teile")));
+    } else {
+        // Ohne Angabe neben die Quelle – ist das nicht freigegeben, in den
+        // ersten freigegebenen Ausgabeordner statt abzubrechen.
+        try {
+            opt.outputDir = checkedWritePath(QFileInfo(path).dir().filePath(partsName));
+        } catch (const ToolError &) {
+            const QStringList roots = AiGuard::effectiveWriteRoots();
+            if (roots.isEmpty())
+                throw;
+            opt.outputDir = checkedWritePath(QDir(roots.first()).filePath(partsName));
+            note = QStringLiteral("\n(the folder next to the source is not released for AI output, so the parts went "
+                                  "to the released output folder)");
+        }
+    }
 
     const PdfSplit::Result r = PdfSplit::split(path, opt);
     if (!r.ok)
@@ -1578,7 +1592,7 @@ QJsonArray McpServer::splitPdf(const QJsonObject &args)
     QString text = QStringLiteral("split %1 (%2 pages, %3 MB) into %4 parts in %5\nmanifest: %6\nreadable summary: %7\n\n"
                                   "part\tpages (original)\tMB\tfile\n")
                        .arg(r.source).arg(r.sourcePages).arg(r.sourceBytes / 1e6, 0, 'f', 1).arg(r.parts.size())
-                       .arg(QFileInfo(r.manifestJson).absolutePath(), r.manifestJson, r.manifestMarkdown);
+                       .arg(QFileInfo(r.manifestJson).absolutePath() + note, r.manifestJson, r.manifestMarkdown);
     for (const PdfSplit::Part &p : r.parts)
         text += QStringLiteral("%1\t%2-%3\t%4\t%5%6\n").arg(p.number).arg(p.firstPage).arg(p.lastPage)
                     .arg(p.bytes / 1e6, 0, 'f', 1).arg(p.file).arg(p.oversize ? QStringLiteral("\t(single page above limit)") : QString());
