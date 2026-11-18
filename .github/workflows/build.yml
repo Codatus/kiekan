@@ -287,3 +287,53 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+
+  # apt-Paketquelle auf GitHub Pages (Zweig gh-pages) um die neuen .deb-Pakete
+  # ergänzen. Bei „Run workflow“ nur Probelauf: bauen und signieren, nicht pushen.
+  apt:
+    needs: [linux, release]
+    if: >-
+      always() && needs.linux.result == 'success' &&
+      ((startsWith(github.ref, 'refs/tags/v') && needs.release.result == 'success') ||
+       github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: src
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: gh-pages
+          path: pages
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: kiekan-ubuntu-24.04*
+          path: debs
+          merge-multiple: true
+      - name: Werkzeuge
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends apt-utils gnupg
+      - name: Signierschlüssel
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: printf '%s\n' "$APT_SIGNING_KEY" | gpg --batch --import
+      - name: Paketquelle aktualisieren
+        run: src/packaging/apt/publish.sh debs pages
+      - name: Veröffentlichen
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Paketquelle: $GITHUB_REF_NAME"
+          git push
+          # Pages neu bauen lassen, falls der Push das nicht selbst auslöst
+          gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds" || true

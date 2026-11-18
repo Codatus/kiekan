@@ -379,6 +379,31 @@ if(UNIX AND NOT APPLE)
             DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif()
 
+# apt-Paketquelle: Pakete aus dem CI (KIEKAN_PKG_SUFFIX einer bekannten
+# Distribution) bringen Quelle und Schlüssel mit, damit neue Versionen mit den
+# normalen Aktualisierungen kommen. Lokale Builds richten nichts ein.
+set(KIEKAN_APT_URL "https://codatus.github.io/kiekan/apt" CACHE STRING "Adresse der apt-Paketquelle")
+set(KIEKAN_APT_SUITE "")
+if(KIEKAN_PKG_SUFFIX STREQUAL "ubuntu22.04")
+    set(KIEKAN_APT_SUITE jammy)
+elseif(KIEKAN_PKG_SUFFIX STREQUAL "ubuntu24.04")
+    set(KIEKAN_APT_SUITE noble)
+elseif(KIEKAN_PKG_SUFFIX STREQUAL "debian12")
+    set(KIEKAN_APT_SUITE bookworm)
+elseif(KIEKAN_PKG_SUFFIX STREQUAL "debian13")
+    set(KIEKAN_APT_SUITE trixie)
+endif()
+if(KIEKAN_APT_SUITE)
+    configure_file(packaging/apt/kiekan.sources.in ${CMAKE_BINARY_DIR}/apt/kiekan.sources @ONLY)
+    install(FILES ${CMAKE_BINARY_DIR}/apt/kiekan.sources
+            DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/apt/sources.list.d)
+    install(FILES packaging/apt/kiekan-archive-keyring.gpg
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/keyrings)
+    # Als Konfigurationsdatei: „Enabled: no“ bleibt bei Aktualisierungen erhalten.
+    file(WRITE ${CMAKE_BINARY_DIR}/apt/conffiles "${CMAKE_INSTALL_FULL_SYSCONFDIR}/apt/sources.list.d/kiekan.sources\n")
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CMAKE_BINARY_DIR}/apt/conffiles)
+endif()
+
 # --- Pakete (cpack -G DEB / cpack -G RPM) ------------------------------------
 
 set(CPACK_PACKAGE_NAME "kiekan")

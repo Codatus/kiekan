@@ -94,6 +94,22 @@ macOS (Apple Silicon), danach das Programm in den Programme-Ordner ziehen:
 curl -L -o /tmp/KiekAn.dmg "$(curl -s https://api.github.com/repos/Codatus/kiekan/releases/latest | grep -o 'https://[^"]*\.dmg')" && open /tmp/KiekAn.dmg
 ```
 
+**Aktualisierungen (Ubuntu, Debian):** Das `.deb`-Paket richtet die
+Paketquelle <https://codatus.github.io/kiekan/apt> ein
+(`/etc/apt/sources.list.d/kiekan.sources`, signiert mit dem Schlüssel
+`BB9F C50D CFEC 0489 5339  92D3 85CB 8B37 39D1 BC63`). Neue Versionen kommen
+danach mit den normalen Systemaktualisierungen. Dabei fragt apt bei GitHub nach
+neuen Versionen – KiekAn! selbst sendet weiterhin nichts. Abschalten: in der
+Datei die Zeile `Enabled: no` ergänzen oder sie löschen; die Änderung bleibt bei
+Aktualisierungen erhalten. `sudo apt purge kiekan` entfernt Programm und Quelle.
+Von Hand einrichten (Suite `jammy`, `noble`, `bookworm` oder `trixie`):
+
+```bash
+sudo curl -fsSLo /usr/share/keyrings/kiekan-archive-keyring.gpg https://codatus.github.io/kiekan/apt/kiekan-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/kiekan.sources https://codatus.github.io/kiekan/apt/kiekan-noble.sources
+sudo apt update && sudo apt install kiekan
+```
+
 **Wayland:** KiekAn! läuft unter X11 und unter Wayland (GNOME, KDE Plasma,
 LXQt mit labwc …). Für die direkte Wayland-Darstellung braucht Qt sein
 Wayland-Modul (`qt6-wayland`); die Pakete schlagen es zur Installation vor.
@@ -594,6 +610,9 @@ kein Nachladen. Das gilt auch für die Bibliotheken:
   aufrufenden Programm und über einen lokalen Socket mit dem eigenen Fenster.
 - Einzige Ausnahme, nur auf Klick: „In OpenStreetMap zeigen“ im EXIF-Dialog
   öffnet den Browser mit den GPS-Koordinaten des Fotos.
+
+Die Paketquelle für Ubuntu/Debian (siehe Installation) fragt nicht KiekAn!
+ab, sondern apt bei der Systemaktualisierung; sie lässt sich abschalten.
 
 Das Flatpak hat zusätzlich keine Netzwerkberechtigung. Geprüft wird das mit
 [`packaging/test/netztest.sh`](packaging/test/netztest.sh): Während aller
