@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KiekAn! Paketquelle</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; background: #fff; }
+  pre { background: #f3f3f3; padding: .8rem; overflow-x: auto; }
+  @media (prefers-color-scheme: dark) { body { color: #ddd; background: #1b1b1b; } pre { background: #2a2a2a; } a { color: #8cf; } }
+</style>
+</head>
+<body>
+<h1>KiekAn! – Paketquelle für Ubuntu und Debian</h1>
+<p>Das Paket von <a href="https://github.com/Codatus/kiekan/releases">GitHub Releases</a> richtet diese
+Quelle beim Installieren selbst ein. Danach kommen neue Versionen mit den normalen Aktualisierungen.</p>
+<p>Von Hand einrichten (Suite passend wählen: <code>jammy</code> = Ubuntu 22.04, <code>noble</code> = Ubuntu 24.04,
+<code>bookworm</code> = Debian 12, <code>trixie</code> = Debian 13):</p>
+<pre>sudo curl -fsSLo /usr/share/keyrings/kiekan-archive-keyring.gpg https://codatus.github.io/kiekan/apt/kiekan-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/kiekan.sources https://codatus.github.io/kiekan/apt/kiekan-noble.sources
+sudo apt update &amp;&amp; sudo apt install kiekan</pre>
+<p>apt fragt hier bei <code>apt update</code> nach neuen Versionen. KiekAn! selbst sendet nichts ins Netz.
+Abschalten: in <code>/etc/apt/sources.list.d/kiekan.sources</code> die Zeile <code>Enabled: no</code> ergänzen
+oder die Datei löschen.</p>
+<p>Fingerabdruck des Signierschlüssels: <code>BB9F C50D CFEC 0489 5339  92D3 85CB 8B37 39D1 BC63</code></p>
+</body>
+</html>

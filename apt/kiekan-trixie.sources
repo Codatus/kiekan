@@ -1,0 +1,8 @@
+# KiekAn! – Paketquelle für Aktualisierungen (eingerichtet vom Paket kiekan).
+# apt fragt hier bei „apt update“ nach neuen Versionen; KiekAn! selbst sendet nichts.
+# Abschalten: „Enabled: no“ eintragen oder diese Datei löschen.
+Types: deb
+URIs: https://codatus.github.io/kiekan/apt
+Suites: trixie
+Components: main
+Signed-By: /usr/share/keyrings/kiekan-archive-keyring.gpg
